@@ -24,7 +24,6 @@ class Compiler:
     # execute the compiler based in the params of the constructor
     def execute(self):
         """execute() -> output of the user file"""
-        os.path.dirname(os.path.realpath(__file__))
         output = subprocess.run([self.__path_language, self.__file],
                                 capture_output=True,
                                 text=True)
