@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <h1>Greetings</h1>
+        <form action="" method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Say hi</button>
+        </form>
+        <br>
+        <h2>Hi {{ first_name }} {{ last_name }}, welcome to JalaCompiler!</h2>
+    </div>
+{% endblock content %}
