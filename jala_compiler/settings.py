@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'code_editor',
-    'code_editor.apps.CodeEditorConfig',
+
 ]
 
 MIDDLEWARE = [
