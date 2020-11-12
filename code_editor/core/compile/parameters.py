@@ -10,11 +10,12 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
+from django.conf import settings
 
-PYTHON39_PATH = r'D:\ProgramFiles\python\Compiler_AT_Project\third_parties\python\Python39-32\python.exe'
+PYTHON39_PATH = settings.BASE_DIR / r'third_parties\python\Python39-32\python.exe'
 
 
-# class parameters to establish and user_file and binaries locations
+# class parameters to establish user_file and binaries location
 class Parameters:
     def __init__(self):
         self.__path_language = ''
