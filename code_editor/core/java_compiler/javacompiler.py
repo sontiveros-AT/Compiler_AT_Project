@@ -16,17 +16,17 @@ import subprocess
 
 from subprocess import STDOUT, PIPE
 
+class CompileJava:
+    def __init__(self, para):
+        self.__path = para.get_version()   
+        self.__binary = para.get_binary()
+        self.__package = para.get_package()
+        self.__mainapp = para.get_main_app()
 
-def compile_java (java_file):
-    proc_compiler=subprocess.Popen(['javac', '-d' ,'bin' ,java_file], stdout = PIPE, stderr = STDOUT)
-    compiler_output = proc_compiler.stdout.read().decode('utf-8')
-    print(compiler_output)
-
-def execute_java (java_file):
-    cmd=['java', '-cp', 'bin', java_file]
-    proc=subprocess.Popen(cmd, stdout = PIPE, stderr = STDOUT)
-    output = proc.stdout.read().decode('utf-8')
-    print(output)
-    
-compile_java("src/com/*.java")
-execute_java("com.GreetingApp")
+    # Executes the java compiler and Runs the Main class
+    def execute_java (self):
+        cmd=[self.__path+"\javac", "-d" , self.__binary ,self.__package, "&&", self.__path+"\java", "-cp", self.__binary, self.__mainapp]
+        proc=subprocess.Popen(cmd, stdout = PIPE, stderr = STDOUT, shell=True)
+        output = proc.stdout.read().decode('utf-8')
+        return output
+		
