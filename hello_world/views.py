@@ -15,7 +15,8 @@ class HelloWorldView(TemplateView):
         if form.is_valid():
             first_name = form.cleaned_data['first_name']
             last_name = form.cleaned_data['last_name']
-        args = {'form': form, 'first_name': first_name, 'last_name': last_name}
+            greet = f"Hi {first_name} {last_name}, welcome to JalaCompiler!"
+        args = {'form': form, 'greet': greet}
 
         return render(request, self.template_name, args)
 
