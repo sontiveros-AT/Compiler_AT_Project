@@ -26,7 +26,6 @@ class Compiler:
         output = subprocess.run([self.__path_language, self.__file],
                                 capture_output=True,
                                 text=True)
-        print(output.stdout)
         if output.returncode != 0:
             return output.stderr
         return output.stdout

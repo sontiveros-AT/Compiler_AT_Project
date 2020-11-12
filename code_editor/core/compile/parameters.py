@@ -11,7 +11,7 @@
 # with Jalasoft.
 #
 
-PYTHON39_PATH = r'../../third_parties/python/Python39-32/python.exe'
+PYTHON39_PATH = r'D:\ProgramFiles\python\Compiler_AT_Project\third_parties\python\Python39-32\python.exe'
 
 
 # class parameters to establish and user_file and binaries locations
