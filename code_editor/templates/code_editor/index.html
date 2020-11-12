@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <h1>Demo</h1>
+        <form action="" method="post">
+            {% csrf_token %}
+            <button type="submit">Run demo</button>
+        </form>
+        <br>
+        <h2>{{ output }}</h2>
+    </div>
+{% endblock content %}
