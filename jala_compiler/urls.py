@@ -19,3 +19,11 @@ from django.urls import path
 urlpatterns = [
     path('admin/', admin.site.urls),
 ]
+
+# NEW LINES GONZALO.ALARCON
+if settings.DEBUG:
+    urlpatterns += [
+        url(r'^storage/(?P<path>.*)$', serve, {
+            'document_root': settings.MEDIA_ROOT,
+        }),
+    ]
