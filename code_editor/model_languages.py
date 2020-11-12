@@ -1,5 +1,5 @@
 #
-# @models.py Copyright (c) 2020 Jalasoft.
+# @model_languages.py Copyright (c) 2020 Jalasoft.
 # 2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
 # 1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
 # All rights reserved.
@@ -13,7 +13,8 @@
 
 from django.db import models
 
-# import the models to be able to manage the Db tables
-from code_editor.model_languages import Languages
-from code_editor.model_projects import Projects
-from code_editor.model_files import Files
+#Create class to set a new 'Table'
+class Languages(models.Model):
+    id=models.AutoField(primary_key=True)
+    languageName=models.CharField(max_length=30)
+    extension=models.CharField(max_length=30)

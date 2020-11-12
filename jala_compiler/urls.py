@@ -14,9 +14,26 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+
+from django.urls import path
+# new lines gonzalo.alarcon
+from django.conf.urls import url
+from django.conf import settings
+from django.views.static import serve
+# no name line
 from django.urls import path, include
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('demo/', include('code_editor.urls')),
 ]
+
+# Add a new PATH to set a default folder
+if settings.DEBUG:
+    urlpatterns += [
+        url(r'^storage/(?P<path>.*)$', serve, {
+            'document_root': settings.MEDIA_ROOT,
+        }),
+    ]
+    
