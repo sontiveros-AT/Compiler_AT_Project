@@ -24,10 +24,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 ]
 
-# NEW LINES GONZALO.ALARCON
+# Add a new PATH to set a default folder
 if settings.DEBUG:
     urlpatterns += [
         url(r'^storage/(?P<path>.*)$', serve, {
             'document_root': settings.MEDIA_ROOT,
         }),
     ]
+    
