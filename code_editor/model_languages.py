@@ -1,5 +1,5 @@
 #
-# @javacompiler.py Copyright (c) 2020 Jalasoft.
+# @model_languages.py Copyright (c) 2020 Jalasoft.
 # 2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
 # 1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
 # All rights reserved.
