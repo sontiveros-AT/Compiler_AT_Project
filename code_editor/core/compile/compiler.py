@@ -20,7 +20,7 @@ class Compiler:
         self.__path_language = params.get_language()
         self.__file = params.get_file()
 
-    # execute the compiler based in the params of the constructor
+    # executes the compiler based in the params of the constructor
     def execute(self):
         """execute() -> output of the user file"""
         output = subprocess.run([self.__path_language, self.__file],
@@ -29,4 +29,3 @@ class Compiler:
         if output.returncode != 0:
             return output.stderr
         return output.stdout
-
