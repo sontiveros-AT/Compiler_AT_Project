@@ -1,5 +1,5 @@
 #
-# @model_files.py Copyright (c) 2020 Jalasoft.
+# @model_file.py Copyright (c) 2020 Jalasoft.
 # 2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
 # 1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
 # All rights reserved.
@@ -12,12 +12,13 @@
 #
 
 from django.db import models
-from code_editor.model_projects import Projects
+from code_editor.Models.model_project import Project
 
 #Create class to set a new 'Table'
-class Files(models.Model):
-    id=models.AutoField(primary_key=True)
-    nombre=models.CharField(max_length=50)
-    path=models.FileField(upload_to='files/')
-    project=models.ForeignKey(Projects, on_delete=models.CASCADE)
-    date=models.DateField()
+class File(models.Model):
+    id_file=models.AutoField(primary_key=True)
+    file_name=models.CharField(max_length=50)
+    file_path=models.CharField(max_length=100)
+    file_date = models.DateField()
+    project=models.ForeignKey(Project, on_delete=models.CASCADE)
+

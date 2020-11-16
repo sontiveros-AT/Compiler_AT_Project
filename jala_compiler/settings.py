@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'code_editor',
+    'code_editor.Models'
 
 ]
 
@@ -80,7 +81,7 @@ WSGI_APPLICATION = 'jala_compiler.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'jalacompilerdb',
+        'NAME': 'jalacompilerdb1',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',

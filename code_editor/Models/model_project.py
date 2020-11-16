@@ -13,12 +13,12 @@
 
 #Import other classes to create ForignKeys
 from django.db import models
-from code_editor.model_languages import Languages
+from code_editor.Models.model_language import Language
 
 #Create class to set a new 'Table'
-class Projects(models.Model):
-    id=models.AutoField(primary_key=True)
-    projectName=models.CharField(max_length=100, null=False)
-    description=models.TextField()
-    directory=models.FileField(upload_to='files/')
-    language=models.ForeignKey(Languages, on_delete=models.CASCADE)
+class Project(models.Model):
+    id_project=models.AutoField(primary_key=True)
+    project_name=models.CharField(max_length=100, null=False)
+    project_description=models.TextField()
+    project_path=models.CharField(max_length=100)
+    language=models.ForeignKey(Language, on_delete=models.CASCADE)
