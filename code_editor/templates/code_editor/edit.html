@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <h1>Update file</h1>
+        <form action="" method="post">
+            {% csrf_token %}
+            <table>
+                {{ form.as_table }}
+            </table>
+            <br>
+            <input type="hidden" name="_method" value="put">
+            <input type="submit" value="Put">
+        </form>
+        <form action="" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="_method" value="delete">
+            <input type="submit" value="Delete">
+        </form>
+        <br>
+        <h2>{{ output }}</h2>
+    </div>
+{% endblock content %}

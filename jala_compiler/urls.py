@@ -26,7 +26,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('demo/', include('code_editor.urls')),
+    path('api/v1/', include('code_editor.urls')),
 ]
 
 # Add a new PATH to set a default folder
@@ -36,4 +36,3 @@ if settings.DEBUG:
             'document_root': settings.MEDIA_ROOT,
         }),
     ]
-    

@@ -5,7 +5,11 @@
         <h1>Demo</h1>
         <form action="" method="post">
             {% csrf_token %}
-            <button type="submit">Run demo</button>
+            <table>
+                {{ form.as_table }}
+            </table>
+            <br>
+            <button type="submit">Post Program</button>
         </form>
         <br>
         <h2>{{ output }}</h2>
