@@ -1,5 +1,5 @@
 #
-# @urls.py Copyright (c) 2020 Jalasoft.
+# @project_view.py Copyright (c) 2020 Jalasoft.
 # 2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
 # 1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
 # All rights reserved.
@@ -11,14 +11,18 @@
 # with Jalasoft.
 #
 
-from django.urls import path
-from code_editor.views.file_view import FileView
-from code_editor.views.file_edit_view import FileEditView
-from code_editor.views.project_view import ProjectView
+import json
+from django.http import HttpResponse
+from django.views.generic import View
 
 
-urlpatterns = [
-    path('file/', FileView.as_view(), name='file-view'),
-    path('file/<int:id>', FileEditView.as_view(), name='file-edit-view'),
-    path('project/', ProjectView.as_view(), name='project-view'),
-]
+class ProjectView(View):
+
+    def get(self, request, *args, **kwargs):
+        response_data = {
+            'id': 4,
+            'name': 'Test Response',
+            'roles': ['Admin', 'User']
+        }
+
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
