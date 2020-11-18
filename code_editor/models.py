@@ -11,9 +11,12 @@
 # with Jalasoft.
 #
 
+# import the models to be able to manage the Db tables
+
+
 from django.db import models
 
 # import the models to be able to manage the Db tables
-from code_editor.model_languages import Languages
-from code_editor.model_projects import Projects
-from code_editor.model_files import Files
+from code_editor.models.model_language import Language
+from code_editor.models.model_project import Project
+from code_editor.models.model_file import File
