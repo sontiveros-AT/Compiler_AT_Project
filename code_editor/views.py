@@ -3,6 +3,9 @@ from django.shortcuts import render
 from code_editor.core.compile.compiler import Compiler
 from code_editor.core.compile.parameters import Parameters
 from django.conf import settings
+from code_editor.orm_queries.orm_file import OrmFile
+from code_editor.orm_queries.orm_language import OrmLanguage
+from code_editor.orm_queries.orm_project import OrmProject
 
 
 class CodeEditorView(TemplateView):

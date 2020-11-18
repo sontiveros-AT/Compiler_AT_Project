@@ -12,3 +12,11 @@
 #
 
 # import the models to be able to manage the Db tables
+
+
+from django.db import models
+
+# import the models to be able to manage the Db tables
+from code_editor.models.model_language import Language
+from code_editor.models.model_project import Project
+from code_editor.models.model_file import File

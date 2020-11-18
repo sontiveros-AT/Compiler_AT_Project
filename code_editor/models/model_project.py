@@ -11,14 +11,18 @@
 # with Jalasoft.
 #
 
-#Import other classes to create ForignKeys
+# Import other classes to create ForignKeys
 from django.db import models
-from code_editor.Models.model_language import Language
+from code_editor.models.model_language import Language
 
-#Create class to set a new 'Table'
+
+# Create class to set a new 'Table'
 class Project(models.Model):
-    id_project=models.AutoField(primary_key=True)
-    project_name=models.CharField(max_length=100, null=False)
-    project_description=models.TextField()
-    project_path=models.CharField(max_length=100)
-    language=models.ForeignKey(Language, on_delete=models.CASCADE)
+    id_project = models.AutoField(primary_key=True, unique=True)
+    project_name = models.CharField(max_length=100, null=False, blank=False)
+    project_description = models.TextField()
+    project_path = models.CharField(max_length=100, null=False, blank=False)
+    language = models.ForeignKey(Language, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'project'

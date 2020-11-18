@@ -12,13 +12,16 @@
 #
 
 from django.db import models
-from code_editor.Models.model_project import Project
+from code_editor.models.model_project import Project
 
-#Create class to set a new 'Table'
+
+# Create class to set a new 'Table'
 class File(models.Model):
-    id_file=models.AutoField(primary_key=True)
-    file_name=models.CharField(max_length=50)
-    file_path=models.CharField(max_length=100)
+    id_file = models.AutoField(primary_key=True, unique=True)
+    file_name = models.CharField(max_length=50, null=False, blank=False)
+    file_path = models.CharField(max_length=150, null=False, blank=False)
     file_date = models.DateField()
-    project=models.ForeignKey(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
+    class Meta:
+        db_table = 'file'
