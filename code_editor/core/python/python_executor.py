@@ -14,6 +14,7 @@
 import subprocess
 from code_editor.core.executor import Executor
 
+# Class to execute Python commands
 
 class PythonExecutor(Executor):
     def run(self, cmd):

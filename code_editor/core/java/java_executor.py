@@ -15,6 +15,7 @@ import subprocess
 from subprocess import STDOUT, PIPE
 from code_editor.core.executor import Executor
 
+# Class executor using popen
 
 class JavaExecutor(Executor):
     def run(self, cmd):

@@ -16,6 +16,8 @@
 
 from code_editor.core.parameters import Parameters
 
+# Class to define getter and setter (binarys & packages)
+
 
 class JavaParameters(Parameters):
     def __init__(self):

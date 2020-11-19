@@ -22,6 +22,9 @@ from code_editor.core.java.java_parameters import JavaParameters
 from code_editor.core.java.java_executor import JavaExecutor
 
 
+# To manage Java and Python parameters and commands
+
+
 class ExecutorManager:
     def __init__(self, language="python", file=''):
         self.__language = language.lower()
