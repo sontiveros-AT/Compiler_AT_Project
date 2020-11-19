@@ -4,7 +4,7 @@ PREREQUISITES:
   - Have installed Django, pipenv and mysqlclient (you should install it in cmd with admin permissions and into the project directory)
     - To install mysqlclient you can search "Mysqlclient" and try installing any of first three files in this link (To install mysqlclient you can search and try installing any of first third files)
     - pipenv shell
-    - pip install mysqlclient-1.4.6-pp373-pypy36_pp73-win32.whl (This file ougth to into the project folder)
+    - pip install mysqlclient-1.4.6-cp39-cp39-win_amd64.whl (This file ougth to into the project folder)
   
 COMMANDS IN ANY TERMINAL AS ADMINISTRATOR:
 (If is the first time you are installing the project in your computer you must do steps 1, 1 and 2 )

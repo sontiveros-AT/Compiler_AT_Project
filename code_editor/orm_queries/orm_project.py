@@ -11,6 +11,7 @@
 # with Jalasoft.
 #
 
+from datetime import datetime
 from code_editor.models.model_file import File
 from code_editor.models.model_project import Project
 from code_editor.models.model_language import Language
@@ -73,3 +74,33 @@ class OrmProject:
     @staticmethod
     def delete_project(id_project):
         Project.objects.get(id_project=id_project).delete()
+
+    # INTEGRATED END POINT
+    # CREATE A NEW PROJECT WITH A MAIN FILE ON IT
+
+    @staticmethod
+    def create_simple_project(name_project, description, language):
+        project = Project()
+        project.project_name = name_project
+        project.project_description = description
+        lang = Language.objects.get(language_name=language)
+        project.language = lang
+        if lang.language_name == 'java':
+            project.project_path = '/media/java/' + name_project
+        elif lang.language_name == 'python':
+            project.project_path = '/media/python/' + name_project
+        project.save()
+
+        pro = Project.objects.get(id_project=project.id_project)
+        file = File()
+        MAIN_NAME = 'main'
+        if lang.language_name == 'java':
+            file.file_name = MAIN_NAME
+            file.file_path = pro.project_path + '/' + MAIN_NAME + lang.language_extension
+        elif lang.language_name == 'python':
+            file.file_path = pro.project_path + '/' + MAIN_NAME + lang.language_extension
+            file.file_name = 'main'
+        file.file_date = datetime.now()
+        file.project = pro
+        file.save()
+        return project

@@ -10,7 +10,7 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
-# Author: Juan Perez
+# Author: Andres Cox
 # Version: 1.0
 
 from django.views.generic import View
@@ -20,26 +20,28 @@ from code_editor.forms import ProjectForm
 from code_editor.orm_queries.orm_project import OrmProject
 from .file_manager import FileManager
 
-
+# class for project endpoints
 class ProjectView(View):
     template_name = 'code_editor/home.html'
 
+    # main view to create a project
     def get(self, request, *args, **kwargs):
         my_form = ProjectForm()
 
         return render(request, self.template_name, {"form": my_form})
 
+    # endpoint to create a new project
     def post(self, request, *args, **kwargs):
         project_name = request.POST['project_name']
         description = request.POST['description']
         language = request.POST['language']
-        program = ""
+        program = "test"
 
+        # creates file
         file = FileManager()
         file.create_file(language, project_name, program)
 
-        OrmProject.create_simple_project(project_name, description, language)
-        # OrmProject.
-        id = 9
-        output = "this is in development"
-        return redirect('/api/v1/file/12')
+        # create project in th database and sends the id
+        project = OrmProject.create_simple_project(project_name, description, language)
+        id = project.id_project
+        return redirect('/api/v1/file/{}'.format(id))
