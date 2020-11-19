@@ -1,5 +1,5 @@
 #
-# @forms.py Copyright (c) 2020 Jalasoft.
+# @java_executor.py Copyright (c) 2020 Jalasoft.
 # 2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
 # 1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
 # All rights reserved.
@@ -11,13 +11,15 @@
 # with Jalasoft.
 #
 
-from django import forms
+import subprocess
+from subprocess import STDOUT, PIPE
+from code_editor.core.executor import Executor
 
+# Class executor using popen
 
-class FileForm(forms.Form):
-    LANGUAGES = (('py', 'Python'), ('java', 'Java'))
-
-    file_name = forms.CharField(max_length=100)
-    description = forms.CharField()
-    program = forms.CharField(widget=forms.Textarea)
-    language = forms.ChoiceField(choices=LANGUAGES)
+class JavaExecutor(Executor):
+    def run(self, cmd):
+        proc = subprocess.Popen(cmd, stdout=PIPE,
+                                stderr=STDOUT, shell=True)
+        output = proc.stdout.read().decode('utf-8')
+        return output

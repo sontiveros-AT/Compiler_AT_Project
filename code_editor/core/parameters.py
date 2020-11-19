@@ -10,26 +10,29 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
-from django.conf import settings
+# Author: Juan S. Ontiveros
+# Version: 1.0
+#
 
-PYTHON39_PATH = settings.BASE_DIR / r'third_parties\python\Python39-32\python.exe'
+from abc import ABC
+
+# Super class that defines the minimun parameters
+# needed to make a simple compilation of a file
 
 
-# class parameters to establish user_file and binaries location
-class Parameters:
+class Parameters(ABC):
     def __init__(self):
-        self.__path_language = ''
-        self.__file = ''
+        self.__language_path = ''
+        self.__main_path = ''
 
     def get_language(self):
-        return self.__path_language
+        return self.__language_path
 
     def set_language(self, language):
-        if language == 'python':
-            self.__path_language = PYTHON39_PATH
+        self.__language_path = language
 
     def get_file(self):
-        return self.__file
+        return self.__main_path
 
-    def set_file(self, file):
-        self.__file = file
+    def set_file(self, main_file):
+        self.__main_path = main_file

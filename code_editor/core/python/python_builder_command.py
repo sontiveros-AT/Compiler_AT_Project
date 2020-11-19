@@ -1,5 +1,5 @@
 #
-# @forms.py Copyright (c) 2020 Jalasoft.
+# @python_builder_command.py Copyright (c) 2020 Jalasoft.
 # 2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
 # 1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
 # All rights reserved.
@@ -11,13 +11,11 @@
 # with Jalasoft.
 #
 
-from django import forms
+import subprocess
+from code_editor.core.builder_command import BuilderCommand
 
 
-class FileForm(forms.Form):
-    LANGUAGES = (('py', 'Python'), ('java', 'Java'))
-
-    file_name = forms.CharField(max_length=100)
-    description = forms.CharField()
-    program = forms.CharField(widget=forms.Textarea)
-    language = forms.ChoiceField(choices=LANGUAGES)
+# class compiler built, based in params class
+class PythonBuilderCommand(BuilderCommand):
+    def command(self, params):
+        return [params.get_language(), params.get_file()]

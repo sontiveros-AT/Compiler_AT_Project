@@ -1,5 +1,5 @@
 #
-# @forms.py Copyright (c) 2020 Jalasoft.
+# @parameters.py Copyright (c) 2020 Jalasoft.
 # 2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
 # 1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
 # All rights reserved.
@@ -10,14 +10,11 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
+from code_editor.core.parameters import Parameters
 
-from django import forms
+# class parameters to establish user_file and binaries location
 
 
-class FileForm(forms.Form):
-    LANGUAGES = (('py', 'Python'), ('java', 'Java'))
-
-    file_name = forms.CharField(max_length=100)
-    description = forms.CharField()
-    program = forms.CharField(widget=forms.Textarea)
-    language = forms.ChoiceField(choices=LANGUAGES)
+class PythonParameters(Parameters):
+    def __init__(self):
+        super().__init__()

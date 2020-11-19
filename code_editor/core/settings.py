@@ -1,5 +1,5 @@
 #
-# @forms.py Copyright (c) 2020 Jalasoft.
+# @settings.py Copyright (c) 2020 Jalasoft.
 # 2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
 # 1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
 # All rights reserved.
@@ -11,13 +11,11 @@
 # with Jalasoft.
 #
 
-from django import forms
+from django.conf import settings
 
 
-class FileForm(forms.Form):
-    LANGUAGES = (('py', 'Python'), ('java', 'Java'))
+# PATH settings for Java and Python
 
-    file_name = forms.CharField(max_length=100)
-    description = forms.CharField()
-    program = forms.CharField(widget=forms.Textarea)
-    language = forms.ChoiceField(choices=LANGUAGES)
+PYTHON39_PATH = settings.BASE_DIR / 'third_parties/python/Python39-32/python.exe'
+JAVA13_PATH = settings.BASE_DIR / 'third_parties/java/jdk-13.0.2/bin'
+JAVA_FILES = settings.BASE_DIR / 'media/java'

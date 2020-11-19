@@ -1,5 +1,5 @@
 #
-# @server_file.py Copyright (c) 2020 Jalasoft.
+# @python_executor.py Copyright (c) 2020 Jalasoft.
 # 2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
 # 1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
 # All rights reserved.
@@ -11,15 +11,15 @@
 # with Jalasoft.
 #
 
-from compile.compiler import Compiler
-from compile.parameters import Parameters
+import subprocess
+from code_editor.core.executor import Executor
 
+# Class to execute Python commands
 
-# establish file and language for params
-params = Parameters()
-params.set_language('python')
-params.set_file(r'../../media/python/client_files/client_file.py')
+class PythonExecutor(Executor):
+    def run(self, cmd):
+        output = subprocess.run(cmd, capture_output=True, text=True)
+        if output.returncode != 0:
+            return output.stderr
 
-# execute file
-program = Compiler(params)
-program.execute()
+        return output.stdout
