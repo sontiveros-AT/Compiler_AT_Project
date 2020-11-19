@@ -40,14 +40,15 @@ class ExecutorManager:
         if self.__language == "python":
             self.__params = PythonParameters()
             self.__params.set_language(PYTHON39_PATH)
+            self.__params.set_file(self.__main_file)
 
         if self.__language == "java":
             self.__params = JavaParameters()
             self.__params.set_language(JAVA13_PATH)
-            self.__params.set_binary(JAVA_FILES / 'p1/bin')
-            self.__params.set_package(JAVA_FILES / 'p1/src/com/*.java')
-
-        self.__params.set_file(self.__main_file)
+            self.__params.set_binary(JAVA_FILES / f'{self.__main_file}/bin')
+            self.__params.set_package(
+                JAVA_FILES / f'{self.__main_file}/src/com/*.java')
+            self.__params.set_file('com.Main')
 
         print("params")
         print(self.__params.get_language())
