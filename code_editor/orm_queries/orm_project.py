@@ -10,11 +10,15 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
+# Author: Alvaro Cruz
+# Version: 1.0
+#
 
 from datetime import datetime
 from code_editor.models.model_file import File
 from code_editor.models.model_project import Project
 from code_editor.models.model_language import Language
+from code_editor.orm_queries.orm_file import OrmFile
 
 
 # OrmProject Class provide the different queries to the DB related with Projects
@@ -52,7 +56,13 @@ class OrmProject:
     # Returns the main File Object that belongs to the id_project
     @staticmethod
     def get_main_file_project(id_project):
-        return File.objects.get(project_id=id_project, file_name='main')
+        project = Project.objects.get(id_project=id_project)
+        print(project.project_name)
+        lang = Language.objects.get(id_language=project.language_id)
+        if lang.language_name == 'java':
+            return File.objects.get(project_id=id_project, file_name='Main')
+        elif lang.language_name == 'python':
+            return File.objects.get(project_id=id_project, file_name='main')
 
     # CREATE A NEW PROJECT
     # Creates a new project on the DB with the project_name, project_description and language
@@ -61,12 +71,12 @@ class OrmProject:
         project = Project()
         project.project_name = name
         project.project_description = description
-        lang = Language.objects.get(language_name=language)
+        lang = Language.objects.get(language_name=language.lower())
         project.language = lang
         if lang.language_name == 'java':
-            project.project_path = '/media/java/java_files/' + name
+            project.project_path = '/media/java/' + name
         elif lang.language_name == 'python':
-            project.project_path = '/media/python/client_files/' + name
+            project.project_path = '/media/python/' + name
         project.save()
 
     # DELETE A PROJECT
@@ -83,23 +93,13 @@ class OrmProject:
         project = Project()
         project.project_name = name_project
         project.project_description = description
-        lang = Language.objects.get(language_name=language)
+        lang = Language.objects.get(language_name=language.lower())
         project.language = lang
         if lang.language_name == 'java':
             project.project_path = '/media/java/' + name_project
         elif lang.language_name == 'python':
             project.project_path = '/media/python/' + name_project
         project.save()
-
-        pro = Project.objects.get(id_project=project.id_project)
-        file = File()
-        MAIN_NAME = 'main'
-        if lang.language_name == 'java':
-            file.file_name = MAIN_NAME
-            file.file_path = pro.project_path + '/' + MAIN_NAME + lang.language_extension
-        elif lang.language_name == 'python':
-            file.file_path = pro.project_path + '/' + MAIN_NAME + lang.language_extension
-            file.file_name = 'main'
-        file.file_date = datetime.now()
-        file.project = pro
-        file.save()
+        MAIN_NAME = 'Main'
+        OrmFile.create_file(project.id_project, MAIN_NAME)
+        return project

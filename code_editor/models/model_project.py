@@ -10,6 +10,9 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
+# Author: Gonzalo Alarcon, Alvaro Cruz
+# Version: 1.0
+#
 
 # Import other classes to create ForignKeys
 from django.db import models
