@@ -10,19 +10,36 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
+# Author: Juan Perez
+# Version: 1.0
 
-import json
-from django.http import HttpResponse
 from django.views.generic import View
+from django.shortcuts import render
+from django.shortcuts import redirect
+from code_editor.forms import ProjectForm
+from code_editor.orm_queries.orm_project import OrmProject
+from .file_manager import FileManager
 
 
 class ProjectView(View):
+    template_name = 'code_editor/home.html'
 
     def get(self, request, *args, **kwargs):
-        response_data = {
-            'id': 4,
-            'name': 'Test Response',
-            'roles': ['Admin', 'User']
-        }
+        my_form = ProjectForm()
 
-        return HttpResponse(json.dumps(response_data), content_type="application/json")
+        return render(request, self.template_name, {"form": my_form})
+
+    def post(self, request, *args, **kwargs):
+        project_name = request.POST['project_name']
+        description = request.POST['description']
+        language = request.POST['language']
+        program = ""
+
+        file = FileManager()
+        file.create_file(language, project_name, program)
+
+        OrmProject.create_simple_project(project_name, description, language)
+        # OrmProject.
+        id = 9
+        output = "this is in development"
+        return redirect('/api/v1/file/12')
