@@ -10,14 +10,27 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
+# Author: Andres Cox
+# Version: 1.0
 
 from django import forms
 
 
+# file form to edit in html
 class FileForm(forms.Form):
-    LANGUAGES = (('py', 'Python'), ('java', 'Java'))
+    LANGUAGES = (('python', 'Python'), ('java', 'Java'))
 
-    file_name = forms.CharField(max_length=100)
-    description = forms.CharField()
     program = forms.CharField(widget=forms.Textarea)
-    language = forms.ChoiceField(choices=LANGUAGES)
+    language = forms.ChoiceField(choices=LANGUAGES, widget=forms.Select(attrs={'class': 'form-control'}))
+
+
+# project form to display in html
+class ProjectForm(forms.Form):
+    LANGUAGES = (('python', 'Python'), ('java', 'Java'))
+
+    project_name = forms.CharField(max_length=100,
+                                   widget=forms.TextInput(
+                                        attrs={'class': 'form-control', 'placeholder': "Enter project name"}))
+    description = forms.CharField(widget=forms.TextInput(
+                                        attrs={'class': 'form-control', 'placeholder': "Project Description"}))
+    language = forms.ChoiceField(choices=LANGUAGES, widget=forms.Select(attrs={'class': 'form-control'}))

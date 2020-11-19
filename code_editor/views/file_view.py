@@ -10,59 +10,37 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
+# Author: Andres Cox
+# Version: 1.0
 
-import os
 from django.views.generic import View
 from django.shortcuts import render
-from django.conf import settings
 from code_editor.forms import FileForm
-from code_editor.core.executor_facade import ExecutorManager
+from code_editor.orm_queries.orm_project import OrmProject
+from .file_manager import FileManager
 
 
+# class for file endpoints
 class FileView(View):
     template_name = 'code_editor/index.html'
 
+    # get endpoint for files
     def get(self, request, *args, **kwargs):
         my_form = FileForm()
 
         return render(request, self.template_name, {"form": my_form})
 
+    # post endpoint for files
     def post(self, request, *args, **kwargs):
-        print(request.POST)
-        file_name = request.POST['file_name']
-        extension = request.POST['language']
+        project_name = request.POST['project_name']
+        description = request.POST['description']
+        language = request.POST['language']
+        program = request.POST['program']
 
-        if extension == "py":
-            file_path = settings.BASE_DIR / \
-                f'media/python/{file_name}.{extension}'
+        file = FileManager()
+        file.create_file(language, project_name, program)
 
-            # create file
-            file = open(file_path, "w")
-            file.write(request.POST['program'])
-            file.close()
+        OrmProject.create_simple_project(project_name, description, language)
 
-            # save in the database
+        return render(request, self.template_name)
 
-            # set parameters
-            compiler = ExecutorManager()
-            compiler.set_language('python')
-            compiler.set_file(file_path)
-
-        if extension == "java":
-            # create file
-            file_path = settings.BASE_DIR / \
-                f'media/java/{file_name}/src/com/Main.{extension}'
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-            with open(file_path, "w") as file:
-                file.write(request.POST['program'])
-
-            # save in the database
-
-            # set parameters
-            compiler = ExecutorManager()
-            compiler.set_language('java')
-            compiler.set_file(file_name)
-        # execute program
-        output = compiler.run()
-        return render(request, self.template_name, {'output': output})

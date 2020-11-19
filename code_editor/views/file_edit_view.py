@@ -10,33 +10,41 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
+# Author: Andres Cox
+# Version: 1.0
 
+import os
 from django.views.generic import View
 from django.shortcuts import render
+from code_editor.orm_queries.orm_project import OrmProject
+from .file_manager import FileManager
 from django.conf import settings
-from pathlib import Path
 from code_editor.forms import FileForm
+from code_editor.core.executor_facade import ExecutorManager
 
 
+# class file edit view
 class FileEditView(View):
     template_name = 'code_editor/edit.html'
     template_success = 'code_editor/success.html'
 
     # get file by id
     def get(self, request, id=None, *args, **kwargs):
-        # print('program id: ', id)
+
+        language = OrmProject.get_language_project(id)
+
+        file = OrmProject.get_main_file_project(id)
+        open_file = FileManager()
+        program = open_file.load_file(file.file_path)
 
         # load file
-        my_form = FileForm({'file_name': 'python operations',
-                            'description': 'simple basic operations',
-                            'program': "print('hello I am from client file')",
-                            'language': "py"
+        my_form = FileForm({'program': program,
+                            'language': language.language_name
                             })
 
         return render(request, self.template_name, {"form": my_form})
 
     def dispatch(self, *args, **kwargs):
-        print(self.request.POST)
         method = self.request.POST.get('_method', '').lower()
         if method == 'put':
             return self.put(*args, **kwargs)
@@ -47,33 +55,72 @@ class FileEditView(View):
     # update file
     def put(self, request, *args, **kwargs):
         id = self.kwargs.get('id')
-        # find file
-        file_name = 'demo1'
-        extension = 'py'
-        file = open(settings.BASE_DIR / r'media\python\{}.{}'.format(file_name, extension), "r")
-        print(file.read())
-        # update file
-        my_form = FileForm({'file_name': 'python operations',
-                            'description': 'simple basic operations',
-                            'program': "print('hello I am from client file')",
-                            'language': "java"
+
+        language = request.POST['language']
+        program = request.POST['program']
+
+        file = OrmProject.get_main_file_project(id)
+        open_file = FileManager()
+        open_file.update_file(file.file_path, program)
+
+        my_form = FileForm({'program': program,
+                            'language': language
                             })
-        # replace and save in the database
-        file.close()
-        output = 'file updated'
-        return render(request, self.template_success, {'output': output})
+        project = OrmProject.get_project(id)
+        file_name = project.project_name
+
+        print('i am getting project name: ', file_name)
+
+        extension = request.POST['language']
+
+        if extension == "python":
+            file_path = settings.BASE_DIR / \
+                        f'media/python/{file_name}.{extension}'
+
+            # create file
+            file = open(file_path, "w")
+            file.write(request.POST['program'])
+            file.close()
+
+            # save in the database
+
+            # set parameters
+            compiler = ExecutorManager()
+            compiler.set_language('python')
+            compiler.set_file(file_path)
+
+        if extension == "java":
+            # create file
+            file_path = settings.BASE_DIR / \
+                        f'media/java/{file_name}/src/com/Main.{extension}'
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            print('files: ', file_name, file_path)
+            with open(file_path, "w") as file:
+                file.write(program)
+
+            # save in the database
+
+            # set parameters
+            compiler = ExecutorManager()
+            compiler.set_language('java')
+            compiler.set_file(file_name)
+        # execute program
+        output = compiler.run()
+
+        return render(request, self.template_name, {"form": my_form, 'output': output})
 
     # delete file
     def delete(self, request, *args, **kwargs):
-        print("Hello, i'm %s!" % self.request.POST.get('_method'))
         id = self.kwargs.get('id')
-        print(id)
         # find file
-        # remove
-        file_name = 'demo1'
-        extension = 'py'
-        file_to_rem = Path(settings.BASE_DIR / r'media\python\{}.{}'.format(file_name, extension))
-        file_to_rem.unlink()
+        file = OrmProject.get_main_file_project(id)
 
-        output = 'user file removed'
+        # remove local storage
+        remove = FileManager()
+        remove.remove_file(file.file_path)
+
+        # remove from database
+        OrmProject.delete_project(id)
+
+        output = 'main file removed'
         return render(request, self.template_success, {'output': output})

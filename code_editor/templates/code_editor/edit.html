@@ -2,22 +2,39 @@
 
 {% block content %}
     <div class="container">
-        <h1>Update file</h1>
-        <form action="" method="post">
-            {% csrf_token %}
-            <table>
-                {{ form.as_table }}
-            </table>
-            <br>
-            <input type="hidden" name="_method" value="put">
-            <input type="submit" value="Put">
-        </form>
-        <form action="" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="_method" value="delete">
-            <input type="submit" value="Delete">
-        </form>
-        <br>
-        <h2>{{ output }}</h2>
+        <div class="row">
+            <div class="col-4">
+                <h3>File Manager</h3>
+                <form action="" method="post">
+                    {% csrf_token %}
+                    <table>
+                        {{ form.as_table }}
+                    </table>
+                    <br>
+                    <input type="hidden" name="_method" value="put">
+                    <input class="btn btn-success"  type="submit" value="Run">
+                </form>
+                <br>
+                <form action="" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="_method" value="delete">
+                    <input class="btn btn-danger"  type="submit" value="Delete">
+                </form>
+                <br>
+            </div>
+<!--            Working in ace editor-->
+<!--            <div class="col-8">-->
+<!--                <div id="editor">function foo(items) {-->
+<!--                    var x = "All this is syntax highlighted";-->
+<!--                    return x;-->
+<!--                }</div>-->
+<!--            </div>-->
+        </div>
+        <div class="row">
+            <div class="col">
+                <h3>Output: </h3>
+            <h2>{{ output }}</h2>
+            </div>
+        </div>
     </div>
 {% endblock content %}

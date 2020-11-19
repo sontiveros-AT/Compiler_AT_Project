@@ -11,14 +11,27 @@
 
     <!--    <link rel="icon" type="ico" href="./favicon.ico">-->
 
+<style type="text/css" media="screen">
+    #editor {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
+</style>
+
         <title>JaCo - Code everywhere!</title>
     </head>
     <body>
         <nav class="navbar navbar-light bg-light">
             <a class="navbar-brand" href="#">JalaCompiler</a>
         </nav>
+
+
         {% block content %}
         {% endblock content %}
+
         <!-- Optional JavaScript -->
         <!-- jQuery first, then Popper.js, then Bootstrap JS -->
         <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
@@ -30,5 +43,9 @@
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
                 integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
                 crossorigin="anonymous"></script>
+        {% load static %}
+        <script src="{% static 'js/ace.js' %}" type="text/javascript" charset="utf-8"></script>
+        <script src="{% static 'js/editor.js' %}" type="text/javascript" charset="utf-8"></script>
+
     </body>
 </html>
