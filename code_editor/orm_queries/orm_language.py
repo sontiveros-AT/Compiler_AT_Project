@@ -10,6 +10,9 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
+# Author: Alvaro Cruz
+# Version: 1.0
+#
 
 from datetime import datetime
 from code_editor.models.model_file import File

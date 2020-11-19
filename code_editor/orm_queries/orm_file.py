@@ -10,6 +10,9 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
+# Author: Alvaro Cruz
+# Version: 1.0
+#
 
 from datetime import datetime
 from code_editor.models.model_file import File
@@ -39,12 +42,22 @@ class OrmFile:
         file = File()
         file.file_name = name
         if lang.language_name == 'java':
-            file.file_path = pro.project_path + '/com/' + name + lang.language_extension
+            file.file_path = pro.project_path + '/src/com/' + name + lang.language_extension
         elif lang.language_name == 'python':
-            file.file_path = pro.project_path + '/' + name + lang.language_extension
+            file.file_path = pro.project_path + '/' + name.lower() + lang.language_extension
         file.file_date = datetime.now()
         file.project = pro
         file.save()
+
+    # UPDATE A FILE
+    # Updates a file on the DB with the id_file
+    @staticmethod
+    def update_file_name(id_file, new_name):
+        file = File.objects.get(id_file=id_file)
+        pro = Project.objects.get(id_project=file.project_id)
+        lang = Language.objects.get(id_language=pro.language_id)
+        File.objects.filter(id_file=id_file).update(file_name=new_name)
+        File.objects.filter(id_file=id_file).update(file_path=pro.project_path+'/'+new_name+lang.language_extension)
 
     # DELETE A FILE
     # Deletes a file on the DB with the id_file
