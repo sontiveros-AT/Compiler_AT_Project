@@ -20,6 +20,7 @@ from code_editor.forms import ProjectForm
 from code_editor.orm_queries.orm_project import OrmProject
 from .file_manager import FileManager
 
+
 # class for project endpoints
 class ProjectView(View):
     template_name = 'code_editor/home.html'

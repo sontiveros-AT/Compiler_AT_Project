@@ -20,6 +20,7 @@ from code_editor.orm_queries.orm_project import OrmProject
 from .file_manager import FileManager
 
 
+# class for file endpoints
 class FileView(View):
     template_name = 'code_editor/index.html'
 
