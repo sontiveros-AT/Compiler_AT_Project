@@ -22,9 +22,10 @@ from django.conf import settings
 from django.views.static import serve
 # no name line
 from django.urls import path, include
-
+from code_editor.views import custom_views
 
 urlpatterns = [
+    path('', custom_views.home),
     path('admin/', admin.site.urls),
     path('api/v1/', include('code_editor.urls')),
 ]
