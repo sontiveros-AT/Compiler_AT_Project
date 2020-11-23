@@ -36,7 +36,7 @@ class ProjectView(View):
         project_name = request.POST['project_name']
         description = request.POST['description']
         language = request.POST['language']
-        program = "test"
+        program = "hello"
 
         # creates file
         file = FileManager()

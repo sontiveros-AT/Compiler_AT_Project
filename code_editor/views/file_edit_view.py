@@ -13,12 +13,11 @@
 # Author: Andres Cox
 # Version: 1.0
 
-import os
+from pathlib import Path
 from django.views.generic import View
 from django.shortcuts import render
 from code_editor.orm_queries.orm_project import OrmProject
 from .file_manager import FileManager
-from django.conf import settings
 from code_editor.forms import FileForm
 from code_editor.core.executor_facade import ExecutorManager
 
@@ -66,45 +65,23 @@ class FileEditView(View):
         my_form = FileForm({'program': program,
                             'language': language
                             })
-        project = OrmProject.get_project(id)
-        file_name = project.project_name
 
-        print('i am getting project name: ', file_name)
+        project = OrmProject.get_project(id)
+        project_name = project.project_name
+        file_path = Path.cwd().joinpath(file.file_path[1:])
 
         extension = request.POST['language']
 
         if extension == "python":
-            file_path = settings.BASE_DIR / \
-                        f'media/python/{file_name}.{extension}'
-
-            # create file
-            file = open(file_path, "w")
-            file.write(request.POST['program'])
-            file.close()
-
-            # save in the database
-
-            # set parameters
             compiler = ExecutorManager()
             compiler.set_language('python')
             compiler.set_file(file_path)
 
         if extension == "java":
-            # create file
-            file_path = settings.BASE_DIR / \
-                        f'media/java/{file_name}/src/com/Main.{extension}'
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-            print('files: ', file_name, file_path)
-            with open(file_path, "w") as file:
-                file.write(program)
-
-            # save in the database
-
-            # set parameters
             compiler = ExecutorManager()
             compiler.set_language('java')
-            compiler.set_file(file_name)
-        # execute program
+            compiler.set_file(project_name)
+
         output = compiler.run()
 
         return render(request, self.template_name, {"form": my_form, 'output': output})
