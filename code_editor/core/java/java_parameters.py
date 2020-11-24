@@ -38,3 +38,10 @@ class JavaParameters(Parameters):
 
     def set_package(self, package):
         self.__package = package
+
+    def validate(self):
+        print('Saludos desde el java parameters')
+        print(self.get_language())
+        print(self.get_file())
+        print(self.get_binary())
+        print(self.get_package())

@@ -14,7 +14,8 @@
 # Version: 1.0
 #
 
-from abc import ABC
+from abc import ABC, abstractmethod
+
 
 # Super class that defines the minimun parameters
 # needed to make a simple compilation of a file
@@ -36,3 +37,4 @@ class Parameters(ABC):
 
     def set_file(self, main_file):
         self.__main_path = main_file
+

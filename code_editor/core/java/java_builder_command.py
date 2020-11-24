@@ -16,10 +16,15 @@ from code_editor.core.builder_command import BuilderCommand
 
 
 # class compiler built, based in params class
+from code_editor.core.exceptions.exceptions import CommandInvalidException
+
 
 class JavaBuilderCommand(BuilderCommand):
     def command(self, params):
+        print('hola desde el builder command java')
         # Command to set the binary
         cmd = [params.get_language() / "javac", "-d", params.get_binary(), params.get_package(),
                "&&", params.get_language() / "java", "-cp", params.get_binary(), params.get_file()]
+        if len(cmd) != 9:
+            raise CommandInvalidException
         return cmd

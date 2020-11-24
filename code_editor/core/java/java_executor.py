@@ -19,6 +19,7 @@ from code_editor.core.executor import Executor
 
 class JavaExecutor(Executor):
     def run(self, cmd):
+
         proc = subprocess.Popen(cmd, stdout=PIPE,
                                 stderr=STDOUT, shell=True)
         output = proc.stdout.read().decode('utf-8')

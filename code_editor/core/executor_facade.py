@@ -21,12 +21,15 @@ from code_editor.core.java.java_builder_command import JavaBuilderCommand
 from code_editor.core.java.java_parameters import JavaParameters
 from code_editor.core.java.java_executor import JavaExecutor
 
+from code_editor.core.validate import Validate
+
 
 # To manage Java and Python parameters and commands
 
 
 class ExecutorManager:
     def __init__(self, language="python", file=''):
+
         self.__language = language.lower()
         self.__main_file = file
         self.__params = ''
@@ -34,7 +37,8 @@ class ExecutorManager:
         self.__executor = ''
 
     def set_language(self, language):
-        self.__language = language.lower()
+        if Validate.validate_language(language):
+            self.__language = language.lower()
 
     def set_file(self, file_path):
         self.__main_file = file_path
@@ -44,6 +48,7 @@ class ExecutorManager:
             self.__params = PythonParameters()
             self.__params.set_language(PYTHON39_PATH)
             self.__params.set_file(self.__main_file)
+            self.__params.validate()
 
         if self.__language == "java":
             self.__params = JavaParameters()
@@ -52,6 +57,7 @@ class ExecutorManager:
             self.__params.set_package(
                 JAVA_FILES / f'{self.__main_file}/src/com/*.java')
             self.__params.set_file('com.Main')
+            self.__params.validate()
 
         print("params")
         print(self.__params.get_language())

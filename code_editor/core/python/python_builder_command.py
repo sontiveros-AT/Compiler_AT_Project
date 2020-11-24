@@ -14,8 +14,14 @@
 import subprocess
 from code_editor.core.builder_command import BuilderCommand
 
-
 # class compiler built, based in params class
+from code_editor.core.exceptions.exceptions import CommandInvalidException
+
+
 class PythonBuilderCommand(BuilderCommand):
     def command(self, params):
-        return [params.get_language(), params.get_file()]
+        cmd = [params.get_language(), params.get_file()]
+        #cmd.append('NewCommand')
+        if len(cmd) != 2:
+            raise CommandInvalidException
+        return cmd

@@ -1,3 +1,4 @@
+from jala_compiler.settings import BASE_DIR
 from jala_compiler.wsgi import *
 from code_editor.orm_queries.orm_file import OrmFile
 from code_editor.orm_queries.orm_language import OrmLanguage
@@ -39,3 +40,34 @@ from datetime import datetime
 # except Exception as e:
 #    print(e)
 
+
+from code_editor.core.executor_facade import ExecutorManager
+from code_editor.core.exceptions.exceptions import *
+
+
+file_path = 'C:\Tests\CompilerProject\Compiler_AT_Project\media\python\pp1\main.py'
+language = 'python'
+
+compiler = ExecutorManager()
+
+try:
+    compiler.set_language(language)
+    compiler.set_file(file_path)
+    print(compiler.run())
+except LanguageInvalidException as e:
+    print(e)
+except ParametersInvalidException as e:
+    print(e)
+except CommandInvalidException as e:
+    print(e)
+except ExecuteInvalidException as e:
+    print(e)
+
+# new_path = BASE_DIR / \
+#            f'media/python/{"pp1"}'
+# print ("base dir path", new_path)
+#
+# if os.path.isfile(file_path):
+#     print('Si existe')
+# else:
+#     print('No existe')

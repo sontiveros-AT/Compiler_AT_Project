@@ -12,14 +12,19 @@
 #
 
 import subprocess
+
+from code_editor.core.exceptions.exceptions import ExecuteInvalidException
 from code_editor.core.executor import Executor
+
 
 # Class to execute Python commands
 
 class PythonExecutor(Executor):
     def run(self, cmd):
-        output = subprocess.run(cmd, capture_output=True, text=True)
-        if output.returncode != 0:
-            return output.stderr
-
-        return output.stdout
+        try:
+            output = subprocess.run(cmd, capture_output=True, text=True)
+            if output.returncode != 0:
+                return output.stderr
+            return output.stdout
+        except ExecuteInvalidException as e:
+            pass
