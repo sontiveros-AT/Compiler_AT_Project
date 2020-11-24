@@ -22,6 +22,19 @@ from abc import ABC, abstractmethod
 
 
 class Executor(ABC):
+
     @abstractmethod
-    def run(self, cmd):
+    def set_project_name(self, project_name):
+        pass
+
+    @abstractmethod
+    def set_parameters(self):
+        pass
+
+    @abstractmethod
+    def build_command(self):
+        pass
+
+    @abstractmethod
+    def run(self):
         pass

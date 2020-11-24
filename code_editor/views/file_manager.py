@@ -48,7 +48,6 @@ class FileManager:
 
     # overwrite the targeted file with new text
     def update_file(self, filepath, program):
-        print("file updated: ", filepath)
         file = open(Path.cwd().joinpath(filepath[1:]), "w")
         program = file.write(program)
         file.close()

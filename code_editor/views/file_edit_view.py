@@ -13,13 +13,12 @@
 # Author: Andres Cox
 # Version: 1.0
 
-from pathlib import Path
 from django.views.generic import View
 from django.shortcuts import render
-from code_editor.orm_queries.orm_project import OrmProject
 from .file_manager import FileManager
 from code_editor.forms import FileForm
-from code_editor.core.executor_facade import ExecutorManager
+from code_editor.core.executor_facade import CompilerFactory
+from code_editor.orm_queries.orm_project import OrmProject
 
 
 # class file edit view
@@ -54,36 +53,27 @@ class FileEditView(View):
     # update file
     def put(self, request, *args, **kwargs):
         id = self.kwargs.get('id')
-
-        language = request.POST['language']
         program = request.POST['program']
 
+        # search file in database
         file = OrmProject.get_main_file_project(id)
+
+        # write program in main file
         open_file = FileManager()
         open_file.update_file(file.file_path, program)
 
-        my_form = FileForm({'program': program,
-                            'language': language
-                            })
+        # write updated program
+        my_form = FileForm({'program': program})
 
+        # get project by id
         project = OrmProject.get_project(id)
-        project_name = project.project_name
-        file_path = Path.cwd().joinpath(file.file_path[1:])
 
-        extension = request.POST['language']
-
-        if extension == "python":
-            compiler = ExecutorManager()
-            compiler.set_language('python')
-            compiler.set_file(file_path)
-
-        if extension == "java":
-            compiler = ExecutorManager()
-            compiler.set_language('java')
-            compiler.set_file(project_name)
+        # compile project
+        comp = CompilerFactory()
+        compiler = comp.create_compiler(project.language.language_name)
+        compiler.set_project_name(project.project_name)
 
         output = compiler.run()
-
         return render(request, self.template_name, {"form": my_form, 'output': output})
 
     # delete file

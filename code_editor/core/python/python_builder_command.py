@@ -18,4 +18,4 @@ from code_editor.core.builder_command import BuilderCommand
 # class compiler built, based in params class
 class PythonBuilderCommand(BuilderCommand):
     def command(self, params):
-        return [params.get_language(), params.get_file()]
+        return [params.get_language_path(), params.get_file_path()]

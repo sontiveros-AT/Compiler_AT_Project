@@ -57,7 +57,6 @@ class OrmProject:
     @staticmethod
     def get_main_file_project(id_project):
         project = Project.objects.get(id_project=id_project)
-        print(project.project_name)
         lang = Language.objects.get(id_language=project.language_id)
         if lang.language_name == 'java':
             return File.objects.get(project_id=id_project, file_name='Main')

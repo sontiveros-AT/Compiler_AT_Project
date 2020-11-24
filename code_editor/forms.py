@@ -18,10 +18,8 @@ from django import forms
 
 # file form to edit in html
 class FileForm(forms.Form):
-    LANGUAGES = (('python', 'Python'), ('java', 'Java'))
 
     program = forms.CharField(widget=forms.Textarea)
-    language = forms.ChoiceField(choices=LANGUAGES, widget=forms.Select(attrs={'class': 'form-control'}))
 
 
 # project form to display in html
