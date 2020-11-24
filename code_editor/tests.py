@@ -1,4 +1,3 @@
-from jala_compiler.settings import BASE_DIR
 from jala_compiler.wsgi import *
 from code_editor.orm_queries.orm_file import OrmFile
 from code_editor.orm_queries.orm_language import OrmLanguage
@@ -39,35 +38,54 @@ from datetime import datetime
 #     print(query.file_path)
 # except Exception as e:
 #    print(e)
+#------------------------------------------------------------
+#
+# from code_editor.core.executor_facade import ExecutorManager
+# from code_editor.core.exceptions.exceptions import *
+#
+#
+# file_path = 'C:\Tests\CompilerProject\Compiler_AT_Project\media\python\pp1\main.py'
+# language = 'python'
+#
+# compiler = ExecutorManager()
+#
+# try:
+#     compiler.set_language(language)
+#     compiler.set_file(file_path)
+#     print(compiler.run())
+# except LanguageInvalidException as e:
+#     print(e)
+# except ParametersInvalidException as e:
+#     print(e)
+# except CommandInvalidException as e:
+#     print(e)
+# except ExecuteInvalidException as e:
+#     print(e)
 
+#-------------------------------------
 
-from code_editor.core.executor_facade import ExecutorManager
-from code_editor.core.exceptions.exceptions import *
+# from code_editor.exceptions.exceptions import FileInvalidException
+# from jala_compiler.settings import BASE_DIR
+# from django.conf import settings
+#
+# file_name = 'ghf'
+# extension = 'py'
+# try:
+#     file_path = settings.BASE_DIR / \
+#                         f'media/python/pp1/{file_name}.{extension}'
+#
+#     file = open(file_path)
+#     file.close()
+# except FileNotFoundError as e:
+#     print(e)
+# except FileInvalidException as e:
+#     print(e)
 
-
-file_path = 'C:\Tests\CompilerProject\Compiler_AT_Project\media\python\pp1\main.py'
-language = 'python'
-
-compiler = ExecutorManager()
+#-------------------------------------------
+from code_editor.exceptions.exceptions import DataBaseException
 
 try:
-    compiler.set_language(language)
-    compiler.set_file(file_path)
-    print(compiler.run())
-except LanguageInvalidException as e:
+    file = OrmProject.get_main_file_project(20)
+    print(file.file_name)
+except Exception as e:
     print(e)
-except ParametersInvalidException as e:
-    print(e)
-except CommandInvalidException as e:
-    print(e)
-except ExecuteInvalidException as e:
-    print(e)
-
-# new_path = BASE_DIR / \
-#            f'media/python/{"pp1"}'
-# print ("base dir path", new_path)
-#
-# if os.path.isfile(file_path):
-#     print('Si existe')
-# else:
-#     print('No existe')
