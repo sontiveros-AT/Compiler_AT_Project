@@ -59,9 +59,9 @@ class ExecutorManager:
             self.__params.set_file('com.Main')
             self.__params.validate()
 
-        print("params")
-        print(self.__params.get_language())
-        print(self.__params.get_file())
+        #print("params")
+        #print(self.__params.get_language())
+        #print(self.__params.get_file())
 
     def __build_command(self):
         if self.__language == "python":
@@ -80,8 +80,8 @@ class ExecutorManager:
         if self.__language == "java":
             self.__executor = JavaExecutor()
 
-        print(self.__language)
-        print(self.__command)
-        print(self.__command.command(self.__params))
+        #print(self.__language)
+        #print(self.__command)
+        #print(self.__command.command(self.__params))
 
         return self.__executor.run(self.__command.command(self.__params))

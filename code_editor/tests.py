@@ -40,27 +40,27 @@ from datetime import datetime
 #    print(e)
 #------------------------------------------------------------
 #
-# from code_editor.core.executor_facade import ExecutorManager
-# from code_editor.core.exceptions.exceptions import *
-#
-#
-# file_path = 'C:\Tests\CompilerProject\Compiler_AT_Project\media\python\pp1\main.py'
-# language = 'python'
-#
-# compiler = ExecutorManager()
-#
-# try:
-#     compiler.set_language(language)
-#     compiler.set_file(file_path)
-#     print(compiler.run())
-# except LanguageInvalidException as e:
-#     print(e)
-# except ParametersInvalidException as e:
-#     print(e)
-# except CommandInvalidException as e:
-#     print(e)
-# except ExecuteInvalidException as e:
-#     print(e)
+from code_editor.core.executor_facade import ExecutorManager
+from code_editor.core.exceptions.exceptions import *
+
+
+file_path = 'C:\Tests\CompilerProject\Compiler_AT_Project\media\python\pp1\main.py'
+language = 'python'
+
+compiler = ExecutorManager()
+
+try:
+    compiler.set_language(language)
+    compiler.set_file(file_path)
+    print(compiler.run())
+except LanguageInvalidException as e:
+    print(e)
+except ParametersInvalidException as e:
+    print(e)
+except CommandInvalidException as e:
+    print(e)
+except ExecuteInvalidException as e:
+    print(e)
 
 #-------------------------------------
 
@@ -83,9 +83,9 @@ from datetime import datetime
 
 #-------------------------------------------
 from code_editor.exceptions.exceptions import DataBaseException
-
-try:
-    file = OrmProject.get_main_file_project(20)
-    print(file.file_name)
-except Exception as e:
-    print(e)
+#
+# try:
+#     file = OrmProject.get_main_file_project(20)
+#     print(file.file_name)
+# except Exception as e:
+#     print(e)

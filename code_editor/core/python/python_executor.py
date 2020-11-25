@@ -22,9 +22,9 @@ from code_editor.core.executor import Executor
 class PythonExecutor(Executor):
     def run(self, cmd):
         try:
-            output = subprocess.run(cmd, capture_output=True, text=True)
+            output = subprocess.runs(cmd, capture_output=True, text=True)
             if output.returncode != 0:
                 return output.stderr
             return output.stdout
-        except ExecuteInvalidException as e:
-            pass
+        except Exception as e:
+            raise ExecuteInvalidException
