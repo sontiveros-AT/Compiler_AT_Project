@@ -25,15 +25,19 @@ class FileManager:
         if language == 'python':
             language = 'python'
             extension = 'py'
+            filepath = Path.cwd().joinpath('media/{}/'.format(language, project_name))
+            os.mkdir(filepath / project_name)
+            file = open(filepath / project_name / 'main.{}'.format(extension), "w")
+            file.write(program)
+            file.close()
         if language == 'java':
             language = 'java'
             extension = 'java'
-
-        filepath = Path.cwd().joinpath('media/{}/'.format(language, project_name))
-        os.mkdir(filepath / project_name)
-        file = open(filepath / project_name / 'main.{}'.format(extension), "w")
-        file.write(program)
-        file.close()
+            filepath = Path.cwd().joinpath('media/{}/'.format(language, project_name))
+            os.makedirs(filepath / project_name / "src/com/",  exist_ok=True)
+            file = open(filepath / project_name / 'src/com/Main.{}'.format(extension), "w")
+            file.write(program)
+            file.close()
 
     # returns the content of the file targeted
     def load_file(self, filepath):

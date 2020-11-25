@@ -11,15 +11,13 @@
 # with Jalasoft.
 #
 
-import os.path
 from code_editor.core.builder_command import BuilderCommand
 
 
 # class compiler built, based in params class
-
 class JavaBuilderCommand(BuilderCommand):
     def command(self, params):
-        # Command to set the binary
-        cmd = [params.get_language() / "javac", "-d", params.get_binary(), params.get_package(),
-               "&&", params.get_language() / "java", "-cp", params.get_binary(), params.get_file()]
+
+        cmd = [params.get_language_path() / "javac", "-d", params.get_binary(), params.get_package(),
+               "&&", params.get_language_path() / "java", "-cp", params.get_binary(), params.get_file_path()]
         return cmd
