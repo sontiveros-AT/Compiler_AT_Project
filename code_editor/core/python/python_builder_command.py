@@ -20,8 +20,4 @@ from code_editor.core.exceptions.exceptions import CommandInvalidException
 
 class PythonBuilderCommand(BuilderCommand):
     def command(self, params):
-        cmd = [params.get_language(), params.get_file()]
-        #cmd.append('NewCommand')
-        if len(cmd) != 2:
-            raise CommandInvalidException
-        return cmd
+        return [params.get_language_path(), params.get_file_path()]

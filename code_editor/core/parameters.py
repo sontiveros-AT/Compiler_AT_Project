@@ -19,22 +19,21 @@ from abc import ABC, abstractmethod
 
 # Super class that defines the minimun parameters
 # needed to make a simple compilation of a file
-
-
 class Parameters(ABC):
     def __init__(self):
         self.__language_path = ''
+        self.__project_name = ''
         self.__main_path = ''
 
-    def get_language(self):
+    def get_language_path(self):
         return self.__language_path
 
-    def set_language(self, language):
+    def set_language_path(self, language):
         self.__language_path = language
 
-    def get_file(self):
+    def get_file_path(self):
         return self.__main_path
 
-    def set_file(self, main_file):
+    def set_file_path(self, main_file):
         self.__main_path = main_file
 

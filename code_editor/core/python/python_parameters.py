@@ -16,9 +16,8 @@ from abc import ABC
 from code_editor.core.exceptions.exceptions import ParametersInvalidException
 from code_editor.core.parameters import Parameters
 
+
 # class parameters to establish user_file and binaries location
-
-
 class PythonParameters(Parameters):
     def __init__(self):
         super().__init__()
