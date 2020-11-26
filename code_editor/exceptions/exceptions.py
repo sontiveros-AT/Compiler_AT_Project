@@ -1,5 +1,5 @@
 #
-# @executor.py Copyright (c) 2020 Jalasoft.
+# @exceptions.py Copyright (c) 2020 Jalasoft.
 # 2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
 # 1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
 # All rights reserved.
@@ -10,31 +10,21 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
-# Author: Juan S. Ontiveros
+# Author: Alvaro Cruz
 # Version: 1.0
 #
 
-import subprocess
-from abc import ABC, abstractmethod
-
-# Super class that defines the signature
-# to run a command to compile a file
-
-
-class Executor(ABC):
-
-    @abstractmethod
-    def set_project_name(self, project_name):
+class FileInvalidException(Exception):
+    def __init__(self):
         pass
 
-    @abstractmethod
-    def set_parameters(self):
+    def __str__(self):
+        return f'File Invalid Error:'
+
+
+class DataBaseException(Exception):
+    def __init__(self):
         pass
 
-    @abstractmethod
-    def build_command(self):
-        pass
-
-    @abstractmethod
-    def run(self):
-        pass
+    def __str__(self):
+        return f'DataBase Error'
