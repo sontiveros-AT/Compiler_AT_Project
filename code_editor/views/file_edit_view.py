@@ -13,6 +13,9 @@
 # Author: Andres Cox
 # Version: 1.0
 
+
+import os
+import simplejson as simplejson
 from django.views.generic import View
 from django.shortcuts import render
 from .file_manager import FileManager
@@ -30,6 +33,10 @@ class FileEditView(View):
     def get(self, request, id=None, *args, **kwargs):
 
         language = OrmProject.get_language_project(id)
+        # Test to get project name
+        project = OrmProject.get_project(id)
+        # project.project_name
+        js_data = simplejson.dumps(project.project_name)
 
         file = OrmProject.get_main_file_project(id)
         open_file = FileManager()
@@ -40,7 +47,7 @@ class FileEditView(View):
                             'language': language.language_name
                             })
 
-        return render(request, self.template_name, {"form": my_form})
+        return render(request, self.template_name, {"form": my_form, "my_data": js_data})
 
     def dispatch(self, *args, **kwargs):
         method = self.request.POST.get('_method', '').lower()

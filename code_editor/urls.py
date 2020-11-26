@@ -19,6 +19,7 @@ from code_editor.views.project_view import ProjectView
 
 urlpatterns = [
     path('file/', FileView.as_view(), name='file-view'),
+    # path('project/<int:id>/file', FileView.as_view(), name='file-view'),    # To create files into the project
     path('file/<int:id>', FileEditView.as_view(), name='file-edit-view'),
     path('project/', ProjectView.as_view(), name='project-view'),
 ]
