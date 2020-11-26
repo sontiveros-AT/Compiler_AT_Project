@@ -20,7 +20,6 @@ from code_editor.views.projects_list_view import ProjectsListView
 
 urlpatterns = [
     path('file/', FileView.as_view(), name='file-view'),
-    # path('file/<int:id>', FileEditView.as_view(), name='file-edit-view'),
     path('project/', ProjectView.as_view(), name='project-view'),
     path('project/<int:id>', FileEditView.as_view(), name='file-edit-view'),
     path('project/all', ProjectsListView.as_view(), name='project-list-view'),
