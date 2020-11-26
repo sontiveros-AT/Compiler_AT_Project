@@ -1,0 +1,32 @@
+<!--
+@edit_profile.html Copyright (c) 2020 Jalasoft.
+2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
+1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
+All rights reserved.
+
+This software is the confidential and proprietary information of
+Jalasoft, ("Confidential Information"). You shall not
+disclose such Confidential Information and shall use it only in
+accordance with the termns of the license agreement you entered into
+with Jalasoft.
+
+Author: Juan Sebastián Ontiveros Gonzales
+Version: 1.0
+-->
+
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Edit your profile</title>
+{% endblock title %}
+
+{% block content %}
+<div class="container">
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit</button>
+    </form>
+    <br>
+</div>
+{% endblock content %}
