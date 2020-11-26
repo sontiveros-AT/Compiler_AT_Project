@@ -18,11 +18,12 @@ from abc import ABC
 
 # Super class that defines the minimun parameters
 # needed to make a simple compilation of a file
+
+
 class Parameters(ABC):
     def __init__(self):
         self.__language_path = ''
-        self.__project_name = ''
-        self.__main_path = ''
+        self.__file_path = ''
 
     def get_language_path(self):
         return self.__language_path
@@ -31,7 +32,7 @@ class Parameters(ABC):
         self.__language_path = language
 
     def get_file_path(self):
-        return self.__main_path
+        return self.__file_path
 
-    def set_file_path(self, main_file):
-        self.__main_path = main_file
+    def set_file_path(self, file_path):
+        self.__file_path = file_path

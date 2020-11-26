@@ -25,7 +25,8 @@ from django.urls import path, include
 from code_editor.views import custom_views
 
 urlpatterns = [
-    path('', custom_views.home),
+    # path('', custom_views.home),
+    path('', include('accounts.urls')),
     path('admin/', admin.site.urls),
     path('api/v1/', include('code_editor.urls')),
 ]

@@ -13,17 +13,28 @@
 # Author: Andres Cox
 # Version: 1.0
 
-from django.views.generic import View
+from django.views.generic import TemplateView
 from django.shortcuts import render
 from django.shortcuts import redirect
 from code_editor.forms import ProjectForm
 from code_editor.orm_queries.orm_project import OrmProject
+from code_editor.orm_queries.orm_language import OrmLanguage
+from accounts.orm_queries.orm_user import OrmUser
 from .file_manager import FileManager
 
 
+def project_names(user):
+    proj_names = []
+    for project in OrmProject.get_all_projects(user):
+        proj_names.append(project.project_name)
+
+    return proj_names
+
 # class for project endpoints
-class ProjectView(View):
-    template_name = 'code_editor/home.html'
+
+
+class ProjectView(TemplateView):
+    template_name = 'code_editor/new_project.html'
 
     # main view to create a project
     def get(self, request, *args, **kwargs):
@@ -35,14 +46,34 @@ class ProjectView(View):
     def post(self, request, *args, **kwargs):
         project_name = request.POST['project_name']
         description = request.POST['description']
-        language = request.POST['language']
-        program = "hello"
+        language_id = request.POST['language']
+        user = OrmUser.get_user(request.user)
 
-        # creates file
+        render_args = {}
+        if project_name in project_names(user):
+            render_args = {
+                "message": f'The project "{project_name}" already exists!', "form": ProjectForm()}
+            return render(request, self.template_name, render_args)
+
+        user_dir = OrmUser.get_user_dir(request.user)
+        language = OrmLanguage.get_language(language_id)
+        language_name = language.language_name
+        language_version = language.language_version
+        project_path = f'media/{user_dir}/{language_name}/{language_version}/{project_name}'
+
+        # create project in the database and sends the id
+        project = OrmProject.create_project(
+            project_name, description, project_path, language_name, user)
+        project_id = project.id_project
+
+        # creates file and adds it to the database
         file = FileManager()
-        file.create_file(language, project_name, program)
+        file_name = ''
+        if language_name == 'python':
+            file_name = 'main'
+        elif language_name == 'java':
+            file_name = 'Main'
+        main_file_path = file.create_file(file_name, project_id)
+        OrmProject.update_main_file(project_id, main_file_path)
 
-        # create project in th database and sends the id
-        project = OrmProject.create_simple_project(project_name, description, language)
-        id = project.id_project
-        return redirect('/api/v1/file/{}'.format(id))
+        return redirect('/api/v1/project/{}'.format(project_id))

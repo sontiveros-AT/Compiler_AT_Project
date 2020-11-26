@@ -23,15 +23,15 @@ from code_editor.orm_queries.orm_file import OrmFile
 
 # OrmProject Class provide the different queries to the DB related with Projects
 class OrmProject:
-    # Returns an integer with the number of project
+    # Returns an integer with the number of project for a given user (logged in)
     @staticmethod
-    def count_all_projects():
-        return Project.objects.all().count()
+    def count_all_projects(user):
+        return Project.objects.filter(user=user).count()
 
-    # Returns a list of all project
+    # Returns a list of all project for a given user (logged in)
     @staticmethod
-    def get_all_projects():
-        return Project.objects.all()
+    def get_all_projects(user):
+        return Project.objects.filter(user=user)
 
     # Returns a Project Object that belongs to the id_project
     @staticmethod
@@ -53,53 +53,35 @@ class OrmProject:
     def get_all_files(id_project):
         return File.objects.filter(project_id=id_project)
 
+    # Updates the main File Object that belongs to the id_project
+    @staticmethod
+    def update_main_file(id_project, main_file_path):
+        project = Project.objects.get(id_project=id_project)
+        project.main_file_path = main_file_path
+        project.save()
+
     # Returns the main File Object that belongs to the id_project
     @staticmethod
-    def get_main_file_project(id_project):
-        project = Project.objects.get(id_project=id_project)
-        lang = Language.objects.get(id_language=project.language_id)
-        if lang.language_name == 'java':
-            return File.objects.get(project_id=id_project, file_name='Main')
-        elif lang.language_name == 'python':
-            return File.objects.get(project_id=id_project, file_name='main')
+    def get_main_file(id_project):
+        return Project.objects.get(id_project=id_project).main_file_path
 
     # CREATE A NEW PROJECT
     # Creates a new project on the DB with the project_name, project_description and language
     @staticmethod
-    def create_project(name, description, language):
+    def create_project(name_project, description, project_path, language, user):
         project = Project()
-        project.project_name = name
+        project.project_name = name_project
         project.project_description = description
+        project.project_path = project_path
         lang = Language.objects.get(language_name=language.lower())
         project.language = lang
-        if lang.language_name == 'java':
-            project.project_path = '/media/java/' + name
-        elif lang.language_name == 'python':
-            project.project_path = '/media/python/' + name
+        project.user = user
         project.save()
+
+        return project
 
     # DELETE A PROJECT
     # Deletes a project on the DB with the id_project
     @staticmethod
     def delete_project(id_project):
         Project.objects.get(id_project=id_project).delete()
-
-    # INTEGRATED END POINT
-    # CREATE A NEW PROJECT WITH A MAIN FILE ON IT
-
-    @staticmethod
-    def create_simple_project(name_project, description, language):
-        project = Project()
-        project.project_name = name_project
-        project.project_description = description
-        lang = Language.objects.get(language_name=language.lower())
-        project.language = lang
-        if lang.language_name == 'java':
-            project.project_path = '/media/java/' + name_project
-        elif lang.language_name == 'python':
-            project.project_path = '/media/python/' + name_project
-        project.save()
-        MAIN_NAME = 'Main'
-        OrmFile.create_file(project.id_project, MAIN_NAME)
-
-        return project

@@ -17,15 +17,18 @@
 # Import other classes to create ForignKeys
 from django.db import models
 from code_editor.models.model_language import Language
+from accounts.models import UserProfile
 
 
 # Create class to set a new 'Table'
 class Project(models.Model):
     id_project = models.AutoField(primary_key=True, unique=True)
-    project_name = models.CharField(max_length=100, null=False, blank=False)
+    project_name = models.CharField(max_length=100)
     project_description = models.TextField()
-    project_path = models.CharField(max_length=100, null=False, blank=False)
-    language = models.ForeignKey(Language, on_delete=models.CASCADE)
+    project_path = models.CharField(max_length=100)
+    main_file_path = models.CharField(max_length=100, default='')
+    language = models.ForeignKey(Language, on_delete=models.PROTECT)
+    user = models.ForeignKey(UserProfile, on_delete=models.PROTECT)
 
     class Meta:
         db_table = 'project'

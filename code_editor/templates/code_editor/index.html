@@ -1,17 +1,31 @@
+<!--
+@index.html Copyright (c) 2020 Jalasoft.
+2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
+1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
+All rights reserved.
+
+This software is the confidential and proprietary information of
+Jalasoft, ("Confidential Information"). You shall not
+disclose such Confidential Information and shall use it only in
+accordance with the termns of the license agreement you entered into
+with Jalasoft.
+
+-->
+
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="container">
-        <h1>Demo</h1>
-        <form action="" method="post">
-            {% csrf_token %}
-            <table>
-                {{ form.as_table }}
-            </table>
-            <br>
-            <button type="submit">Post Program</button>
-        </form>
+<div class="container">
+    <h1>Demo</h1>
+    <form action="" method="post">
+        {% csrf_token %}
+        <table>
+            {{ form.as_table }}
+        </table>
         <br>
-        <h2>{{ output }}</h2>
-    </div>
+        <button type="submit">Post Program</button>
+    </form>
+    <br>
+    <h2>{{ output }}</h2>
+</div>
 {% endblock content %}

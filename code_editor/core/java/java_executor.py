@@ -11,7 +11,7 @@
 # with Jalasoft.
 #
 
-from code_editor.core.settings import JAVA13_PATH, JAVA_PROJECTS
+from code_editor.core.settings import JAVA13_PATH, BASE_DIR
 
 import subprocess
 from subprocess import STDOUT, PIPE
@@ -20,22 +20,22 @@ from code_editor.core.java.java_builder_command import JavaBuilderCommand
 from code_editor.core.java.java_parameters import JavaParameters
 
 
-# Class executor
+# Class executor for java
 class JavaExecutor(Executor):
     def __init__(self):
-        self.__project_name = ''
+        self.__project = ''
         self.__params = ''
         self.__command = ''
-        self.__executor = ''
 
-    def set_project_name(self, project_name):
-        self.__project_name = project_name
+    def set_project(self, project):
+        self.__project = project
 
     def set_parameters(self):
         self.__params = JavaParameters()
         self.__params.set_language_path(JAVA13_PATH)
-        self.__params.set_binary(JAVA_PROJECTS / f'{self.__project_name}/bin')
-        self.__params.set_package(JAVA_PROJECTS / f'{self.__project_name}/src/com/*.java')
+        project_path = self.__project.project_path
+        self.__params.set_binary(BASE_DIR / project_path / 'bin')
+        self.__params.set_package(BASE_DIR / project_path / 'src/com/*.java')
         self.__params.set_file_path('com.Main')
 
     def build_command(self):

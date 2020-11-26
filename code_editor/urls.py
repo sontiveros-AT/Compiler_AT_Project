@@ -15,11 +15,12 @@ from django.urls import path
 from code_editor.views.file_view import FileView
 from code_editor.views.file_edit_view import FileEditView
 from code_editor.views.project_view import ProjectView
+from code_editor.views.projects_list_view import ProjectsListView
 
 
 urlpatterns = [
     path('file/', FileView.as_view(), name='file-view'),
-    # path('project/<int:id>/file', FileView.as_view(), name='file-view'),    # To create files into the project
-    path('file/<int:id>', FileEditView.as_view(), name='file-edit-view'),
     path('project/', ProjectView.as_view(), name='project-view'),
+    path('project/<int:id>', FileEditView.as_view(), name='file-edit-view'),
+    path('project/all', ProjectsListView.as_view(), name='project-list-view'),
 ]

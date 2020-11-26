@@ -11,8 +11,8 @@ from datetime import datetime
 
 # TO PUT SOME DATA IN THE DATA BASE
 
-# OrmLanguage.create_new_language('java', '.java')
-# OrmLanguage.create_new_language('python', '.py')
+# OrmLanguage.create_new_language('java', '13.0.2', '.java')
+# OrmLanguage.create_new_language('python', '3.9', '.py')
 
 # OrmProject.create_project('ProjectJava1', 'This is a Java Project 1', 'java')
 # OrmProject.create_project('ProjectPython1', 'This is a Python Project 1', 'python')
@@ -38,4 +38,3 @@ from datetime import datetime
 #     print(query.file_path)
 # except Exception as e:
 #    print(e)
-

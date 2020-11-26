@@ -13,10 +13,20 @@
 
 from django.conf import settings
 
+# Base directory
+BASE_DIR = settings.BASE_DIR
 
 # PATH settings for Java and Python
+PYTHON39_PATH = BASE_DIR / 'third_parties/python/Python39-32/python.exe'
+JAVA13_PATH = BASE_DIR / 'third_parties/java/jdk-13.0.2/bin'
 
-PYTHON39_PATH = settings.BASE_DIR / 'third_parties/python/Python39-32/python.exe'
-JAVA13_PATH = settings.BASE_DIR / 'third_parties/java/jdk-13.0.2/bin'
-JAVA_PROJECTS = settings.BASE_DIR / 'media/java'
-PYTHON_PROJECTS = settings.BASE_DIR / 'media/python'
+# File templates
+PYTHON39_HELLO_WORLD = 'print("Hello world!")'
+JAVA13_HELLO_WORLD = '''package com;
+
+public class Main {
+
+	public static void main(String[] args) {
+        System.out.println("Hello world!");
+	}
+}'''

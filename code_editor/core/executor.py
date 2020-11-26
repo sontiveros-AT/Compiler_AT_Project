@@ -24,7 +24,7 @@ from abc import ABC, abstractmethod
 class Executor(ABC):
 
     @abstractmethod
-    def set_project_name(self, project_name):
+    def set_project(self, project):
         pass
 
     @abstractmethod
