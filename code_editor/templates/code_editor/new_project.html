@@ -1,16 +1,35 @@
+<!--
+@new_project.html Copyright (c) 2020 Jalasoft.
+2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
+1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
+All rights reserved.
+
+This software is the confidential and proprietary information of
+Jalasoft, ("Confidential Information"). You shall not
+disclose such Confidential Information and shall use it only in
+accordance with the termns of the license agreement you entered into
+with Jalasoft.
+
+-->
+
 {% extends 'base.html' %}
+
+{% block title %}
+<title>New Project</title>
+{% endblock title %}
 
 {% block content %}
 
 <div class="container">
   <div class="row justify-content-center">
-    <h2>Welcome to JalaCompiler</h2>
+    <h2>Create a new project</h2>
   </div>
   <br>
   <div class="row justify-content-lg-center">
     <div class="col">
     </div>
     <div class="col">
+      <p class="text-danger">{{ message }}</p>
       <form action="" method="post">
         {% csrf_token %}
         <div class="form-group">
@@ -25,7 +44,7 @@
           <label for="exampleFormControlSelect1">Select Language:</label>
           {{form.language}}
         </div>
-          <button class="btn btn-primary" type="submit">Create</button>
+        <button class="btn btn-primary" type="submit">Create</button>
       </form>
     </div>
     <div class="col">

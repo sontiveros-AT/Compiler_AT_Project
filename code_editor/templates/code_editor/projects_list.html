@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Projects</title>
+{% endblock title %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <h2>Your Projects</h2>
+    </div>
+    <br>
+    <div class="row justify-content-lg-center">
+        <div class="col">
+        </div>
+        <div class="col">
+            <ol>
+                {% for id, project in projects %}
+                <li><a href="/api/v1/project/{{ id }}">{{ project }}</a></li>
+                {% endfor %}
+            </ol>
+            <p>{{ message }}</p>
+            <a href="/api/v1/project">Create new project</a>
+        </div>
+        <div class="col">
+        </div>
+    </div>
+</div>
+{% endblock content %}

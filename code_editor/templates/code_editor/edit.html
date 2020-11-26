@@ -1,40 +1,58 @@
+<!--
+@edit.html Copyright (c) 2020 Jalasoft.
+2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
+1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
+All rights reserved.
+
+This software is the confidential and proprietary information of
+Jalasoft, ("Confidential Information"). You shall not
+disclose such Confidential Information and shall use it only in
+accordance with the termns of the license agreement you entered into
+with Jalasoft.
+
+-->
+
 {% extends 'base.html' %}
 
+{% block title %}
+<title>Code!</title>
+{% endblock title %}
+
 {% block content %}
-    <div class="container">
-        <div class="row">
-            <div class="col-4">
-                <h3>File Manager</h3>
-                <form action="" method="post">
-                    {% csrf_token %}
-                    <table>
-                        {{ form.as_table }}
-                    </table>
-                    <br>
-                    <input type="hidden" name="_method" value="put">
-                    <input class="btn btn-success"  type="submit" value="Run">
-                </form>
+<div class="container">
+    <div class="row">
+        <div class="col-4">
+            <h3>File Manager</h3>
+            <form action="" method="post">
+                {% csrf_token %}
+                <table>
+                    {{ form.as_table }}
+                </table>
                 <br>
-                <form action="" method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="_method" value="delete">
-                    <input class="btn btn-danger"  type="submit" value="Delete">
-                </form>
-                <br>
-            </div>
-<!--            Working in ace editor-->
-<!--            <div class="col-8">-->
-<!--                <div id="editor">function foo(items) {-->
-<!--                    var x = "All this is syntax highlighted";-->
-<!--                    return x;-->
-<!--                }</div>-->
-<!--            </div>-->
+                <input type="hidden" name="_method" value="put">
+                <input class="btn btn-success" type="submit" value="Run">
+            </form>
+            <br>
+            <form action="" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="_method" value="delete">
+                <input class="btn btn-danger" type="submit" value="Delete">
+            </form>
+            <br>
         </div>
-        <div class="row">
-            <div class="col">
-                <h3>Output: </h3>
+        <!--            Working in ace editor-->
+        <!--            <div class="col-8">-->
+        <!--                <div id="editor">function foo(items) {-->
+        <!--                    var x = "All this is syntax highlighted";-->
+        <!--                    return x;-->
+        <!--                }</div>-->
+        <!--            </div>-->
+    </div>
+    <div class="row">
+        <div class="col">
+            <h3>Output: </h3>
             <h2>{{ output }}</h2>
-            </div>
         </div>
     </div>
+</div>
 {% endblock content %}
