@@ -13,7 +13,8 @@
 
 # All java jdk must be directed here
 # This path should be changed pointing to the java jdk folder.
-
+import os
+from code_editor.core.exceptions.parameters_exceptions import *
 from code_editor.core.parameters import Parameters
 
 
@@ -37,3 +38,26 @@ class JavaParameters(Parameters):
 
     def set_package(self, package):
         self.__package = package
+
+    def validate(self):
+        print('params java')
+        print(self.get_file_path())
+
+        if self.get_file_path() is None:
+            raise NoneParametersException(self.get_file_path(), 'file path')
+        elif self.get_language_path() is None:
+            raise NoneParametersException(self.get_language_path(), 'language path')
+        elif self.get_binary() is None:
+            raise NoneParametersException(self.get_binary(), 'binary path')
+        elif self.get_package() is None:
+            raise NoneParametersException(self.get_package(), 'package path')
+        elif self.get_file_path() == '':
+            raise EmptyParametersException(self.get_file_path(), 'file path')
+        elif self.get_language_path() == '':
+            raise EmptyParametersException(self.get_language_path(), 'file language')
+        elif self.get_binary() == '':
+            raise EmptyParametersException(self.get_binary(), 'binary path')
+        elif self.get_package() == '':
+            raise EmptyParametersException(self.get_package(), 'package path')
+
+

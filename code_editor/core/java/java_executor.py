@@ -10,7 +10,7 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
-
+from code_editor.core.exceptions.exceptions import ExecuteInvalidException
 from code_editor.core.settings import JAVA13_PATH, BASE_DIR
 
 import subprocess
@@ -37,6 +37,7 @@ class JavaExecutor(Executor):
         self.__params.set_binary(BASE_DIR / project_path / 'bin')
         self.__params.set_package(BASE_DIR / project_path / 'src/com/*.java')
         self.__params.set_file_path('com.Main')
+        self.__params.validate()
 
     def build_command(self):
         self.__command = JavaBuilderCommand()
@@ -45,8 +46,10 @@ class JavaExecutor(Executor):
         self.set_parameters()
         self.build_command()
 
-        proc = subprocess.Popen(self.__command.command(self.__params), stdout=PIPE,
+        try:
+            proc = subprocess.Popen(self.__command.command(self.__params), stdout=PIPE,
                                 stderr=STDOUT, shell=True)
-        output = proc.stdout.read().decode('utf-8')
-
-        return output
+            output = proc.stdout.read().decode('utf-8')
+            return output
+        except Exception as err:
+            raise ExecuteInvalidException(err)
