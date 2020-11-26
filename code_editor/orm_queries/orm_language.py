@@ -39,17 +39,24 @@ class OrmLanguage:
 
     # CREATE A NEW LANGUAGE IN THE DATA BASE
     @staticmethod
-    def create_new_language(language_name, language_extension):
-        lang = Language(language_name=language_name, language_extension=language_extension)
+    def create_new_language(language_name, language_version, language_extension):
+        lang = Language(language_name=language_name,
+                        language_version=language_version,
+                        language_extension=language_extension)
         lang.save()
 
     # UPDATE A LANGUAGE IN THE DATA BASE
     @staticmethod
-    def update_language(id_language, language_name, language_extension):
-        Language.objects.filter(id_language=id_language).\
-            update(language_name=language_name, language_extension=language_extension)
+    def update_language(id_language, language_name, language_version, language_extension):
+        Language.objects.filter(id_language=id_language).update(
+            language_name=language_name, language_version=language_version, language_extension=language_extension)
 
     # DELETE A LANGUAGE IN THE DATA BASE
     @staticmethod
     def delete_language(id_language):
         Language.objects.get(id_language=id_language).delete()
+
+    # GET EXTENSION SUPORTED BY LANGUAGE
+    @staticmethod
+    def get_extension(language_name):
+        return Language.objects.get(language_name=language_name).language_extension

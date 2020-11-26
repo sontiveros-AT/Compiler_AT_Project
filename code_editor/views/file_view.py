@@ -13,7 +13,7 @@
 # Author: Andres Cox
 # Version: 1.0
 
-from django.views.generic import View
+from django.views.generic import TemplateView
 from django.shortcuts import render
 from code_editor.forms import FileForm
 from code_editor.orm_queries.orm_project import OrmProject
@@ -21,7 +21,7 @@ from .file_manager import FileManager
 
 
 # class for file endpoints
-class FileView(View):
+class FileView(TemplateView):
     template_name = 'code_editor/index.html'
 
     # get endpoint for files
@@ -37,10 +37,9 @@ class FileView(View):
         language = request.POST['language']
         program = request.POST['program']
 
-        file = FileManager()
-        file.create_file(language, project_name, program)
+        # file = FileManager()
+        # file.create_file(language, project_name, program)
 
-        OrmProject.create_simple_project(project_name, description, language)
+        # OrmProject.create_simple_project(project_name, description, language)
 
         return render(request, self.template_name)
-

@@ -13,7 +13,7 @@
 
 import subprocess
 from code_editor.core.executor import Executor
-from code_editor.core.settings import PYTHON39_PATH, PYTHON_PROJECTS
+from code_editor.core.settings import PYTHON39_PATH, BASE_DIR
 from code_editor.core.python.python_builder_command import PythonBuilderCommand
 from code_editor.core.python.python_parameters import PythonParameters
 
@@ -22,18 +22,18 @@ from code_editor.core.python.python_parameters import PythonParameters
 class PythonExecutor(Executor):
 
     def __init__(self):
-        self.__project_name = ''
+        self.__project = ''
         self.__params = ''
         self.__command = ''
-        self.__executor = ''
 
-    def set_project_name(self, project_name):
-        self.__project_name = project_name
+    def set_project(self, project):
+        self.__project = project
 
     def set_parameters(self):
         self.__params = PythonParameters()
         self.__params.set_language_path(PYTHON39_PATH)
-        self.__params.set_file_path(PYTHON_PROJECTS / f'{self.__project_name}/main.py')
+        main_file_path = self.__project.main_file_path
+        self.__params.set_file_path(BASE_DIR / main_file_path)
 
     def build_command(self):
         self.__command = PythonBuilderCommand()

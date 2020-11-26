@@ -20,8 +20,9 @@ from django.db import models
 # Create class to set a new 'Table'
 class Language(models.Model):
     id_language = models.AutoField(primary_key=True, unique=True)
-    language_name = models.CharField(max_length=30, null=False, blank=False)
-    language_extension = models.CharField(max_length=30, null=False, blank=False)
+    language_name = models.CharField(max_length=30)
+    language_version = models.CharField(max_length=30, default='Version')
+    language_extension = models.CharField(max_length=30)
 
     class Meta:
         db_table = 'language'

@@ -38,8 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'code_editor'
-
+    'code_editor',
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -135,3 +135,7 @@ STATICFILES_DIRS = (
 # NEW GONZALOALARCON
 MEDIA_ROOT = os.path.join(BASE_DIR, 'storage')
 MEDIA_URL = "/storage/"
+
+LOGIN_REDIRECT_URL = '/'
+
+LOGIN_URL = '/login/'

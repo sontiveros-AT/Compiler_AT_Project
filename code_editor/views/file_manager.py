@@ -15,45 +15,55 @@
 
 import os
 from pathlib import Path
-
+from code_editor.orm_queries.orm_file import OrmFile
+from code_editor.orm_queries.orm_language import OrmLanguage
+from code_editor.orm_queries.orm_project import OrmProject
+from code_editor.core.settings import BASE_DIR, PYTHON39_HELLO_WORLD, JAVA13_HELLO_WORLD
 
 # class file manager to modify local files
+
+
 class FileManager:
 
     # create a file in the media directory based in the language
-    def create_file(self, language, project_name, program):
+    def create_file(self, file_name, project_id):
+        project = OrmProject.get_project(project_id)
+        language = project.language.language_name
+        extension = OrmLanguage.get_extension(language)
+        file = file_name + extension
+
         if language == 'python':
-            language = 'python'
-            extension = 'py'
-            filepath = Path.cwd().joinpath('media/{}/'.format(language, project_name))
-            os.mkdir(filepath / project_name)
-            file = open(filepath / project_name / 'main.{}'.format(extension), "w")
-            file.write(program)
-            file.close()
+            file_path = project.project_path
+            program = PYTHON39_HELLO_WORLD
+
         if language == 'java':
-            language = 'java'
-            extension = 'java'
-            filepath = Path.cwd().joinpath('media/{}/'.format(language, project_name))
-            os.makedirs(filepath / project_name / "src/com/",  exist_ok=True)
-            file = open(filepath / project_name / 'src/com/Main.{}'.format(extension), "w")
-            file.write(program)
-            file.close()
+            file_path = f'{project.project_path}/src/com'
+            program = JAVA13_HELLO_WORLD
+
+        full_path = BASE_DIR / file_path / file
+
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        with open(full_path, "w") as f:
+            f.write(program)
+
+        OrmFile.create_file(file_name, file_path, project_id)
+
+        return f'{file_path}/{file}'
 
     # returns the content of the file targeted
     def load_file(self, filepath):
-        file = open(Path.cwd().joinpath(filepath[1:]), "r")
+        file = open(filepath, "r")
         program = file.read()
         file.close()
         return program
 
     # overwrite the targeted file with new text
     def update_file(self, filepath, program):
-        file = open(Path.cwd().joinpath(filepath[1:]), "w")
+        file = open(filepath, "w")
         program = file.write(program)
         file.close()
 
     # remove the targeted file
     def remove_file(self, filepath):
-        file_to_rem = Path.cwd().joinpath(filepath[1:])
+        file_to_rem = Path(filepath)
         file_to_rem.unlink()
-
