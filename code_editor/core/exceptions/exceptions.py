@@ -23,24 +23,25 @@ class LanguageInvalidException(Exception):
 
 
 class ParametersInvalidException(Exception):
-    def __init__(self):
-        pass
+    def __init__(self, obj, desc):
+        self._obj = obj
+        self._desc = desc
 
     def __str__(self):
         return f'Parameters Invalid Error'
 
 
 class CommandInvalidException(Exception):
-    def __init__(self):
-        pass
+    def __init__(self, obj):
+        self._obj = obj
 
     def __str__(self):
         return f'Command Invalid Error'
 
 
 class ExecuteInvalidException(Exception):
-    def __init__(self):
-        pass
+    def __init__(self, obj):
+        self._obj = obj
 
     def __str__(self):
-        return f'Execute Invalid Error'
+        return f'Execute Invalid Error: {self._obj}'
