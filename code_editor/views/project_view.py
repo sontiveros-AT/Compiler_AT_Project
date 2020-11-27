@@ -73,6 +73,8 @@ class ProjectView(TemplateView):
             file_name = 'main'
         elif language_name == 'java':
             file_name = 'Main'
+        elif language_name == 'javascript':
+            file_name = 'main'
         main_file_path = file.create_file(file_name, project_id)
         OrmProject.update_main_file(project_id, main_file_path)
 

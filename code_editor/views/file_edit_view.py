@@ -12,8 +12,7 @@
 #
 # Author: Andres Cox
 # Version: 1.0
-
-
+from django.contrib import messages
 from django.views.generic import TemplateView
 from django.shortcuts import render
 from .file_manager import FileManager
@@ -23,18 +22,21 @@ from code_editor.orm_queries.orm_project import OrmProject
 
 
 # class file edit view
+from ..core.exceptions.exceptions import LanguageInvalidException, ParametersInvalidException, ExecuteInvalidException
+
+
 class FileEditView(TemplateView):
     template_name = 'code_editor/edit.html'
     template_success = 'code_editor/success.html'
 
     # get file by id
-    def get(self, request, id=None, *args, **kwargs):
+    def get(self, request, id = None, *args, **kwargs):
 
         language = OrmProject.get_language_project(id)
         # Test to get project name
-        project = OrmProject.get_project(id)
+        # project = OrmProject.get_project(id)
         # project.project_name
-        js_data = simplejson.dumps(project.project_name)
+        # js_data = simplejson.dumps(project.project_name)
 
         file = OrmProject.get_main_file(id)
         open_file = FileManager()
@@ -45,7 +47,7 @@ class FileEditView(TemplateView):
                             'language': language.language_name
                             })
 
-        return render(request, self.template_name, {"form": my_form, "my_data": js_data})
+        return render(request, self.template_name, {"form": my_form})
 
     def dispatch(self, *args, **kwargs):
         method = self.request.POST.get('_method', '').lower()
@@ -74,12 +76,18 @@ class FileEditView(TemplateView):
         project = OrmProject.get_project(project_id)
 
         # compile project
+
+        #try:
+            #language = 'python'
         comp = CompilerFactory()
         compiler = comp.create_compiler(project.language.language_name)
         compiler.set_project(project)
-
         output = compiler.run()
         return render(request, self.template_name, {"form": my_form, 'output': output})
+        #except LanguageInvalidException as e:
+            #messages.add_message(request, messages.ERROR, e)
+            #return render(request, self.template_name, {"form": my_form, 'output': e})
+
 
     # delete file
     def delete(self, request, *args, **kwargs):

@@ -15,13 +15,13 @@ import subprocess
 
 from code_editor.core.exceptions.exceptions import ExecuteInvalidException
 from code_editor.core.executor import Executor
-from code_editor.core.settings import PYTHON39_PATH, BASE_DIR
-from code_editor.core.python.python_builder_command import PythonBuilderCommand
-from code_editor.core.python.python_parameters import PythonParameters
+from code_editor.core.javascript.javascript_builder_command import JavascriptBuilderCommand
+from code_editor.core.javascript.javascript_parameters import JavascriptParameters
+from code_editor.core.settings import BASE_DIR, JAVASCRIPT14_PATH
 
 
 # Class to execute Python commands
-class PythonExecutor(Executor):
+class JavascriptExecutor(Executor):
 
     def __init__(self):
         self.__project = ''
@@ -32,25 +32,22 @@ class PythonExecutor(Executor):
         self.__project = project
 
     def set_parameters(self):
-        self.__params = PythonParameters()
-        self.__params.set_language_path(PYTHON39_PATH)
+        self.__params = JavascriptParameters()
+        self.__params.set_language_path(JAVASCRIPT14_PATH)
         main_file_path = self.__project.main_file_path
         self.__params.set_file_path(BASE_DIR / main_file_path)
-        self.__params.validate()
+        # self.__params.validate()
 
     def build_command(self):
-        self.__command = PythonBuilderCommand()
+        self.__command = JavascriptBuilderCommand()
 
     def run(self):
         self.set_parameters()
         self.build_command()
-        print(self.__command.command(self.__params))
-        try:
-            process = subprocess.Popen(self.__command.command(self.__params),
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE,
-                                    universal_newlines=True)
-            output, errors = process.communicate()
-            return output
-        except Exception as err:
-            raise ExecuteInvalidException(err)
+
+        process = subprocess.Popen(self.__command.command(self.__params),
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   universal_newlines=True)
+        output, errors = process.communicate()
+        return output
