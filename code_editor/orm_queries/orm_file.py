@@ -24,8 +24,8 @@ from code_editor.models.model_language import Language
 class OrmFile:
     # Returns a File Object with the name_file requested and id_project
     @staticmethod
-    def get_file(name_file, id_project):
-        return File.objects.get(file_name=name_file, project_id=id_project)
+    def get_file(id_file):
+        return File.objects.get(id_file=id_file)
 
     # Returns a Language Object with the name_file requested and id_project
     @staticmethod
@@ -46,6 +46,8 @@ class OrmFile:
         file.project = project
         file.user = project.user
         file.save()
+
+        return file
 
     # UPDATE A FILE
     # Updates a file on the DB with the id_file

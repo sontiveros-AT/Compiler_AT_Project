@@ -73,7 +73,8 @@ class ProjectView(TemplateView):
             file_name = 'main'
         elif language_name == 'java':
             file_name = 'Main'
-        main_file_path = file.create_file(file_name, project_id)
+
+        main_file_path = file.create_file(project_id, file_name)
         OrmProject.update_main_file(project_id, main_file_path)
 
         return redirect('/api/v1/project/{}'.format(project_id))
