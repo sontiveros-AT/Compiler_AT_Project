@@ -20,6 +20,7 @@ from code_editor.orm_queries.orm_language import OrmLanguage
 from code_editor.orm_queries.orm_project import OrmProject
 from code_editor.core.settings import BASE_DIR, PYTHON39_HELLO_WORLD, JAVA13_HELLO_WORLD, JAVASCRIPT14_HELLO_WORLD
 
+
 # class file manager to modify local files
 
 
@@ -28,9 +29,12 @@ class FileManager:
     # create a file in the media directory based in the language
     def create_file(self, file_name, project_id):
         project = OrmProject.get_project(project_id)
+        # language = project.language.language_name
         language = project.language.language_name
-        extension = OrmLanguage.get_extension(language)
+        language_id = project.language.id_language
+        extension = OrmLanguage.get_extension(language_id)
         file = file_name + extension
+        file_path = ''
 
         if language == 'python':
             file_path = project.project_path
@@ -44,6 +48,9 @@ class FileManager:
             file_path = project.project_path
             program = JAVASCRIPT14_HELLO_WORLD
 
+        print('.....................')
+        print(file_path)
+        print('.....................')
         full_path = BASE_DIR / file_path / file
 
         os.makedirs(os.path.dirname(full_path), exist_ok=True)

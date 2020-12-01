@@ -30,6 +30,9 @@ class JavaExecutor(Executor):
     def set_project(self, project):
         self.__project = project
 
+    def set_version(self, version):
+        self.__version = version
+
     def set_parameters(self):
         self.__params = JavaParameters()
         self.__params.set_language_path(JAVA13_PATH)

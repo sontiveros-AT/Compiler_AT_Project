@@ -16,6 +16,7 @@
 from django import forms
 from code_editor.orm_queries.orm_language import OrmLanguage
 
+
 # Tuple of (language_id, language_label) for dropdown list
 
 
@@ -25,14 +26,13 @@ def get_languages_labels():
     lang_label = []
     for lang in lang_list:
         lang_id.append(lang.id_language)
-        lang_label.append(lang.language_name.capitalize())
+        lang_label.append(lang.language_name.capitalize()+' '+lang.language_version)
 
     return list(zip(lang_id, lang_label))
 
 
 # file form to edit in html
 class FileForm(forms.Form):
-
     program = forms.CharField(widget=forms.Textarea)
 
 
@@ -40,10 +40,23 @@ class FileForm(forms.Form):
 class ProjectForm(forms.Form):
     LANGUAGES = get_languages_labels()
 
+    choises = [
+        ('python', (
+            (4, 'python 2.7'),
+            (2, 'python 3.9'),
+        )),
+        ('java', (
+            (1, 'java 13.0.2'),
+        )),
+        ('javascript', (
+            (3, 'javascript 14.15.1'),
+        )),
+    ]
+
     project_name = forms.CharField(max_length=100,
                                    widget=forms.TextInput(
                                        attrs={'class': 'form-control', 'placeholder': "Enter project name"}))
     description = forms.CharField(widget=forms.TextInput(
         attrs={'class': 'form-control', 'placeholder': "Project Description"}))
     language = forms.ChoiceField(
-        choices=LANGUAGES, widget=forms.Select(attrs={'class': 'form-control'}))
+        choices=choises, widget=forms.Select(attrs={'class': 'form-control'}))
