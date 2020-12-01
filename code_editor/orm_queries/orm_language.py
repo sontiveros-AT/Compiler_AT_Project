@@ -58,5 +58,5 @@ class OrmLanguage:
 
     # GET EXTENSION SUPORTED BY LANGUAGE
     @staticmethod
-    def get_extension(language_name):
-        return Language.objects.get(language_name=language_name).language_extension
+    def get_extension(id_language):
+        return Language.objects.get(id_language=id_language).language_extension

@@ -10,7 +10,12 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
+# Author: Alvaro Cruz, Juan S. Ontiveros
+# Version: 1.0
+#
+
 from code_editor.core.exceptions.exceptions import ExecuteInvalidException
+from code_editor.core.path_compiler import PathCompiler
 from code_editor.core.settings import JAVA13_PATH, BASE_DIR
 
 import subprocess
@@ -32,7 +37,7 @@ class JavaExecutor(Executor):
 
     def set_parameters(self):
         self.__params = JavaParameters()
-        self.__params.set_language_path(JAVA13_PATH)
+        self.__params.set_language_path(PathCompiler.get_path_compiler(self.__project.language))
         project_path = self.__project.project_path
         self.__params.set_binary(BASE_DIR / project_path / 'bin')
         self.__params.set_package(BASE_DIR / project_path / 'src/com/*.java')
@@ -45,7 +50,6 @@ class JavaExecutor(Executor):
     def run(self):
         self.set_parameters()
         self.build_command()
-
         try:
             proc = subprocess.Popen(self.__command.command(self.__params), stdout=PIPE,
                                 stderr=STDOUT, shell=True)

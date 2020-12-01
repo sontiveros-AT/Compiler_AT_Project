@@ -10,6 +10,9 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
+# Author: Alvaro Cruz, Juan S. Ontiveros
+# Version: 1.0
+#
 
 # All java jdk must be directed here
 # This path should be changed pointing to the java jdk folder.
@@ -40,8 +43,6 @@ class JavaParameters(Parameters):
         self.__package = package
 
     def validate(self):
-        print('params java')
-        print(self.get_file_path())
 
         if self.get_file_path() is None:
             raise NoneParametersException(self.get_file_path(), 'file path')

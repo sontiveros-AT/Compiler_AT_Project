@@ -18,7 +18,8 @@ from pathlib import Path
 from code_editor.orm_queries.orm_file import OrmFile
 from code_editor.orm_queries.orm_language import OrmLanguage
 from code_editor.orm_queries.orm_project import OrmProject
-from code_editor.core.settings import BASE_DIR, PYTHON39_HELLO_WORLD, JAVA13_HELLO_WORLD
+from code_editor.core.settings import BASE_DIR, PYTHON39_HELLO_WORLD, JAVA13_HELLO_WORLD, JAVASCRIPT14_HELLO_WORLD
+
 
 # class file manager to modify local files
 
@@ -29,8 +30,10 @@ class FileManager:
     def create_file(self, file_name, project_id):
         project = OrmProject.get_project(project_id)
         language = project.language.language_name
-        extension = OrmLanguage.get_extension(language)
+        language_id = project.language.id_language
+        extension = OrmLanguage.get_extension(language_id)
         file = file_name + extension
+        file_path = ''
 
         if language == 'python':
             file_path = project.project_path
@@ -39,6 +42,10 @@ class FileManager:
         if language == 'java':
             file_path = f'{project.project_path}/src/com'
             program = JAVA13_HELLO_WORLD
+
+        if language == 'javascript':
+            file_path = project.project_path
+            program = JAVASCRIPT14_HELLO_WORLD
 
         full_path = BASE_DIR / file_path / file
 

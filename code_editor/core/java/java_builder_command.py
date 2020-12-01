@@ -10,6 +10,9 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
+# Author: Alvaro Cruz, Juan S. Ontiveros
+# Version: 1.0
+#
 
 from code_editor.core.builder_command import BuilderCommand
 

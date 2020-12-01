@@ -15,10 +15,13 @@
 #
 
 from datetime import datetime
+
+from accounts.models import UserProfile
 from code_editor.models.model_file import File
 from code_editor.models.model_project import Project
 from code_editor.models.model_language import Language
 from code_editor.orm_queries.orm_file import OrmFile
+
 
 
 # OrmProject Class provide the different queries to the DB related with Projects
@@ -73,8 +76,8 @@ class OrmProject:
         project.project_name = name_project
         project.project_description = description
         project.project_path = project_path
-        lang = Language.objects.get(language_name=language.lower())
-        project.language = lang
+        #lang = Language.objects.get(language_name=language.lower())
+        project.language = language
         project.user = user
         project.save()
 
@@ -85,3 +88,17 @@ class OrmProject:
     @staticmethod
     def delete_project(id_project):
         Project.objects.get(id_project=id_project).delete()
+
+    @staticmethod
+    def hard_project(project_name, project_description, project_path, main_file_path):
+        lang = Language.objects.get(id_language=3)
+        us = UserProfile.objects.get(id=1)
+        project = Project()
+        project.project_name = project_name
+        project.project_description = project_description
+        project.project_path = project_path
+        project.main_file_path = main_file_path
+        project.language = lang
+        project.user = us
+        project.save()
+

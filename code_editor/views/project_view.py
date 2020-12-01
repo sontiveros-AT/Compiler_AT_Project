@@ -62,8 +62,7 @@ class ProjectView(TemplateView):
         project_path = f'media/{user_dir}/{language_name}/{language_version}/{project_name}'
 
         # create project in the database and sends the id
-        project = OrmProject.create_project(
-            project_name, description, project_path, language_name, user)
+        project = OrmProject.create_project(project_name, description, project_path, language, user)
         project_id = project.id_project
 
         # creates file and adds it to the database
@@ -73,6 +72,8 @@ class ProjectView(TemplateView):
             file_name = 'main'
         elif language_name == 'java':
             file_name = 'Main'
+        elif language_name == 'javascript':
+            file_name = 'main'
         main_file_path = file.create_file(file_name, project_id)
         OrmProject.update_main_file(project_id, main_file_path)
 
