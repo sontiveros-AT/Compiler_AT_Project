@@ -22,18 +22,17 @@ from code_editor.models.model_language import Language
 
 # OrmFile Class provide the different queries to the DB related with Files
 class OrmFile:
-    # Returns a File Object with the name_file requested and id_project
+    # Returns a File Object with id_file
     @staticmethod
-    def get_file(name_file, id_project):
-        return File.objects.get(file_name=name_file, project_id=id_project)
+    def get_file(id_file):
+        return File.objects.get(id_file=id_file)
 
-    # Returns a Language Object with the name_file requested and id_project
+    # Returns a Language Object with id_file
     @staticmethod
-    def get_language_file(name_file, id_project):
-        lang_id = File.objects.get(file_name=name_file,
-                                   project_id=id_project).project_id
+    def get_file_language(id_file):
+        id_project = File.objects.get(id_file=id_file).project_id
+        lang_id = Project.objects.get(id_project=id_project).language_id
         return Language.objects.get(id_language=lang_id)
-
     # CREATE A NEW FILE
     # Creates a new file on the DB with the id_project and file_name
     @staticmethod
