@@ -34,7 +34,7 @@ class FileEditView(TemplateView):
         # Test to get project name
         project = OrmProject.get_project(id)
         # project.project_name
-        js_data = simplejson.dumps(project.project_name)
+        #js_data = simplejson.dumps(project.project_name)
 
         file = OrmProject.get_main_file(id)
         open_file = FileManager()
@@ -45,7 +45,7 @@ class FileEditView(TemplateView):
                             'language': language.language_name
                             })
 
-        return render(request, self.template_name, {"form": my_form, "my_data": js_data})
+        return render(request, self.template_name, {"form": my_form})
 
     def dispatch(self, *args, **kwargs):
         method = self.request.POST.get('_method', '').lower()
