@@ -45,5 +45,6 @@ class PythonExecutor(Executor):
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE,
                                    universal_newlines=True)
-        output, errors = process.communicate()
-        return output
+        output, err = process.communicate()
+
+        return output if output else err
