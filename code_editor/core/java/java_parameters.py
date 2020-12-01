@@ -43,8 +43,6 @@ class JavaParameters(Parameters):
         self.__package = package
 
     def validate(self):
-        print('params java')
-        print(self.get_file_path())
 
         if self.get_file_path() is None:
             raise NoneParametersException(self.get_file_path(), 'file path')

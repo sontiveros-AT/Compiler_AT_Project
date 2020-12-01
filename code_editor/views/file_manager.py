@@ -29,7 +29,6 @@ class FileManager:
     # create a file in the media directory based in the language
     def create_file(self, file_name, project_id):
         project = OrmProject.get_project(project_id)
-        # language = project.language.language_name
         language = project.language.language_name
         language_id = project.language.id_language
         extension = OrmLanguage.get_extension(language_id)

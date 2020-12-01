@@ -21,16 +21,15 @@ class CompilerFactory:
     languages = {'python': PythonExecutor(), 'java': JavaExecutor(), 'javascript': JavascriptExecutor()}
 
     def create_compiler(self, language):
-        # self.validate(language)
+        self.validate(language)
         executor = self.languages[language]
         return executor
 
-    # def validate(self, language):
-    #     if language is None:
-    #         raise NoneLanguageException(language)
-    #     elif type(language) == int or type(language) == float:
-    #         raise TypeLanguageException(language)
-    #     elif not language.isalpha():
-    #         raise TypeLanguageException(language)
-    #     elif language.lower().strip() != 'python' and language.lower().strip() != 'java':
-    #         raise FoundLanguageException(language)
+    def validate(self, language):
+        if language is None:
+            raise NoneLanguageException(language)
+        elif type(language) == int or type(language) == float:
+            raise TypeLanguageException(language)
+        elif not language.isalpha():
+            raise TypeLanguageException(language)
+

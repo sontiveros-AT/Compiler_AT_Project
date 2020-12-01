@@ -29,7 +29,5 @@ class JavascriptBuilderCommand(BuilderCommand):
         cmd = params
         language_path = cmd.get_language_path()
         file_path = cmd.get_file_path()
-        print('builder', language_path)
-        print('builder', file_path)
 
         return [language_path, file_path]
