@@ -39,24 +39,10 @@ class FileForm(forms.Form):
 # project form to display in html
 class ProjectForm(forms.Form):
     LANGUAGES = get_languages_labels()
-
-    choises = [
-        ('python', (
-            (4, 'python 2.7'),
-            (2, 'python 3.9'),
-        )),
-        ('java', (
-            (1, 'java 13.0.2'),
-        )),
-        ('javascript', (
-            (3, 'javascript 14.15.1'),
-        )),
-    ]
-
     project_name = forms.CharField(max_length=100,
                                    widget=forms.TextInput(
                                        attrs={'class': 'form-control', 'placeholder': "Enter project name"}))
     description = forms.CharField(widget=forms.TextInput(
         attrs={'class': 'form-control', 'placeholder': "Project Description"}))
     language = forms.ChoiceField(
-        choices=choises, widget=forms.Select(attrs={'class': 'form-control'}))
+        choices=LANGUAGES, widget=forms.Select(attrs={'class': 'form-control'}))

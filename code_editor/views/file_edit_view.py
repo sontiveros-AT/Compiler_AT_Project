@@ -78,11 +78,9 @@ class FileEditView(TemplateView):
         # compile project
 
         #try:
-            #language = 'python'
         comp = CompilerFactory()
         compiler = comp.create_compiler(project.language.language_name)
         compiler.set_project(project)
-        compiler.set_version(project.language.language_version)
         output = compiler.run()
         return render(request, self.template_name, {"form": my_form, 'output': output})
         #except LanguageInvalidException as e:

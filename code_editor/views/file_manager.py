@@ -48,9 +48,6 @@ class FileManager:
             file_path = project.project_path
             program = JAVASCRIPT14_HELLO_WORLD
 
-        print('.....................')
-        print(file_path)
-        print('.....................')
         full_path = BASE_DIR / file_path / file
 
         os.makedirs(os.path.dirname(full_path), exist_ok=True)

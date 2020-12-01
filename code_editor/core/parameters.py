@@ -24,7 +24,6 @@ class Parameters(ABC):
     def __init__(self):
         self.__language_path = ''
         self.__file_path = ''
-        self.__version_path = ''
 
     def get_language_path(self):
         return self.__language_path
@@ -37,9 +36,3 @@ class Parameters(ABC):
 
     def set_file_path(self, file_path):
         self.__file_path = file_path
-
-    def get_version_path(self):
-        return self.__version_path
-
-    def set_version_path(self, version):
-        self.__version_path = version

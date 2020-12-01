@@ -10,6 +10,9 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
+# Author: Alvaro Cruz
+# Version: 1.0
+#
 
 import subprocess
 
@@ -17,6 +20,7 @@ from code_editor.core.exceptions.exceptions import ExecuteInvalidException
 from code_editor.core.executor import Executor
 from code_editor.core.javascript.javascript_builder_command import JavascriptBuilderCommand
 from code_editor.core.javascript.javascript_parameters import JavascriptParameters
+from code_editor.core.path_compiler import PathCompiler
 from code_editor.core.settings import BASE_DIR, JAVASCRIPT14_PATH
 
 
@@ -31,15 +35,12 @@ class JavascriptExecutor(Executor):
     def set_project(self, project):
         self.__project = project
 
-    def set_version(self, version):
-        self.__version = version
-
     def set_parameters(self):
         self.__params = JavascriptParameters()
+        self.__params.set_language_path(PathCompiler.get_path_compiler(self.__project.language))
         self.__params.set_language_path(JAVASCRIPT14_PATH)
         main_file_path = self.__project.main_file_path
         self.__params.set_file_path(BASE_DIR / main_file_path)
-        # self.__params.validate()
 
     def build_command(self):
         self.__command = JavascriptBuilderCommand()
@@ -47,10 +48,12 @@ class JavascriptExecutor(Executor):
     def run(self):
         self.set_parameters()
         self.build_command()
-
-        process = subprocess.Popen(self.__command.command(self.__params),
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   universal_newlines=True)
-        output, errors = process.communicate()
-        return output
+        try:
+            process = subprocess.Popen(self.__command.command(self.__params),
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE,
+                                    universal_newlines=True)
+            output, errors = process.communicate()
+            return output
+        except Exception as err:
+            raise ExecuteInvalidException(err)

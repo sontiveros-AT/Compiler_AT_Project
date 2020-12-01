@@ -10,6 +10,10 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
+# Author: Alvaro Cruz
+# Version: 1.0
+#
+
 
 import subprocess
 from code_editor.core.builder_command import BuilderCommand
@@ -27,16 +31,5 @@ class JavascriptBuilderCommand(BuilderCommand):
         file_path = cmd.get_file_path()
         print('builder', language_path)
         print('builder', file_path)
-        #
-        # if language_path is None:
-        #     raise NoneCommandException(language_path)
-        # elif file_path is None:
-        #     raise NoneCommandException(file_path)
-        # elif language_path == '':
-        #     raise EmptyCommandException(language_path)
-        # elif file_path == '':
-        #     raise EmptyCommandException(file_path)
-        # elif not isinstance(params, PythonParameters):
-        #     raise TypeCommandException(params)
 
         return [language_path, file_path]

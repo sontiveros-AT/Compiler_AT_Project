@@ -10,6 +10,9 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
+# Author: Alvaro Cruz
+# Version: 1.0
+#
 
 import os
 from code_editor.core.parameters import Parameters
@@ -20,17 +23,3 @@ from code_editor.core.exceptions.parameters_exceptions import *
 class JavascriptParameters(Parameters):
     def __init__(self):
         super().__init__()
-
-    # def validate(self):
-    #     if self.get_file_path() is None:
-    #         raise NoneParametersException(self.get_file_path(), 'file path')
-    #     elif self.get_language_path() is None:
-    #         raise NoneParametersException(self.get_language_path(), 'language path')
-    #     elif self.get_file_path() == '':
-    #         raise EmptyParametersException(self.get_file_path(), 'file path')
-    #     elif self.get_language_path() == '':
-    #         raise EmptyParametersException(self.get_language_path(), 'file language')
-    #     elif not os.path.isfile(self.get_file_path()):
-    #         raise NotFoundParametersException(self.get_file_path(), 'file path')
-    #     elif not os.path.isfile(self.get_language_path()):
-    #         raise NotFoundParametersException(self.get_language_path(), 'file language')
