@@ -21,7 +21,8 @@ PYTHON39_PATH = BASE_DIR / 'third_parties/python/Python39-32/python.exe'
 JAVA13_PATH = BASE_DIR / 'third_parties/java/jdk-13.0.2/bin'
 
 # File templates
-PYTHON39_HELLO_WORLD = 'print("Hello world!")'
+PYTHON2_HELLO_WORLD = 'print "Hello world!"'
+PYTHON3_HELLO_WORLD = 'print("Hello world!")'
 JAVA13_HELLO_WORLD = '''package com;
 
 public class Main {
