@@ -23,7 +23,7 @@ var setting = {
     },
     edit: {
         enable: true,
-        showRemoveBtn: true,
+        showRemoveBtn: showRemoveBtn,
         showRenameBtn: false
     },
     callback: {
@@ -64,16 +64,14 @@ function addHoverDom(treeId, treeNode) {
         var btnFile = $("#addFileBtn_"+treeNode.tId);
         var btnDir = $("#addDirBtn_"+treeNode.tId);
         if (btnFile) btnFile.bind("click", function(){
-            console.log(treeNode)
             var zTree = $.fn.zTree.getZTreeObj("treeDemo");
-            zTree.addNodes(treeNode, { name: `newFile.py`});
+            zTree.addNodes(treeNode, { name: `newFile`});
             zTree.editName(treeNode.children[treeNode.children.length-1]);
             return false;
         });
         if (btnDir) btnDir.bind("click", function(){
-            console.log(treeNode)
             var zTree = $.fn.zTree.getZTreeObj("treeDemo");
-            zTree.addNodes(treeNode, { name: `newFolder`, isParent: true});
+            zTree.addNodes(treeNode, { name: `newDir`, isParent: true});
             zTree.editName(treeNode.children[treeNode.children.length-1]);
             return false;
         });
@@ -85,11 +83,16 @@ function removeHoverDom(treeId, treeNode) {
     $("#addDirBtn_"+treeNode.tId).unbind().remove();
 };
 
+function showRemoveBtn(treeId, treeNode) {
+    return treeNode.name !=  "main";
+}
 
 //Button Methods
 function Save() {
     var program = editor.getValue();
-    activeNode.program = program;
+    if (program !== ''){
+        activeNode.program = program;
+    }
 }
 
 function onRemove(e, treeId, treeNode) {
@@ -97,10 +100,21 @@ function onRemove(e, treeId, treeNode) {
 }
 
 function onRename(e, treeId, treeNode) {
-    AddFile(treeNode);
+    var zTree = $.fn.zTree.getZTreeObj("treeDemo");
+      if (treeNode.name.length == 0) {
+        alert("file name can not be empty.");
+        zTree.removeNode(treeNode);
+      } else if (treeNode.name == 'main') {
+        alert("file name can not be 'main'");
+        zTree.removeNode(treeNode);
+      } else {
+        AddFile(treeNode);
+      }
 }
 
+
 function onClick(e, treeId, treeNode) {
+    Save();
     editor.setValue(treeNode.program);
     programDisplayed = treeNode.program;
     activeNode = treeNode;
@@ -143,14 +157,12 @@ function RunCode() {
     })
     .then(res => res.json())
     .then(data => {
-            console.log(data);
             document.getElementById("output").innerHTML = data.output;
         }
     )
 }
 
 function AddFile(treeNode) {
-    console.log("add file")
     var form = new FormData();
     form.append("fileName", treeNode.name);
     fetch(`http://127.0.0.1:8000/api/v1/project/${project_id}`, {

@@ -1,4 +1,4 @@
-define("ace/mode/python_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module) {
+ace.define("ace/mode/python_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../lib/oop");
@@ -79,7 +79,7 @@ var PythonHighlightRules = function() {
             regex: strRawPre + '"{3}',
             next: "rawqqstring3"
         }, {
-            token: "string",
+            token: "string", 
             regex: strRawPre + '"(?=.)',
             next: "rawqqstring"
         }, {
@@ -389,7 +389,7 @@ oop.inherits(PythonHighlightRules, TextHighlightRules);
 exports.PythonHighlightRules = PythonHighlightRules;
 });
 
-define("ace/mode/folding/pythonic",["require","exports","module","ace/lib/oop","ace/mode/folding/fold_mode"], function(require, exports, module) {
+ace.define("ace/mode/folding/pythonic",["require","exports","module","ace/lib/oop","ace/mode/folding/fold_mode"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../../lib/oop");
@@ -418,7 +418,7 @@ oop.inherits(FoldMode, BaseFoldMode);
 
 });
 
-define("ace/mode/python",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/python_highlight_rules","ace/mode/folding/pythonic","ace/range"], function(require, exports, module) {
+ace.define("ace/mode/python",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/python_highlight_rules","ace/mode/folding/pythonic","ace/range"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../lib/oop");
@@ -465,27 +465,27 @@ oop.inherits(Mode, TextMode);
         "break": 1,
         "continue": 1
     };
-
+    
     this.checkOutdent = function(state, line, input) {
         if (input !== "\r\n" && input !== "\r" && input !== "\n")
             return false;
 
         var tokens = this.getTokenizer().getLineTokens(line.trim(), state).tokens;
-
+        
         if (!tokens)
             return false;
         do {
             var last = tokens.pop();
         } while (last && (last.type == "comment" || (last.type == "text" && last.value.match(/^\s+$/))));
-
+        
         if (!last)
             return false;
-
+        
         return (last.type == "keyword" && outdents[last.value]);
     };
 
     this.autoOutdent = function(state, doc, row) {
-
+        
         row += 1;
         var indent = this.$getIndent(doc.getLine(row));
         var tab = doc.getTabString();
@@ -499,9 +499,10 @@ oop.inherits(Mode, TextMode);
 
 exports.Mode = Mode;
 });                (function() {
-                    window.require(["ace/mode/python"], function(m) {
+                    ace.require(["ace/mode/python"], function(m) {
                         if (typeof module == "object" && typeof exports == "object" && module) {
                             module.exports = m;
                         }
                     });
                 })();
+            
