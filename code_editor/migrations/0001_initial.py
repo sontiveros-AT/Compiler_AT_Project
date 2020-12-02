@@ -9,7 +9,6 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('accounts', '0001_initial'),
     ]
 
     operations = [
@@ -32,8 +31,10 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=100)),
                 ('description', models.TextField()),
                 ('path', models.CharField(max_length=100)),
-                ('language', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='code_editor.language')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='accounts.userprofile')),
+                ('language', models.ForeignKey(
+                    on_delete=django.db.models.deletion.PROTECT, to='code_editor.language')),
+                ('user', models.ForeignKey(
+                    on_delete=django.db.models.deletion.PROTECT, to='accounts.userprofile')),
             ],
             options={
                 'db_table': 'project',
@@ -47,8 +48,10 @@ class Migration(migrations.Migration):
                 ('path', models.CharField(max_length=150)),
                 ('creation_date', models.DateField()),
                 ('is_main', models.BooleanField(default=False)),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='code_editor.project')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.userprofile')),
+                ('project', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to='code_editor.project')),
+                ('user', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to='accounts.userprofile')),
             ],
             options={
                 'db_table': 'file',

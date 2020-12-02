@@ -12,10 +12,13 @@
 #
 
 import subprocess
+
+from code_editor.core.exceptions.exceptions import ExecuteInvalidException
 from code_editor.core.executor import Executor
-from commons.settings import PYTHON39_PATH, BASE_DIR
+from commons.settings import BASE_DIR
 from code_editor.core.python.python_builder_command import PythonBuilderCommand
 from code_editor.core.python.python_parameters import PythonParameters
+from code_editor.core.path_compiler import PathCompiler
 
 
 # Class to execute Python commands
@@ -29,11 +32,14 @@ class PythonExecutor(Executor):
 
     def set_file(self, file):
         self.__file = file
+        self.__project = file.project
 
     def set_parameters(self):
         self.__params = PythonParameters()
-        self.__params.set_language_path(PYTHON39_PATH)
+        self.__params.set_language_path(
+            PathCompiler.get_path_compiler(self.__project.language))
         self.__params.set_file_path(BASE_DIR / self.__file.path)
+        self.__params.validate()
 
     def build_command(self):
         self.__command = PythonBuilderCommand()
@@ -41,10 +47,13 @@ class PythonExecutor(Executor):
     def run(self):
         self.set_parameters()
         self.build_command()
-        process = subprocess.Popen(self.__command.command(self.__params),
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   universal_newlines=True)
-        output, err = process.communicate()
 
-        return output if output else err
+        try:
+            process = subprocess.Popen(self.__command.command(self.__params),
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE,
+                                       universal_newlines=True)
+            output, errors = process.communicate()
+            return output if output else errors
+        except Exception as err:
+            raise ExecuteInvalidException(err)

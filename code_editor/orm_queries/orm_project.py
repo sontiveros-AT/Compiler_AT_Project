@@ -15,6 +15,8 @@
 #
 
 from datetime import datetime
+
+from accounts.models import UserProfile
 from code_editor.models.model_file import File
 from code_editor.models.model_project import Project
 from code_editor.orm_queries.orm_file import OrmFile
@@ -27,7 +29,7 @@ class OrmProject:
     # Returns an integer with the number of project for a given user (logged in)
     @staticmethod
     def count_all_projects(user):
-        return Project.objects.filter(user=user).count()
+        return OrmProject.get_all_projects(user).count()
 
     # Returns a list of all project for a given user (logged in)
     @staticmethod
@@ -83,3 +85,16 @@ class OrmProject:
     @staticmethod
     def delete_project(project_id):
         OrmProject.get_project(project_id).delete()
+
+    # @staticmethod
+    # def hard_project(project_name, project_description, project_path, main_file_path):
+    #     lang = Language.objects.get(id_language=3)
+    #     us = UserProfile.objects.get(id=1)
+    #     project = Project()
+    #     project.project_name = project_name
+    #     project.project_description = project_description
+    #     project.project_path = project_path
+    #     project.main_file_path = main_file_path
+    #     project.language = lang
+    #     project.user = us
+    #     project.save()

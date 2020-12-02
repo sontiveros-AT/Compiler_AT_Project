@@ -23,7 +23,7 @@ class OrmLanguage:
     # Returns an integer with the number of languages
     @staticmethod
     def count_all_language():
-        return Language.objects.all().count()
+        return OrmLanguage.get_languages().count()
 
     # Returns a list of all languages
     @staticmethod
@@ -54,7 +54,7 @@ class OrmLanguage:
     # DELETE A LANGUAGE IN THE DATA BASE
     @staticmethod
     def delete_language(language_id):
-        Language.objects.get(id=language_id).delete()
+        OrmLanguage.get_language(language_id).delete()
 
     # GET EXTENSION SUPORTED BY LANGUAGE
     @staticmethod

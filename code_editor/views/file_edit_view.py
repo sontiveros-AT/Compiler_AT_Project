@@ -12,8 +12,9 @@
 #
 # Author: Andres Cox
 # Version: 1.0
+#
 
-
+from django.contrib import messages
 from django.views.generic import TemplateView
 from django.shortcuts import render
 from commons.file_manager import FileManager
@@ -24,6 +25,9 @@ from commons.settings import BASE_DIR
 
 
 # class file edit view
+from ..core.exceptions.exceptions import LanguageInvalidException, ParametersInvalidException, ExecuteInvalidException
+
+
 class FileEditView(TemplateView):
     template_name = 'code_editor/edit.html'
     template_success = 'code_editor/success.html'
@@ -72,17 +76,16 @@ class FileEditView(TemplateView):
         comp = CompilerFactory()
         compiler = comp.create_compiler(project.language.name)
         compiler.set_file(main_file)
-
         output = compiler.run()
+
         return render(request, self.template_name, {"form": my_form, 'output': output})
 
     # delete file
+
     def delete(self, request, *args, **kwargs):
         project_id = self.kwargs.get('id')
         # find file
         main_file = OrmProject.get_main_file(project_id)
-        # file_path = BASE_DIR / file
-        # file_path.unlink()
 
         # remove local storage
         remove = FileManager()
