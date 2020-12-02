@@ -25,7 +25,7 @@ def get_languages_labels():
     lang_id = []
     lang_label = []
     for lang in lang_list:
-        lang_id.append(lang.id_language)
+        lang_id.append(lang.id)
         lang_label.append(lang.name.capitalize()+' '+lang.version)
 
     return list(zip(lang_id, lang_label))
