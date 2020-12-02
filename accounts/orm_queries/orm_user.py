@@ -23,9 +23,10 @@ from accounts.models import UserProfile
 class OrmUser:
     # Returns a User Object with the user(from auth_user table)
     @staticmethod
-    def get_user_dir(user):
-        return UserProfile.objects.get(user=user).user_dir
+    def get_user_dir(user_id):
+        return OrmUser.get_user(user_id).user_dir
 
     @staticmethod
-    def get_user(user):
+    def get_user(user_id):
+        user = User.objects.get(id=user_id)
         return UserProfile.objects.get(user=user)

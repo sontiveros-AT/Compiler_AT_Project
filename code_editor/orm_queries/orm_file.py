@@ -17,46 +17,43 @@
 from datetime import datetime
 from code_editor.models.model_file import File
 from code_editor.models.model_project import Project
-from code_editor.models.model_language import Language
 
 
 # OrmFile Class provide the different queries to the DB related with Files
 class OrmFile:
     # Returns a File Object with the name_file requested and id_project
     @staticmethod
-    def get_file(id_file):
-        return File.objects.get(id_file=id_file)
+    def get_file(file_id):
+        return File.objects.get(id=file_id)
 
     # Returns a Language Object with the name_file requested and id_project
     @staticmethod
-    def get_language_file(name_file, id_project):
-        lang_id = File.objects.get(file_name=name_file,
-                                   project_id=id_project).project_id
-        return Language.objects.get(id_language=lang_id)
+    def get_language_file(file_id):
+        return OrmFile.get_file(file_id).project.language
 
     # CREATE A NEW FILE
     # Creates a new file on the DB with the id_project and file_name
     @staticmethod
-    def create_file(name, file_path, id_project):
-        file = File()
-        file.file_name = name
-        file.file_path = file_path
-        file.file_date = datetime.now()
-        project = Project.objects.get(id_project=id_project)
-        file.project = project
-        file.user = project.user
+    def create_file(name, file_path, project_id):
+        project = Project.objects.get(id=project_id)
+        file = File(
+            name=name,
+            path=file_path,
+            creation_date=datetime.now(),
+            project=project,
+            user=project.user)
         file.save()
 
         return file
 
     # UPDATE A FILE
     # Updates a file on the DB with the id_file
-    @staticmethod
-    def update_file_name(id_file, new_name):
-        File.objects.filter(id_file=id_file).update(file_name=new_name)
+    @ staticmethod
+    def update_file_name(file_id, new_name):
+        File.objects.filter(id=file_id).update(file_name=new_name)
 
     # DELETE A FILE
     # Deletes a file on the DB with the id_file
-    @staticmethod
-    def delete_file(id_file):
-        File.objects.get(id_file=id_file).delete()
+    @ staticmethod
+    def delete_file(file_id):
+        OrmFile.get_file(file_id).delete()
