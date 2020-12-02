@@ -31,9 +31,6 @@ class FileManager:
     def is_repeated_project(project_name, language_id, user_id):
         user = OrmUser.get_user(user_id)
         for project in OrmProject.get_all_projects(user):
-            print(project.name)
-            print(type(project.language.id), type(language_id))
-            print(project.language.id == language_id)
             if (project.language.id == language_id) and (project.name == project_name):
                 return True
         return False
@@ -47,8 +44,6 @@ class FileManager:
             language.version / project_name
 
         # create project in the database and sends the id
-        print(FileManager.is_repeated_project(
-            project_name, language_id, user_id))
         if not FileManager.is_repeated_project(project_name, language_id, user_id):
             project = OrmProject.create_project(
                 project_name, description, project_path, language_id, user_id)
@@ -65,17 +60,28 @@ class FileManager:
 
         return None
 
+    @staticmethod
+    def is_repeated_file(project_id, file_path):
+        for file in OrmProject.get_all_files(project_id):
+            if str(file_path) == file.path:
+                return file
+        return None
+
     # create a file in the media directory based in the language
     @staticmethod
     def create_file(project_id, file_name, path=''):
         parameters = ProjectParameters(project_id)
         main_path = parameters.get_main_path()
         code = parameters.get_hello_world_code()
-
-        file_path = main_path / path / file_name
+        file_name_ext = parameters.get_file_name_with_ext(file_name)
+        file_path = main_path / path / file_name_ext
         full_path = BASE_DIR / file_path
-        file = OrmFile.create_file(file_name, file_path, project_id)
 
+        file = FileManager.is_repeated_file(project_id, file_path)
+        if file:
+            return file
+
+        file = OrmFile.create_file(file_name_ext, file_path, project_id)
         os.makedirs(os.path.dirname(full_path), exist_ok=True)
         FileManager.update_file(file.id, code)
 
@@ -102,8 +108,9 @@ class FileManager:
     # remove the targeted file
     @staticmethod
     def remove_file(file_id):
-        full_path = BASE_DIR / OrmFile.get_file(file_id).path
-
-        file_to_rem = Path(full_path)
-        file_to_rem.unlink()
-        OrmFile.delete_file(file_id)
+        file = OrmFile.get_file(file_id)
+        if not file.is_main:
+            full_path = BASE_DIR / file.path
+            file_to_rem = Path(full_path)
+            file_to_rem.unlink()
+            OrmFile.delete_file(file_id)
