@@ -15,7 +15,7 @@
 
 from django.http import JsonResponse
 from django.views.generic import TemplateView
-from code_editor.views.file_manager import FileManager
+from commons.file_manager import FileManager
 import json
 
 

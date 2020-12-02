@@ -20,15 +20,7 @@ from code_editor.forms import ProjectForm
 from code_editor.orm_queries.orm_project import OrmProject
 from code_editor.orm_queries.orm_language import OrmLanguage
 from accounts.orm_queries.orm_user import OrmUser
-from .file_manager import FileManager
-
-
-def project_names(user):
-    proj_names = []
-    for project in OrmProject.get_all_projects(user):
-        proj_names.append(project.project_name)
-
-    return proj_names
+from commons.file_manager import FileManager
 
 # class for project endpoints
 
@@ -38,43 +30,26 @@ class ProjectView(TemplateView):
 
     # main view to create a project
     def get(self, request, *args, **kwargs):
-        my_form = ProjectForm()
+        form = ProjectForm()
 
-        return render(request, self.template_name, {"form": my_form})
+        return render(request, self.template_name, {"form": form})
 
     # endpoint to create a new project
     def post(self, request, *args, **kwargs):
         project_name = request.POST['project_name']
         description = request.POST['description']
-        language_id = request.POST['language']
-        user = OrmUser.get_user(request.user)
+        language_id = int(request.POST['language'])
+        user = request.user
 
-        render_args = {}
-        if project_name in project_names(user):
-            render_args = {
-                "message": f'The project "{project_name}" already exists!', "form": ProjectForm()}
-            return render(request, self.template_name, render_args)
+        project = FileManager.create_project(
+            project_name, description, language_id, user.id)
 
-        user_dir = OrmUser.get_user_dir(request.user)
-        language = OrmLanguage.get_language(language_id)
-        language_name = language.language_name
-        language_version = language.language_version
-        project_path = f'media/{user_dir}/{language_name}/{language_version}/{project_name}'
+        if project:
+            return redirect('/api/v1/project/{}'.format(project.id))
 
-        # create project in the database and sends the id
-        project = OrmProject.create_project(
-            project_name, description, project_path, language_name, user)
-        project_id = project.id_project
+        render_args = {
+            "message": f'The project "{project_name}" already exists!',
+            "form": ProjectForm()
+        }
 
-        # creates file and adds it to the database
-        file = FileManager()
-        file_name = ''
-        if language_name == 'python':
-            file_name = 'main'
-        elif language_name == 'java':
-            file_name = 'Main'
-
-        main_file_path = file.create_file(project_id, file_name)
-        OrmProject.update_main_file(project_id, main_file_path)
-
-        return redirect('/api/v1/project/{}'.format(project_id))
+        return render(request, self.template_name, render_args)
