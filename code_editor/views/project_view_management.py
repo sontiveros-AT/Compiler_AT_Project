@@ -19,7 +19,7 @@ from code_editor.orm_queries.orm_project import OrmProject
 from code_editor.core.executor_facade import CompilerFactory
 
 
-# class for file endpoints
+# Class for file endpoints
 class ProjectViewManagement(TemplateView):
     template_name = 'code_editor/index.html'
 
@@ -40,4 +40,3 @@ class ProjectViewManagement(TemplateView):
         compiler.set_file(main_file)
         output = compiler.run()
         return JsonResponse({"output": output})
-

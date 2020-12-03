@@ -17,7 +17,7 @@ from code_editor.core.exceptions.command_exceptions import *
 from code_editor.core.python.python_parameters import PythonParameters
 
 
-# class compiler built, based in params class
+# Class compiler built, based in params class
 class PythonBuilderCommand(BuilderCommand):
     def command(self, params):
         cmd = params

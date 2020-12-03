@@ -17,6 +17,7 @@
 from code_editor.core.parameters import Parameters
 
 
+# Class parameters to establish location
 class PhpParameters(Parameters):
     def __init__(self):
         super().__init__()

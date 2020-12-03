@@ -14,6 +14,8 @@
 # Version: 1.0
 #
 
+# Create classes for exceptions
+
 class FileInvalidException(Exception):
     def __init__(self):
         pass

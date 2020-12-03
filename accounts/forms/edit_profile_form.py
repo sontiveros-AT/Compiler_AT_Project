@@ -17,8 +17,8 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserChangeForm
 
-# Form for changing user's info
 
+# Form for changing user's info
 
 class EditProfileForm(UserChangeForm):
 

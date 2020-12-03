@@ -19,7 +19,7 @@ from commons.file_manager import FileManager
 import json
 
 
-# class for file endpoints
+# Class for file endpoints
 class ProjectJSONView(TemplateView):
     template_name = 'code_editor/index.html'
 

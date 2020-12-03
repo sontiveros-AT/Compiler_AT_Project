@@ -14,6 +14,8 @@
 # Version: 1.0
 #
 
+# Create classes for exceptions
+
 class LanguageInvalidException(Exception):
     def __init__(self, lang):
         self._lang = lang

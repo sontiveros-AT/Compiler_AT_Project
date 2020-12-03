@@ -20,7 +20,7 @@ from code_editor.forms import ProjectForm
 from commons.file_manager import FileManager
 
 
-# class for project endpoints
+# Class for project endpoints
 class ProjectView(TemplateView):
     template_name = 'code_editor/new_project.html'
 

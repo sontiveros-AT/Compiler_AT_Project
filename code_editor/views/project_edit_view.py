@@ -18,7 +18,7 @@ from django.shortcuts import render
 from commons.file_manager import FileManager
 
 
-# class file edit view
+# Class file edit view
 class ProjectEditView(TemplateView):
     template_name = 'code_editor/edit.html'
 

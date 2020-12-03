@@ -20,7 +20,7 @@ from code_editor.orm_queries.orm_project import OrmProject
 from accounts.orm_queries.orm_user import OrmUser
 
 
-# class for project/all endpoint
+# Class for project/all endpoint
 class ProjectsListView(TemplateView):
     template_name = 'code_editor/projects_list.html'
 

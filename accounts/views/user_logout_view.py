@@ -16,8 +16,7 @@
 
 from django.contrib.auth.views import LogoutView
 
+
 # UserLogoutView class directs to logout page
-
-
 class UserLogoutView(LogoutView):
     template_name = 'registration/logout.html'

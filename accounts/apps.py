@@ -17,5 +17,6 @@
 from django.apps import AppConfig
 
 
+# To init all apps
 class AccountsConfig(AppConfig):
     name = 'accounts'
