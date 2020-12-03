@@ -14,24 +14,14 @@
 # Version: 1.0
 #
 
-from commons.settings import PYTHON39_PATH, PYTHON27_PATH, JAVA13_PATH, JAVASCRIPT14_PATH
+from commons.configuration.config_manager import ConfigManager
+from commons.settings import BASE_DIR
 
 
+# Class that requests and returns the path of a language binary
 class PathCompiler:
 
     @staticmethod
     def get_path_compiler(language):
-
-        if language.name == 'python':
-            if language.version == '3.9':
-                return PYTHON39_PATH
-            elif language.version == '2.7':
-                return PYTHON27_PATH
-
-        elif language.name == 'java':
-            if language.version == '13.0.2':
-                return JAVA13_PATH
-
-        elif language.name == 'javascript':
-            if language.version == '14.15.1':
-                return JAVASCRIPT14_PATH
+        con = ConfigManager()
+        return BASE_DIR / con.get_path_compiler(str(language.id))
