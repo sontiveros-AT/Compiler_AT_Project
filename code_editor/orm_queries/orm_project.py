@@ -19,9 +19,9 @@ from datetime import datetime
 from accounts.models import UserProfile
 from code_editor.models.model_file import File
 from code_editor.models.model_project import Project
-from code_editor.models.model_language import Language
 from code_editor.orm_queries.orm_file import OrmFile
-
+from code_editor.orm_queries.orm_language import OrmLanguage
+from accounts.orm_queries.orm_user import OrmUser
 
 
 # OrmProject Class provide the different queries to the DB related with Projects
@@ -29,7 +29,7 @@ class OrmProject:
     # Returns an integer with the number of project for a given user (logged in)
     @staticmethod
     def count_all_projects(user):
-        return Project.objects.filter(user=user).count()
+        return OrmProject.get_all_projects(user).count()
 
     # Returns a list of all project for a given user (logged in)
     @staticmethod
@@ -38,47 +38,44 @@ class OrmProject:
 
     # Returns a Project Object that belongs to the id_project
     @staticmethod
-    def get_project(id_project):
-        return Project.objects.get(id_project=id_project)
+    def get_project(project_id):
+        return Project.objects.get(id=project_id)
 
     # Returns a Language Object that belongs to the id_project
     @staticmethod
-    def get_language_project(id_project):
-        return Project.objects.get(id_project=id_project).language
+    def get_language_project(project_id):
+        return OrmProject.get_project(project_id).language
 
     # Returns an integer with the number of files of the id_project
     @staticmethod
-    def count_all_files(id_project):
-        return File.objects.filter(project_id=id_project).count()
+    def count_all_files(project_id):
+        return OrmProject.get_all_files(project_id).count()
 
     # Returns an List of all files of the id_project
     @staticmethod
-    def get_all_files(id_project):
-        return File.objects.filter(project_id=id_project)
-
-    # Updates the main File Object that belongs to the id_project
-    @staticmethod
-    def update_main_file(id_project, main_file_path):
-        project = Project.objects.get(id_project=id_project)
-        project.main_file_path = main_file_path
-        project.save()
+    def get_all_files(project_id):
+        project = OrmProject.get_project(project_id)
+        user = project.user
+        return File.objects.filter(project=project, user=user)
 
     # Returns the main File Object that belongs to the id_project
     @staticmethod
-    def get_main_file(id_project):
-        return Project.objects.get(id_project=id_project).main_file_path
+    def get_main_file(project_id):
+        files = OrmProject.get_all_files(project_id)
+        for file in files:
+            if file.is_main:
+                return file
 
     # CREATE A NEW PROJECT
     # Creates a new project on the DB with the project_name, project_description and language
     @staticmethod
-    def create_project(name_project, description, project_path, language, user):
-        project = Project()
-        project.project_name = name_project
-        project.project_description = description
-        project.project_path = project_path
-        #lang = Language.objects.get(language_name=language.lower())
-        project.language = language
-        project.user = user
+    def create_project(name_project, description, project_path, language_id, user_id):
+        project = Project(
+            name=name_project,
+            description=description,
+            path=project_path,
+            language=OrmLanguage.get_language(language_id),
+            user=OrmUser.get_user(user_id))
         project.save()
 
         return project
@@ -86,19 +83,18 @@ class OrmProject:
     # DELETE A PROJECT
     # Deletes a project on the DB with the id_project
     @staticmethod
-    def delete_project(id_project):
-        Project.objects.get(id_project=id_project).delete()
+    def delete_project(project_id):
+        OrmProject.get_project(project_id).delete()
 
-    @staticmethod
-    def hard_project(project_name, project_description, project_path, main_file_path):
-        lang = Language.objects.get(id_language=3)
-        us = UserProfile.objects.get(id=1)
-        project = Project()
-        project.project_name = project_name
-        project.project_description = project_description
-        project.project_path = project_path
-        project.main_file_path = main_file_path
-        project.language = lang
-        project.user = us
-        project.save()
-
+    # @staticmethod
+    # def hard_project(project_name, project_description, project_path, main_file_path):
+    #     lang = Language.objects.get(id_language=3)
+    #     us = UserProfile.objects.get(id=1)
+    #     project = Project()
+    #     project.project_name = project_name
+    #     project.project_description = project_description
+    #     project.project_path = project_path
+    #     project.main_file_path = main_file_path
+    #     project.language = lang
+    #     project.user = us
+    #     project.save()

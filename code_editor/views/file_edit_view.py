@@ -12,13 +12,16 @@
 #
 # Author: Andres Cox
 # Version: 1.0
+#
+
 from django.contrib import messages
 from django.views.generic import TemplateView
 from django.shortcuts import render
-from .file_manager import FileManager
+from commons.file_manager import FileManager
 from code_editor.forms import FileForm
 from code_editor.core.executor_facade import CompilerFactory
 from code_editor.orm_queries.orm_project import OrmProject
+from commons.settings import BASE_DIR
 
 
 # class file edit view
@@ -30,21 +33,16 @@ class FileEditView(TemplateView):
     template_success = 'code_editor/success.html'
 
     # get file by id
-    def get(self, request, id = None, *args, **kwargs):
+    def get(self, request, id=None, *args, **kwargs):
 
         language = OrmProject.get_language_project(id)
-        # Test to get project name
-        # project = OrmProject.get_project(id)
-        # project.project_name
-        # js_data = simplejson.dumps(project.project_name)
 
+        # get and load file
         file = OrmProject.get_main_file(id)
-        open_file = FileManager()
-        program = open_file.load_file(file)
+        program = FileManager.load_file(file.id)
 
-        # load file
         my_form = FileForm({'program': program,
-                            'language': language.language_name
+                            'language': language.name
                             })
 
         return render(request, self.template_name, {"form": my_form})
@@ -63,11 +61,10 @@ class FileEditView(TemplateView):
         program = request.POST['program']
 
         # search file in database
-        file = OrmProject.get_main_file(project_id)
+        main_file = OrmProject.get_main_file(project_id)
 
         # write program in main file
-        open_file = FileManager()
-        open_file.update_file(file, program)
+        FileManager.update_file(main_file.id, program)
 
         # write updated program
         my_form = FileForm({'program': program})
@@ -76,23 +73,23 @@ class FileEditView(TemplateView):
         project = OrmProject.get_project(project_id)
 
         # compile project
-
         comp = CompilerFactory()
-        compiler = comp.create_compiler(project.language.language_name)
-        compiler.set_project(project)
+        compiler = comp.create_compiler(project.language.name)
+        compiler.set_file(main_file)
         output = compiler.run()
+
         return render(request, self.template_name, {"form": my_form, 'output': output})
 
-
     # delete file
+
     def delete(self, request, *args, **kwargs):
         project_id = self.kwargs.get('id')
         # find file
-        file = OrmProject.get_main_file(project_id)
+        main_file = OrmProject.get_main_file(project_id)
 
         # remove local storage
         remove = FileManager()
-        remove.remove_file(file)
+        remove.remove_file(main_file.id_file)
 
         # remove from database
         OrmProject.delete_project(project_id)

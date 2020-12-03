@@ -21,11 +21,12 @@ from accounts.models import UserProfile
 
 # Create class to set a new 'Table'
 class File(models.Model):
-    id_file = models.AutoField(primary_key=True, unique=True)
-    file_name = models.CharField(max_length=50)
-    file_path = models.CharField(max_length=150)
-    file_date = models.DateField()
+    id = models.AutoField(primary_key=True, unique=True)
+    name = models.CharField(max_length=50)
+    path = models.CharField(max_length=150)
+    creation_date = models.DateField()
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    is_main = models.BooleanField(default=False)
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
 
     class Meta:

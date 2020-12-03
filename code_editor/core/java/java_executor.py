@@ -16,7 +16,7 @@
 
 from code_editor.core.exceptions.exceptions import ExecuteInvalidException
 from code_editor.core.path_compiler import PathCompiler
-from code_editor.core.settings import JAVA13_PATH, BASE_DIR
+from commons.settings import BASE_DIR
 
 import subprocess
 from subprocess import STDOUT, PIPE
@@ -28,19 +28,22 @@ from code_editor.core.java.java_parameters import JavaParameters
 # Class executor for java
 class JavaExecutor(Executor):
     def __init__(self):
+        self.__file = ''
         self.__project = ''
         self.__params = ''
         self.__command = ''
 
-    def set_project(self, project):
-        self.__project = project
+    def set_file(self, file):
+        self.__file = file
+        self.__project = file.project
 
     def set_parameters(self):
         self.__params = JavaParameters()
-        self.__params.set_language_path(PathCompiler.get_path_compiler(self.__project.language))
-        project_path = self.__project.project_path
-        self.__params.set_binary(BASE_DIR / project_path / 'bin')
-        self.__params.set_package(BASE_DIR / project_path / 'src/com/*.java')
+        self.__params.set_language_path(
+            PathCompiler.get_path_compiler(self.__project.language))
+        self.__params.set_binary(BASE_DIR / self.__project.path / 'bin')
+        self.__params.set_package(
+            BASE_DIR / self.__project.path / 'src/com/*.java')
         self.__params.set_file_path('com.Main')
         self.__params.validate()
 
@@ -52,7 +55,7 @@ class JavaExecutor(Executor):
         self.build_command()
         try:
             proc = subprocess.Popen(self.__command.command(self.__params), stdout=PIPE,
-                                stderr=STDOUT, shell=True)
+                                    stderr=STDOUT, shell=True)
             output = proc.stdout.read().decode('utf-8')
             return output
         except Exception as err:

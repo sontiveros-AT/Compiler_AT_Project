@@ -24,7 +24,8 @@ JAVA13_PATH = BASE_DIR / 'third_parties/java/jdk-13.0.2/bin'
 JAVASCRIPT14_PATH = BASE_DIR / 'third_parties/javascript/nodejs14.15.1/node.exe'
 
 # File templates
-PYTHON39_HELLO_WORLD = 'print("Hello world!")'
+PYTHON2_HELLO_WORLD = 'print "Hello world!"'
+PYTHON3_HELLO_WORLD = 'print("Hello world!")'
 JAVASCRIPT14_HELLO_WORLD = 'console.log("Hello world!")'
 JAVA13_HELLO_WORLD = '''package com;
 

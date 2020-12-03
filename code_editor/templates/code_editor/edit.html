@@ -73,4 +73,15 @@ with Jalasoft.
         </div>
     </div>
 </footer>
+{% load static %}
+<script src="{% static 'js/ace.js' %}" type="text/javascript" charset="utf-8"></script>
+<script src="{% static 'js/editor.js' %}" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript" src="{% static 'js/jquery-1.4.4.min.js' %}"></script>
+<script src="{% static 'js/jquery.ztree.core.js' %}" type="text/javascript" charset="utf-8"></script>
+<script src="{% static 'js/jquery.ztree.excheck.js' %}" type="text/javascript" charset="utf-8"></script>
+<script src="{% static 'js/jquery.ztree.exedit.js' %}" type="text/javascript" charset="utf-8"></script>
+<script src="{% static 'js/tree.js' %}" type="text/javascript" charset="utf-8"></script>
+
+<!-- <link rel="stylesheet" type="text/css" href="{% static 'css/demo.css' %}"> -->
+<link rel="stylesheet" href="{% static 'css/metroStyle/metroStyle.css' %}" type="text/css">
 {% endblock content %}

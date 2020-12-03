@@ -25,8 +25,8 @@ def get_languages_labels():
     lang_id = []
     lang_label = []
     for lang in lang_list:
-        lang_id.append(lang.id_language)
-        lang_label.append(lang.language_name.capitalize()+' '+lang.language_version)
+        lang_id.append(lang.id)
+        lang_label.append(lang.name.capitalize()+' '+lang.version)
 
     return list(zip(lang_id, lang_label))
 
@@ -34,9 +34,12 @@ def get_languages_labels():
 # file form to edit in html
 class FileForm(forms.Form):
     #program = forms.CharField(widget=forms.Textarea)
-    program = forms.CharField(widget=forms.Textarea(attrs={'cols': '100', 'rows': '15'}))
+    program = forms.CharField(widget=forms.Textarea(
+        attrs={'cols': '100', 'rows': '15'}))
 
 # project form to display in html
+
+
 class ProjectForm(forms.Form):
     LANGUAGES = get_languages_labels()
     project_name = forms.CharField(max_length=100,

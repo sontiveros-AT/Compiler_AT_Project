@@ -14,7 +14,7 @@
 # Version: 1.0
 #
 
-from code_editor.core.settings import PYTHON39_PATH, PYTHON27_PATH, JAVA13_PATH, JAVASCRIPT14_PATH
+from commons.settings import PYTHON39_PATH, PYTHON27_PATH, JAVA13_PATH, JAVASCRIPT14_PATH
 
 
 class PathCompiler:
@@ -22,16 +22,16 @@ class PathCompiler:
     @staticmethod
     def get_path_compiler(language):
 
-        if language.language_name == 'python':
-            if language.language_version == '3.9':
+        if language.name == 'python':
+            if language.version == '3.9':
                 return PYTHON39_PATH
-            elif language.language_version == '2.7':
+            elif language.version == '2.7':
                 return PYTHON27_PATH
 
-        elif language.language_name == 'java':
-            if language.language_version == '13.0.2':
+        elif language.name == 'java':
+            if language.version == '13.0.2':
                 return JAVA13_PATH
 
-        elif language.language_name == 'javascript':
-            if language.language_version == '14.15.1':
+        elif language.name == 'javascript':
+            if language.version == '14.15.1':
                 return JAVASCRIPT14_PATH
