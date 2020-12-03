@@ -10,14 +10,26 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
-
+from code_editor.core.exceptions.language_exceptions import *
+from code_editor.core.javascript.javascript_executor import JavascriptExecutor
 from code_editor.core.python.python_executor import PythonExecutor
 from code_editor.core.java.java_executor import JavaExecutor
 
 
 # To manage Java and Python parameters and commands
 class CompilerFactory:
+    languages = {'python': PythonExecutor(), 'java': JavaExecutor(), 'javascript': JavascriptExecutor()}
 
     def create_compiler(self, language):
-        executor_class = language.capitalize() + "Executor"
-        return globals()[executor_class]()
+        self.validate(language)
+        executor = self.languages[language]
+        return executor
+
+    def validate(self, language):
+        if language is None:
+            raise NoneLanguageException(language)
+        elif type(language) == int or type(language) == float:
+            raise TypeLanguageException(language)
+        elif not language.isalpha():
+            raise TypeLanguageException(language)
+

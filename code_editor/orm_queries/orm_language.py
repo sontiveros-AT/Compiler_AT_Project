@@ -15,8 +15,6 @@
 #
 
 from datetime import datetime
-from code_editor.models.model_file import File
-from code_editor.models.model_project import Project
 from code_editor.models.model_language import Language
 
 
@@ -25,7 +23,7 @@ class OrmLanguage:
     # Returns an integer with the number of languages
     @staticmethod
     def count_all_language():
-        return Language.objects.all().count()
+        return OrmLanguage.get_languages().count()
 
     # Returns a list of all languages
     @staticmethod
@@ -34,29 +32,31 @@ class OrmLanguage:
 
     # Returns a Language Object with the id_language
     @staticmethod
-    def get_language(id_language):
-        return Language.objects.get(id_language=id_language)
+    def get_language(language_id):
+        return Language.objects.get(id=language_id)
 
     # CREATE A NEW LANGUAGE IN THE DATA BASE
     @staticmethod
     def create_new_language(language_name, language_version, language_extension):
-        lang = Language(language_name=language_name,
-                        language_version=language_version,
-                        language_extension=language_extension)
+        lang = Language(name=language_name,
+                        version=language_version,
+                        extension=language_extension)
         lang.save()
 
     # UPDATE A LANGUAGE IN THE DATA BASE
     @staticmethod
-    def update_language(id_language, language_name, language_version, language_extension):
-        Language.objects.filter(id_language=id_language).update(
-            language_name=language_name, language_version=language_version, language_extension=language_extension)
+    def update_language(language_id, language_name, language_version, language_extension):
+        Language.objects.filter(id=language_id).update(
+            name=language_name,
+            version=language_version,
+            extension=language_extension)
 
     # DELETE A LANGUAGE IN THE DATA BASE
     @staticmethod
-    def delete_language(id_language):
-        Language.objects.get(id_language=id_language).delete()
+    def delete_language(language_id):
+        OrmLanguage.get_language(language_id).delete()
 
     # GET EXTENSION SUPORTED BY LANGUAGE
     @staticmethod
-    def get_extension(language_name):
-        return Language.objects.get(language_name=language_name).language_extension
+    def get_extension(language_id):
+        return OrmLanguage.get_language(language_id).language_extension

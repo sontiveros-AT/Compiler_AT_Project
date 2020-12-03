@@ -22,11 +22,10 @@ from accounts.models import UserProfile
 
 # Create class to set a new 'Table'
 class Project(models.Model):
-    id_project = models.AutoField(primary_key=True, unique=True)
-    project_name = models.CharField(max_length=100)
-    project_description = models.TextField()
-    project_path = models.CharField(max_length=100)
-    main_file_path = models.CharField(max_length=100, default='')
+    id = models.AutoField(primary_key=True, unique=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    path = models.CharField(max_length=100)
     language = models.ForeignKey(Language, on_delete=models.PROTECT)
     user = models.ForeignKey(UserProfile, on_delete=models.PROTECT)
 

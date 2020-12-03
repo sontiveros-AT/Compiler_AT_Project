@@ -16,6 +16,9 @@
 
 from django.contrib import admin
 from accounts.models import UserProfile
+from code_editor.models import File, Project
 
 # Register your models here.
 admin.site.register(UserProfile)
+admin.site.register(Project)
+admin.site.register(File)

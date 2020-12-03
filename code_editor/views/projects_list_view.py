@@ -26,11 +26,11 @@ class ProjectsListView(TemplateView):
 
     # main view listing all projects of a logged in user
     def get(self, request, *args, **kwargs):
-        user = OrmUser.get_user(request.user)
+        user = OrmUser.get_user(request.user.id)
         projects = OrmProject.get_all_projects(user)
         project_id_name = []
         for project in projects:
-            project_id_name.append((project.id_project, project.project_name))
+            project_id_name.append((project.id, project.name))
 
         args = {}
         if projects.count() > 0:
