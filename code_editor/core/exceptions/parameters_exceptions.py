@@ -17,6 +17,8 @@
 from code_editor.core.exceptions.exceptions import ParametersInvalidException
 
 
+# Create classes for parameters exceptions
+
 class NoneParametersException(ParametersInvalidException):
 
     def __str__(self):

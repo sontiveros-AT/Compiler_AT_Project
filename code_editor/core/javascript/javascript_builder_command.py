@@ -1,5 +1,5 @@
 #
-# @python_builder_command.py Copyright (c) 2020 Jalasoft.
+# @javascript_builder_command.py Copyright (c) 2020 Jalasoft.
 # 2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
 # 1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
 # All rights reserved.
@@ -14,16 +14,12 @@
 # Version: 1.0
 #
 
-
-import subprocess
 from code_editor.core.builder_command import BuilderCommand
-
-
-# class compiler built, based in params class
 from code_editor.core.exceptions.command_exceptions import *
-from code_editor.core.python.python_parameters import PythonParameters
+from code_editor.core.javascript.javascript_parameters import JavascriptParameters
 
 
+# Class compiler built, based in params class
 class JavascriptBuilderCommand(BuilderCommand):
     def command(self, params):
         cmd = params

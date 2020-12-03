@@ -17,9 +17,12 @@
 from pathlib import Path
 from code_editor.orm_queries.orm_language import OrmLanguage
 from code_editor.orm_queries.orm_project import OrmProject
+from commons.configuration.config_templates import ConfigTemplates
 from commons.settings import PYTHON2_HELLO_WORLD
 from commons.settings import PYTHON3_HELLO_WORLD
 from commons.settings import JAVA13_HELLO_WORLD
+from commons.settings import JAVASCRIPT14_HELLO_WORLD
+from commons.settings import PHP7_HELLO_WORLD
 
 
 class ProjectParameters():
@@ -44,12 +47,18 @@ class ProjectParameters():
 
         if self.language_name == 'python':
             if self.language.version[0] == '2':
-                template_code = PYTHON2_HELLO_WORLD
+                template_code = ConfigTemplates.get_python27_template()
             if self.language.version[0] == '3':
-                template_code = PYTHON3_HELLO_WORLD
+                template_code = ConfigTemplates.get_python39_template()
 
         if self.language_name == 'java':
-            template_code = JAVA13_HELLO_WORLD
+            template_code = ConfigTemplates.get_java_template()
+
+        if self.language_name == 'javascript':
+            template_code = ConfigTemplates.get_javascript_template()
+
+        if self.language_name == 'php':
+            template_code = ConfigTemplates.get_php_template()
 
         return template_code
 

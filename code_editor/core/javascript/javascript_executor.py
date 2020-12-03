@@ -1,5 +1,5 @@
 #
-# @python_executor.py Copyright (c) 2020 Jalasoft.
+# @javascript_executor.py Copyright (c) 2020 Jalasoft.
 # 2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
 # 1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
 # All rights reserved.
@@ -15,16 +15,15 @@
 #
 
 import subprocess
-
 from code_editor.core.exceptions.exceptions import ExecuteInvalidException
 from code_editor.core.executor import Executor
 from code_editor.core.javascript.javascript_builder_command import JavascriptBuilderCommand
 from code_editor.core.javascript.javascript_parameters import JavascriptParameters
 from code_editor.core.path_compiler import PathCompiler
-from commons.settings import BASE_DIR, JAVASCRIPT14_PATH
+from commons.settings import BASE_DIR
 
 
-# Class to execute Python commands
+# Class to execute Javascript commands
 class JavascriptExecutor(Executor):
 
     def __init__(self):
@@ -41,7 +40,6 @@ class JavascriptExecutor(Executor):
         self.__params = JavascriptParameters()
         self.__params.set_language_path(
             PathCompiler.get_path_compiler(self.__project.language))
-        self.__params.set_language_path(JAVASCRIPT14_PATH)
         self.__params.set_file_path(BASE_DIR / self.__file.path)
 
     def build_command(self):

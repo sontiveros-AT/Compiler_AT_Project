@@ -17,9 +17,8 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render
 
+
 # UserProfileView class manages get request to display user's info
-
-
 class UserProfileView(TemplateView):
 
     def get(self, request):

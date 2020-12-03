@@ -10,15 +10,18 @@
 # accordance with the termns of the license agreement you entered into
 # with Jalasoft.
 #
+
 from code_editor.core.exceptions.language_exceptions import *
 from code_editor.core.javascript.javascript_executor import JavascriptExecutor
+from code_editor.core.php.php_executor import PhpExecutor
 from code_editor.core.python.python_executor import PythonExecutor
 from code_editor.core.java.java_executor import JavaExecutor
 
 
-# To manage Java and Python parameters and commands
+# Class that instantiates the request language
 class CompilerFactory:
-    languages = {'python': PythonExecutor(), 'java': JavaExecutor(), 'javascript': JavascriptExecutor()}
+    languages = {'python': PythonExecutor(), 'java': JavaExecutor(), 'javascript': JavascriptExecutor(),
+                 'php': PhpExecutor()}
 
     def create_compiler(self, language):
         self.validate(language)
@@ -32,4 +35,3 @@ class CompilerFactory:
             raise TypeLanguageException(language)
         elif not language.isalpha():
             raise TypeLanguageException(language)
-

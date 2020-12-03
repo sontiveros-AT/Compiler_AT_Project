@@ -16,10 +16,9 @@
 from django.http import JsonResponse
 from django.views.generic import TemplateView
 from commons.jsonify_project import jsonify_project
-import json
 
 
-# class for file endpoints
+# Class for file endpoints
 class ProjectJSONView(TemplateView):
     template_name = 'code_editor/index.html'
 

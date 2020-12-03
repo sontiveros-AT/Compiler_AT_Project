@@ -18,9 +18,8 @@ from django.views.generic import TemplateView
 from django.shortcuts import render, redirect
 from accounts.forms.reg_form import RegistrationForm
 
+
 # UserRegisterView manages get and post requests for user registration page
-
-
 class UserRegisterView(TemplateView):
 
     def get(self, request):

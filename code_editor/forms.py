@@ -22,18 +22,29 @@ from code_editor.orm_queries.orm_language import OrmLanguage
 
 def get_languages_labels():
     lang_list = OrmLanguage.get_languages()
-    lang_id = []
     lang_label = []
     for lang in lang_list:
-        lang_id.append(lang.id)
-        lang_label.append(lang.name.capitalize()+' '+lang.version)
+        if lang.name not in lang_label:
+            lang_label.append(lang.name)
 
-    return list(zip(lang_id, lang_label))
+    total = []
+    for la in lang_label:
+        partial = []
+        aux = []
+        for lang in lang_list:
+            if la == lang.name:
+                n = lang.name+' '+lang.version
+                x = [lang.id, n]
+                partial.append(x)
+        aux.append(partial)
+        aux.insert(0, la)
+        total.append(aux)
+    return total
 
 
 # file form to edit in html
 class FileForm(forms.Form):
-    #program = forms.CharField(widget=forms.Textarea)
+    # program = forms.CharField(widget=forms.Textarea)
     program = forms.CharField(widget=forms.Textarea(
         attrs={'cols': '100', 'rows': '15'}))
 
@@ -41,7 +52,12 @@ class FileForm(forms.Form):
 
 
 class ProjectForm(forms.Form):
-    LANGUAGES = get_languages_labels()
+
+    if OrmLanguage.count_all_language() == 0:
+        LANGUAGES = ''
+    else:
+        LANGUAGES = get_languages_labels()
+
     project_name = forms.CharField(max_length=100,
                                    widget=forms.TextInput(
                                        attrs={'class': 'form-control', 'placeholder': "Enter project name"}))

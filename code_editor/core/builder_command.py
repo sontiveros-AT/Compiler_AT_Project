@@ -17,10 +17,9 @@
 import subprocess
 from abc import ABC, abstractmethod
 
+
 # Super class that defines the signature to build a command
 # based on a specific Parameters class instance
-
-
 class BuilderCommand(ABC):
     @abstractmethod
     def command(self, params):

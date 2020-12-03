@@ -18,9 +18,8 @@ from django.views.generic import TemplateView
 from django.shortcuts import render, redirect
 from accounts.forms.edit_profile_form import EditProfileForm
 
+
 # EditUserProfileView class manages get and post requests for changing user's info
-
-
 class EditUserProfileView(TemplateView):
 
     def get(self, request):

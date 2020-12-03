@@ -1,5 +1,5 @@
 #
-# @file_edit_view.py Copyright (c) 2020 Jalasoft.
+# @file_view.py Copyright (c) 2020 Jalasoft.
 # 2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
 # 1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
 # All rights reserved.
@@ -12,40 +12,37 @@
 #
 # Author: Andres Cox
 # Version: 1.0
-#
 
-from django.contrib import messages
 from django.views.generic import TemplateView
-from django.shortcuts import render
-from commons.file_manager import FileManager
 from code_editor.forms import FileForm
-from code_editor.core.executor_facade import CompilerFactory
+from commons.file_manager import FileManager
 from code_editor.orm_queries.orm_project import OrmProject
-from commons.settings import BASE_DIR
+from code_editor.orm_queries.orm_file import OrmFile
+from django.http import JsonResponse
+from django.forms.models import model_to_dict
 
 
-# class file edit view
-from ..core.exceptions.exceptions import LanguageInvalidException, ParametersInvalidException, ExecuteInvalidException
-
-
+# Class for file endpoints
 class FileEditView(TemplateView):
-    template_name = 'code_editor/edit.html'
-    template_success = 'code_editor/success.html'
+    template_name = 'code_editor/index.html'
 
-    # get file by id
+    # get file by id and return json program and more info
     def get(self, request, id=None, *args, **kwargs):
-
-        language = OrmProject.get_language_project(id)
-
-        # get and load file
+        my_form = FileForm()
+        project = OrmProject.get_project(id)
+        filess = OrmProject.get_all_files(id)
+        files = model_to_dict(filess[0])
+        language = model_to_dict(OrmProject.get_language_project(id))
+        # for file in filess:
+        #     files = files.append(model_to_dict(file))
         file = OrmProject.get_main_file(id)
-        program = FileManager.load_file(file.id)
+        open_file = FileManager()
+        program = open_file.load_file(file)
 
-        my_form = FileForm({'program': program,
-                            'language': language.name
-                            })
-
-        return render(request, self.template_name, {"form": my_form})
+        return JsonResponse({"project_name": project.project_name,
+                             "program": program,
+                             "files": files,
+                             "language": language})
 
     def dispatch(self, *args, **kwargs):
         method = self.request.POST.get('_method', '').lower()
@@ -55,44 +52,27 @@ class FileEditView(TemplateView):
             return self.delete(*args, **kwargs)
         return super(FileEditView, self).dispatch(*args, **kwargs)
 
-    # update file
+    # update file endpoint
     def put(self, request, *args, **kwargs):
-        project_id = self.kwargs.get('id')
+        """file_id, program -> put program in file"""
+        file_id = self.kwargs.get('id')
         program = request.POST['program']
 
         # search file in database
-        main_file = OrmProject.get_main_file(project_id)
+        file_edit = OrmFile.get_file(file_id)
 
-        # write program in main file
-        FileManager.update_file(main_file.id, program)
+        # update file
+        FileManager.update_file(file_edit.id, program)
 
-        # write updated program
-        my_form = FileForm({'program': program})
+        return JsonResponse({"response": "file saved"})
 
-        # get project by id
-        project = OrmProject.get_project(project_id)
-
-        # compile project
-        comp = CompilerFactory()
-        compiler = comp.create_compiler(project.language.name)
-        compiler.set_file(main_file)
-        output = compiler.run()
-
-        return render(request, self.template_name, {"form": my_form, 'output': output})
-
-    # delete file
-
+    # delete file endpoint
     def delete(self, request, *args, **kwargs):
-        project_id = self.kwargs.get('id')
-        # find file
-        main_file = OrmProject.get_main_file(project_id)
+        """file_id -> remove file"""
+        file_id = self.kwargs.get('id')
 
         # remove local storage
         remove = FileManager()
-        remove.remove_file(main_file.id_file)
+        remove.remove_file(file_id)
 
-        # remove from database
-        OrmProject.delete_project(project_id)
-
-        output = 'main file removed'
-        return render(request, self.template_success, {'output': output})
+        return JsonResponse({"response": "file removed"})

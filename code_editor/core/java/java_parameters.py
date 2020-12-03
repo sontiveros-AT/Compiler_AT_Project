@@ -1,5 +1,5 @@
 #
-# @parameters_java.py Copyright (c) 2020 Jalasoft.
+# @java_parameters.py Copyright (c) 2020 Jalasoft.
 # 2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
 # 1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
 # All rights reserved.
@@ -14,8 +14,7 @@
 # Version: 1.0
 #
 
-# All java jdk must be directed here
-# This path should be changed pointing to the java jdk folder.
+
 import os
 from code_editor.core.exceptions.parameters_exceptions import *
 from code_editor.core.parameters import Parameters
@@ -60,5 +59,3 @@ class JavaParameters(Parameters):
             raise EmptyParametersException(self.get_binary(), 'binary path')
         elif self.get_package() == '':
             raise EmptyParametersException(self.get_package(), 'package path')
-
-

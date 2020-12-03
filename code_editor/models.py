@@ -11,8 +11,6 @@
 # with Jalasoft.
 #
 
-# import the models to be able to manage the Db tables
-
 
 from django.db import models
 
