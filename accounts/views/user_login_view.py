@@ -16,8 +16,7 @@
 
 from django.contrib.auth.views import LoginView
 
+
 # UserLoginView class directs to login page
-
-
 class UserLoginView(LoginView):
     template_name = 'registration/login.html'

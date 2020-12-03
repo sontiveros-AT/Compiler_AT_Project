@@ -35,4 +35,3 @@ class CompilerFactory:
             raise TypeLanguageException(language)
         elif not language.isalpha():
             raise TypeLanguageException(language)
-

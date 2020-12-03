@@ -59,5 +59,3 @@ class JavaParameters(Parameters):
             raise EmptyParametersException(self.get_binary(), 'binary path')
         elif self.get_package() == '':
             raise EmptyParametersException(self.get_package(), 'package path')
-
-

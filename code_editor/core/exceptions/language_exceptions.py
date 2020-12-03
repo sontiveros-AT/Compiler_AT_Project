@@ -17,6 +17,8 @@
 from code_editor.core.exceptions.exceptions import LanguageInvalidException
 
 
+# Create classes for languages exceptions
+
 class NoneLanguageException(LanguageInvalidException):
 
     def __str__(self):

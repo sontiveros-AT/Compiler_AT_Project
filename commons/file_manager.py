@@ -22,9 +22,8 @@ from accounts.orm_queries.orm_user import OrmUser
 from commons.project_params import ProjectParameters
 from commons.settings import BASE_DIR
 
-# class file manager to modify local files
 
-
+# Class file manager to modify local files
 class FileManager:
 
     @staticmethod

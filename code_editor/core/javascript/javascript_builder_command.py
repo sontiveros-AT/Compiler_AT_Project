@@ -19,7 +19,7 @@ from code_editor.core.exceptions.command_exceptions import *
 from code_editor.core.javascript.javascript_parameters import JavascriptParameters
 
 
-# class compiler built, based in params class
+# Class compiler built, based in params class
 class JavascriptBuilderCommand(BuilderCommand):
     def command(self, params):
         cmd = params

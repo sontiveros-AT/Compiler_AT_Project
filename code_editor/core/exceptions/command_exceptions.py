@@ -18,6 +18,8 @@
 from code_editor.core.exceptions.exceptions import CommandInvalidException
 
 
+# Create classes for commands exceptions
+
 class NoneCommandException(CommandInvalidException):
 
     def __str__(self):
