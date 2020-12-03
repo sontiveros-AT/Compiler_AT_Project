@@ -27,6 +27,7 @@ JAVASCRIPT14_PATH = BASE_DIR / 'third_parties/javascript/nodejs14.15.1/node.exe'
 PYTHON2_HELLO_WORLD = 'print "Hello world!"'
 PYTHON3_HELLO_WORLD = 'print("Hello world!")'
 JAVASCRIPT14_HELLO_WORLD = 'console.log("Hello world!")'
+PHP7_HELLO_WORLD = '<?php echo "Hi, from a php script" ?>'
 JAVA13_HELLO_WORLD = '''package com;
 
 public class Main {

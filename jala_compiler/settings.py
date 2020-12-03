@@ -83,7 +83,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'jalacompilerdb',
         'USER': 'postgres',
-        'PASSWORD': 'P05tgre5Q7adminP45W0Rd',
+        'PASSWORD': '1234',
         'HOST': 'localhost',
         'PORT': 5432,
     }
@@ -129,7 +129,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "statics"),
+    os.path.join(BASE_DIR, "static"),
 )
 
 # NEW GONZALOALARCON

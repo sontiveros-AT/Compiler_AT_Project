@@ -16,10 +16,9 @@
 
 from abc import ABC
 
+
 # Super class that defines the minimun parameters
 # needed to make a simple compilation of a file
-
-
 class Parameters(ABC):
     def __init__(self):
         self.__language_path = ''

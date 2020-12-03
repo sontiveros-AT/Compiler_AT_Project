@@ -17,14 +17,10 @@ from django.views.generic import TemplateView
 from django.shortcuts import render
 from django.shortcuts import redirect
 from code_editor.forms import ProjectForm
-from code_editor.orm_queries.orm_project import OrmProject
-from code_editor.orm_queries.orm_language import OrmLanguage
-from accounts.orm_queries.orm_user import OrmUser
 from commons.file_manager import FileManager
 
+
 # class for project endpoints
-
-
 class ProjectView(TemplateView):
     template_name = 'code_editor/new_project.html'
 
@@ -34,8 +30,9 @@ class ProjectView(TemplateView):
 
         return render(request, self.template_name, {"form": form})
 
-    # endpoint to create a new project
+    # endpoint to create a new project for a user
     def post(self, request, *args, **kwargs):
+        """project_id, project_name, description, language_id, user -> post new project for a user"""
         project_name = request.POST['project_name']
         description = request.POST['description']
         language_id = int(request.POST['language'])

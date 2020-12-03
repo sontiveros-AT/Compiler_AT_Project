@@ -14,11 +14,10 @@
 # Version: 1.0
 #
 
+import subprocess
 from code_editor.core.exceptions.exceptions import ExecuteInvalidException
 from code_editor.core.path_compiler import PathCompiler
 from commons.settings import BASE_DIR
-
-import subprocess
 from subprocess import STDOUT, PIPE
 from code_editor.core.executor import Executor
 from code_editor.core.java.java_builder_command import JavaBuilderCommand
