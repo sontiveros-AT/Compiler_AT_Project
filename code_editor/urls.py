@@ -17,13 +17,13 @@ from code_editor.views.project_edit_view import ProjectEditView
 from code_editor.views.project_view import ProjectView
 from code_editor.views.projects_list_view import ProjectsListView
 from code_editor.views.project_json_view import ProjectJSONView
-from code_editor.views.project_view_management import ProjectViewManagement
+from code_editor.views.project_management_view import ProjectManagementView
 
 urlpatterns = [
     path('file/<int:id>', FileEditView.as_view(), name='file-view'),
     path('project/', ProjectView.as_view(), name='project-view'),
     path('project/<int:id>', ProjectEditView.as_view(), name='project-edit-view'),
-    path('project/<int:id>/run', ProjectViewManagement.as_view(), name='project-view-management'),
+    path('project/<int:id>/run', ProjectManagementView.as_view(), name='project-view-management'),
     path('project/all', ProjectsListView.as_view(), name='project-list-view'),
     path('project/json/<int:id>', ProjectJSONView.as_view(), name='project-json'),
 ]

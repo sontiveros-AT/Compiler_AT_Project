@@ -16,7 +16,6 @@
 from django.http import JsonResponse
 from django.views.generic import TemplateView
 from commons.jsonify_project import jsonify_project
-import json
 
 
 # Class for file endpoints

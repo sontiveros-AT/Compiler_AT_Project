@@ -63,13 +63,13 @@ function addHoverDom(treeId, treeNode) {
         var btnDir = $("#addDirBtn_"+treeNode.tId);
         if (btnFile) btnFile.bind("click", function(){
             var zTree = $.fn.zTree.getZTreeObj("treeDemo");
-            zTree.addNodes(treeNode, { name: `newFile`});
+            zTree.addNodes(treeNode, { name: ``});
             zTree.editName(treeNode.children[treeNode.children.length-1]);
             return false;
         });
         if (btnDir) btnDir.bind("click", function(){
             var zTree = $.fn.zTree.getZTreeObj("treeDemo");
-            zTree.addNodes(treeNode, { name: `newDir`, isParent: true});
+            zTree.addNodes(treeNode, { name: ``, isParent: true});
             zTree.editName(treeNode.children[treeNode.children.length-1]);
             return false;
         });
@@ -165,9 +165,15 @@ function AddFile(treeNode) {
 
     var form = new FormData();
     var path = '';
-    if (treeNode.getParentNode().level !==0) {
-        path = treeNode.getParentNode().name;
+    var pathArray = [];
+    parentNode = treeNode.getParentNode();
+
+    while (parentNode.level !== 0) {
+        pathArray.push(parentNode.name);
+        parentNode = parentNode.getParentNode();
     }
+
+    path = pathArray.reverse().join('/');
     form.append("fileName", treeNode.name);
     form.append("filePath", path);
     fetch(`http://127.0.0.1:8000/api/v1/project/${project_id}`, {
@@ -178,6 +184,8 @@ function AddFile(treeNode) {
             "X-Requested-With": "XMLHttpRequest",
         }
     })
+
+    location.reload();
 }
 
 function SaveFile(file_id, program) {

@@ -16,6 +16,7 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render
 from commons.file_manager import FileManager
+from django.http import JsonResponse
 
 
 # Class file edit view
@@ -37,4 +38,4 @@ class ProjectEditView(TemplateView):
         file_manager = FileManager()
         file_manager.create_file(project_id, file_name, file_path)
 
-        return render(request, self.template_name)
+        return JsonResponse({"response": "file created"})
