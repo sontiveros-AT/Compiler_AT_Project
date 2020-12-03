@@ -50,8 +50,9 @@ class FileManager:
             # creates file and adds it to the database
             parameters = ProjectParameters(project.id)
             file_name = parameters.get_main_file_name()
+            path = parameters.get_main_path()
 
-            main_file = FileManager.create_file(project.id, file_name)
+            main_file = FileManager.create_file(project.id, file_name, path)
             main_file.is_main = True
             main_file.save()
 
@@ -69,11 +70,11 @@ class FileManager:
     # create a file in the media directory based in the language
     @staticmethod
     def create_file(project_id, file_name, path=''):
+        project = OrmProject.get_project(project_id)
         parameters = ProjectParameters(project_id)
-        main_path = parameters.get_main_path()
-        code = parameters.get_hello_world_code()
+        code = parameters.get_template_code()
         file_name_ext = parameters.get_file_name_with_ext(file_name)
-        file_path = main_path / path / file_name_ext
+        file_path = Path(project.path) / path / file_name_ext
         full_path = BASE_DIR / file_path
 
         file = FileManager.is_repeated_file(project_id, file_path)

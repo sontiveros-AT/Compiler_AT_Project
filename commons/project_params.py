@@ -42,33 +42,31 @@ class ProjectParameters():
 
         return Path(f'{file_name}{self.language.extension}')
 
-    def get_hello_world_code(self):
-        hello_world_code = ''
+    def get_template_code(self):
+        template_code = ''
 
         if self.language_name == 'python':
             if self.language.version[0] == '2':
-                hello_world_code = ConfigTemplates.get_python27_template()
+                template_code = ConfigTemplates.get_python27_template()
             if self.language.version[0] == '3':
-                hello_world_code = ConfigTemplates.get_python39_template()
+                template_code = ConfigTemplates.get_python39_template()
 
         if self.language_name == 'java':
-            hello_world_code = ConfigTemplates.get_java_template()
+            template_code = ConfigTemplates.get_java_template()
 
         if self.language_name == 'javascript':
-            hello_world_code = ConfigTemplates.get_javascript_template()
+            template_code = ConfigTemplates.get_javascript_template()
 
         if self.language_name == 'php':
-            hello_world_code = ConfigTemplates.get_php_template()
+            template_code = ConfigTemplates.get_php_template()
 
-        return hello_world_code
+        return template_code
 
     def get_main_path(self):
         file_path = Path()
 
         if self.language_name == 'java':
-            file_path = Path(self.project.path) / 'src/com'
-        else:
-            file_path = Path(self.project.path)
+            file_path = Path('src/com')
 
         return file_path
 
