@@ -64,7 +64,7 @@ class ProjectParameters():
         return file_path
 
     def get_file_name_with_ext(self, file_name):
-        extension = '.' + file_name.split('.')[-1]
+        extension = '.' + str(file_name).split('.')[-1]
 
         if extension == self.language.extension:
             return file_name

@@ -1,6 +1,20 @@
+// @main.js Copyright (c) 2020 Jalasoft.
+// 2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
+// 1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
+// All rights reserved.
+//
+// This software is the confidential and proprietary information of
+// Jalasoft, ("Confidential Information"). You shall not
+// disclose such Confidential Information and shall use it only in
+// accordance with the termns of the license agreement you entered into
+// with Jalasoft.
+//
+// Author: Andres Cox
+// Version: 1.0
+
 // get current project id
-url = window.location.href;
-project_id = url.substr(url.length - 1);
+url = window.location.href.split('/');
+project_id = url[url.length - 1];
 
 // nodes and editor state
 var programDisplayed = "";
@@ -34,20 +48,20 @@ var setting = {
 };
 
 // zTree nodes
-var zNodes =[
-    { name: `pydemo7`, open:true, isParent: true,
-        children: [
-            { name: `main`, fileId: `39`, program: `print("hello world")`},
-            { name: `newFile11`, fileId: `53`, program: `print("hello world file 11")`},
-            { name: `newFile12`, fileId: `54`, program: `print("hello world file 12")`}
-        ]
-    }
-];
-
-//zTree initialize
-$(document).ready(function(){
-    $.fn.zTree.init($("#treeDemo"), setting, zNodes);
-});
+//var zNodes =[
+//    { name: `pydemo7`, open:true, isParent: true,
+//        children: [
+//            { name: `main`, fileId: `39`, program: `print("hello world")`},
+//            { name: `newFile11`, fileId: `53`, program: `print("hello world file 11")`},
+//            { name: `newFile12`, fileId: `54`, program: `print("hello world file 12")`}
+//        ]
+//    }
+//];
+//
+////zTree initialize
+//$(document).ready(function(){
+//    $.fn.zTree.init($("#treeDemo"), setting, zNodes);
+//});
 
 // Hover UI methods
 function addHoverDom(treeId, treeNode) {
@@ -88,37 +102,44 @@ function showRemoveBtn(treeId, treeNode) {
 }
 
 //Button Methods
-function Save() {
-    var program = editor.getValue();
-    if (program !== ''){
-        activeNode.program = program;
-    }
-}
-
 function onRemove(e, treeId, treeNode) {
     RemoveFile(treeNode.fileId);
 }
 
 function onRename(e, treeId, treeNode) {
     var zTree = $.fn.zTree.getZTreeObj("treeDemo");
+    if (!treeNode.isParent) {
       if (treeNode.name.length == 0) {
         alert("file name can not be empty.");
         zTree.removeNode(treeNode);
-      } else if (treeNode.name == 'main') {
+      } else if (treeNode.name == 'main.py') {
         alert("file name can not be 'main'");
         zTree.removeNode(treeNode);
       } else {
         AddFile(treeNode);
       }
+    }
 }
 
 
 function onClick(e, treeId, treeNode) {
-    Save();
+    console.log(activeNode);
+    if(activeNode !== undefined){
+        onSave();
+    }
     editor.setValue(treeNode.program);
     programDisplayed = treeNode.program;
     activeNode = treeNode;
 }
+
+function onSave(treeNode) {
+    var program = editor.getValue();
+    SaveFile(activeNode.fileId, program)
+    if (program !== ''){
+        activeNode.program = program;
+    }
+}
+
 
 // Cookie Method
 function getCookie(name) {
@@ -142,14 +163,9 @@ function RunCode() {
     var program = editor.getValue();
     activeNode.program = program;
     file_id = activeNode.fileId
-    var form = new FormData();
-
-    form.append("_method", "put");
-    form.append("project_id", project_id);
-    form.append("program", program);
-    fetch(`http://127.0.0.1:8000/api/v1/file/${file_id}`,{
-        method: "POST",
-        body: form,
+    SaveFile(file_id, program)
+    fetch(`http://127.0.0.1:8000/api/v1/project/${project_id}/run`,{
+        method: "GET",
         headers: {
             "X-CSRFToken": getCookie('csrftoken'),
             "X-Requested-With": "XMLHttpRequest",
@@ -163,8 +179,14 @@ function RunCode() {
 }
 
 function AddFile(treeNode) {
+
     var form = new FormData();
+    var path = '';
+    if (treeNode.getParentNode().level !==0) {
+        path = treeNode.getParentNode().name;
+    }
     form.append("fileName", treeNode.name);
+    form.append("filePath", path);
     fetch(`http://127.0.0.1:8000/api/v1/project/${project_id}`, {
         method: "POST",
         body: form,
@@ -173,6 +195,24 @@ function AddFile(treeNode) {
             "X-Requested-With": "XMLHttpRequest",
         }
     })
+}
+
+function SaveFile(file_id, program) {
+    var form = new FormData();
+    form.append("_method", "put");
+    form.append("program", program);
+    fetch(`http://127.0.0.1:8000/api/v1/file/${file_id}`,{
+        method: "POST",
+        body: form,
+        headers: {
+            "X-CSRFToken": getCookie('csrftoken'),
+            "X-Requested-With": "XMLHttpRequest",
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        }
+    )
 }
 
 function RemoveFile(fileIdd) {
