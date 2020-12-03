@@ -40,4 +40,3 @@ class ProjectManagementView(TemplateView):
         compiler.set_file(main_file)
         output = compiler.run()
         return JsonResponse({"output": output})
-
