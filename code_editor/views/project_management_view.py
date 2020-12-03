@@ -20,7 +20,7 @@ from code_editor.core.executor_facade import CompilerFactory
 
 
 # class for file endpoints
-class ProjectViewManagement(TemplateView):
+class ProjectManagementView(TemplateView):
     template_name = 'code_editor/index.html'
 
     # endpoint to compile main file of a project

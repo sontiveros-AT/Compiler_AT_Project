@@ -24,9 +24,9 @@ project_id = url[url.length - 1];
 var json = fetch(`http://127.0.0.1:8000/api/v1/project/json/${project_id}`)
     .then(res => res.json())
     .then(data => {
-        editor.session.setMode(`ace/mode/${data.language}`);
-//        editor.setValue(data.children[0].program);
-        var zNodes = [data];
+        console.log(data.content)
+        editor.session.setMode(`ace/mode/${data.languageName}`);
+        var zNodes = data.content;
         $(document).ready(function(){
             $.fn.zTree.init($("#treeDemo"), setting, zNodes);
         });
