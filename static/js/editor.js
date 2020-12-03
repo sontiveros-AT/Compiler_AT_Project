@@ -24,7 +24,6 @@ project_id = url[url.length - 1];
 var json = fetch(`http://127.0.0.1:8000/api/v1/project/json/${project_id}`)
     .then(res => res.json())
     .then(data => {
-        console.log(data.content)
         editor.session.setMode(`ace/mode/${data.languageName}`);
         var zNodes = data.content;
         $(document).ready(function(){
