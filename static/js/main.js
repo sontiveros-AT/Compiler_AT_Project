@@ -47,22 +47,6 @@ var setting = {
     }
 };
 
-// zTree nodes
-//var zNodes =[
-//    { name: `pydemo7`, open:true, isParent: true,
-//        children: [
-//            { name: `main`, fileId: `39`, program: `print("hello world")`},
-//            { name: `newFile11`, fileId: `53`, program: `print("hello world file 11")`},
-//            { name: `newFile12`, fileId: `54`, program: `print("hello world file 12")`}
-//        ]
-//    }
-//];
-//
-////zTree initialize
-//$(document).ready(function(){
-//    $.fn.zTree.init($("#treeDemo"), setting, zNodes);
-//});
-
 // Hover UI methods
 function addHoverDom(treeId, treeNode) {
     var sObj = $("#" + treeNode.tId + "_span");
@@ -123,7 +107,6 @@ function onRename(e, treeId, treeNode) {
 
 
 function onClick(e, treeId, treeNode) {
-    console.log(activeNode);
     if(activeNode !== undefined){
         onSave();
     }
@@ -229,18 +212,6 @@ function RemoveFile(fileIdd) {
     })
 }
 
-//function OpenFile(treeNode) {
-//    var form = new FormData();
-//    form.append("fileName", treeNode.name);
-//    fetch(`http://127.0.0.1:8000/api/v1/file/${fileId}`, {
-//        method: "POST",
-//        body: form,
-//        headers: {
-//            "X-CSRFToken": getCookie('csrftoken'),
-//            "X-Requested-With": "XMLHttpRequest",
-//        }
-//    })
-//}
 
 
 
