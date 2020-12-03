@@ -15,13 +15,11 @@
 #
 
 from code_editor.core.builder_command import BuilderCommand
-
-
-# class compiler built, based in params class
 from code_editor.core.exceptions.command_exceptions import *
 from code_editor.core.java.java_parameters import JavaParameters
 
 
+# class compiler built, based in params class
 class JavaBuilderCommand(BuilderCommand):
     def command(self, params):
 

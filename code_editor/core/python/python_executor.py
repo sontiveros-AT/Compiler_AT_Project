@@ -12,7 +12,6 @@
 #
 
 import subprocess
-
 from code_editor.core.exceptions.exceptions import ExecuteInvalidException
 from code_editor.core.executor import Executor
 from commons.settings import BASE_DIR
