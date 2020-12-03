@@ -56,6 +56,6 @@ class JavascriptExecutor(Executor):
                                        stderr=subprocess.PIPE,
                                        universal_newlines=True)
             output, errors = process.communicate()
-            return output
+            return output if output else errors
         except Exception as err:
             raise ExecuteInvalidException(err)

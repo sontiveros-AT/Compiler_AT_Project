@@ -39,32 +39,30 @@ class ProjectParameters():
 
         return Path(f'{file_name}{self.language.extension}')
 
-    def get_hello_world_code(self):
-        hello_world_code = ''
+    def get_template_code(self):
+        template_code = ''
 
         if self.language_name == 'python':
             if self.language.version[0] == '2':
-                hello_world_code = PYTHON2_HELLO_WORLD
+                template_code = PYTHON2_HELLO_WORLD
             if self.language.version[0] == '3':
-                hello_world_code = PYTHON3_HELLO_WORLD
+                template_code = PYTHON3_HELLO_WORLD
 
         if self.language_name == 'java':
-            hello_world_code = JAVA13_HELLO_WORLD
+            template_code = JAVA13_HELLO_WORLD
 
-        return hello_world_code
+        return template_code
 
     def get_main_path(self):
         file_path = Path()
 
         if self.language_name == 'java':
-            file_path = Path(self.project.path) / 'src/com'
-        else:
-            file_path = Path(self.project.path)
+            file_path = Path('src/com')
 
         return file_path
 
     def get_file_name_with_ext(self, file_name):
-        extension = '.' + file_name.split('.')[-1]
+        extension = '.' + str(file_name).split('.')[-1]
 
         if extension == self.language.extension:
             return file_name
