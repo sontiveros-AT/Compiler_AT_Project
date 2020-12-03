@@ -25,6 +25,14 @@ class ProjectJSONView(TemplateView):
 
     # get endpoint for files
     def get(self, request, id=None, *args, **kwargs):
-        project_json = FileManager().jsonify_project(id)
+        # project_json = FileManager().jsonify_project(id)
+        json = {"name": "pythondemo10", "open": True, "isParent": True, "language": 'python',
+                "children": [
+                    {"name": 'main.py', 'fileId': "1", "program": "print('Hello world!')"},
+                    {"name": 'PyModule.py', 'fileId': "2", "program": "print('Hello world!')"},
+                    {"name": 'PyTestclass.py', 'fileId': "4", "program": "print('Hello world!')"}
+                ]
+                }
 
-        return JsonResponse(project_json)
+        return JsonResponse(json)
+        # return JsonResponse(project_json)
