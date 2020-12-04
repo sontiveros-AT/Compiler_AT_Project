@@ -41,6 +41,7 @@ class JavascriptExecutor(Executor):
         self.__params.set_language_path(
             PathCompiler.get_path_compiler(self.__project.language))
         self.__params.set_file_path(BASE_DIR / self.__file.path)
+        self.__params.validate()
 
     def build_command(self):
         self.__command = JavascriptBuilderCommand()

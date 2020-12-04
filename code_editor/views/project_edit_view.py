@@ -39,3 +39,12 @@ class ProjectEditView(TemplateView):
         file_manager.create_file(project_id, file_name, file_path)
 
         return JsonResponse({"response": "file created"})
+
+    def delete(self, request, *args, **kwargs):
+        """project_id -> remove project"""
+        project_id = self.kwargs.get('id')
+
+        # remove local storage
+        FileManager().remove_project(project_id)
+
+        return JsonResponse({"response": "project removed"})

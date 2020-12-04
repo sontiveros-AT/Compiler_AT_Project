@@ -82,7 +82,10 @@ function removeHoverDom(treeId, treeNode) {
 };
 
 function showRemoveBtn(treeId, treeNode) {
-    return treeNode.name !=  "main";
+    var mainFiles = ['main', 'main.py', 'main.java', 'main.js', 'main.php'];
+    if (!mainFiles.includes(treeNode.name.toLowerCase()) && !treeNode.isParent){
+        return treeNode.name;
+    }
 }
 
 //Button Methods
@@ -92,11 +95,12 @@ function onRemove(e, treeId, treeNode) {
 
 function onRename(e, treeId, treeNode) {
     var zTree = $.fn.zTree.getZTreeObj("treeDemo");
+    var mainFiles = ['main', 'main.py', 'main.java', 'main.js', 'main.php']
     if (!treeNode.isParent) {
       if (treeNode.name.length == 0) {
         alert("file name can not be empty.");
         zTree.removeNode(treeNode);
-      } else if (treeNode.name == 'main.py') {
+      } else if (mainFiles.includes(treeNode.name.toLowerCase())) {
         alert("file name can not be 'main'");
         zTree.removeNode(treeNode);
       } else {
@@ -173,8 +177,9 @@ function AddFile(treeNode) {
         parentNode = parentNode.getParentNode();
     }
 
+    fileName = treeNode.name;
     path = pathArray.reverse().join('/');
-    form.append("fileName", treeNode.name);
+    form.append("fileName", fileName);
     form.append("filePath", path);
     fetch(`http://127.0.0.1:8000/api/v1/project/${project_id}`, {
         method: "POST",
@@ -183,10 +188,34 @@ function AddFile(treeNode) {
             "X-CSRFToken": getCookie('csrftoken'),
             "X-Requested-With": "XMLHttpRequest",
         }
-    })
-
-    location.reload();
+    }).then( res => {
+        fetch(`http://127.0.0.1:8000/api/v1/project/json/${project_id}`)
+            .then(res => res.json())
+            .then(data => {
+                editor.session.setMode(`ace/mode/${data.languageName}`);
+                var zNodes = data.content;
+                $(document).ready(function(){
+                    $.fn.zTree.init($("#treeDemo"), setting, zNodes);
+                });
+                var zTree = $.fn.zTree.getZTreeObj("treeDemo");
+                lastNodeAdded = zTree.getNodeByParam("name", fileName, null);
+                LoadFile(lastNodeAdded);
+            })
+        }
+    )
 }
+
+function LoadFile(treeNode) {
+    var zTree = $.fn.zTree.getZTreeObj("treeDemo");
+    zTree.selectNode(treeNode);
+    if(activeNode !== undefined){
+        onSave();
+    }
+    editor.setValue(treeNode.program);
+    programDisplayed = treeNode.program;
+    activeNode = treeNode;
+}
+
 
 function SaveFile(file_id, program) {
     var form = new FormData();
@@ -220,6 +249,13 @@ function RemoveFile(fileIdd) {
     })
 }
 
-
-
-
+function DeleteProject(projectIdd) {
+    var projectId = projectIdd;
+    fetch(`http://127.0.0.1:8000/api/v1/project/${projectId}`, {
+        method: "DELETE",
+        headers: {
+            "X-CSRFToken": getCookie('csrftoken'),
+            "X-Requested-With": "XMLHttpRequest",
+        }
+    }).then(location.reload())
+}

@@ -20,19 +20,19 @@ from code_editor.core.python.python_parameters import PythonParameters
 # Class compiler built, based in params class
 class PythonBuilderCommand(BuilderCommand):
     def command(self, params):
+        self.validate(params)
         cmd = params
         language_path = cmd.get_language_path()
         file_path = cmd.get_file_path()
 
-        if language_path is None:
-            raise NoneCommandException(language_path)
-        elif file_path is None:
-            raise NoneCommandException(file_path)
-        elif language_path == '':
-            raise EmptyCommandException(language_path)
-        elif file_path == '':
-            raise EmptyCommandException(file_path)
+        return [language_path, file_path]
+
+    def validate(self, params):
+        if params is None:
+            raise NoneCommandException(params)
+        elif params == '':
+            raise EmptyCommandException(params)
         elif not isinstance(params, PythonParameters):
             raise TypeCommandException(params)
-
-        return [language_path, file_path]
+        else:
+            return True

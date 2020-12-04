@@ -24,6 +24,7 @@ from pathlib import Path
 
 class JavaBuilderCommand(BuilderCommand):
     def command(self, params):
+        self.validate(params)
         src_path = params.get_package().as_posix()
         java_files = Path(src_path + '/*.java')
         sources = Path(src_path + '/sources.txt')
@@ -32,14 +33,14 @@ class JavaBuilderCommand(BuilderCommand):
                src_path + '/sources.txt',
                "&&", params.get_language_path() / "java", "-cp", params.get_binary(), params.get_file_path()]
 
-        if params.get_language_path() is None:
-            raise NoneCommandException(params.get_language_path())
-        elif params.get_file_path() is None:
-            raise NoneCommandException(params.get_file_path())
-        elif params.get_language_path() == '':
-            raise EmptyCommandException(params.get_language_path())
-        elif params.get_file_path() == '':
-            raise EmptyCommandException(params.get_file_path())
+        return cmd
+
+    def validate(self, params):
+        if params is None:
+            raise NoneCommandException(params)
+        elif params == '':
+            raise EmptyCommandException(params)
         elif not isinstance(params, JavaParameters):
             raise TypeCommandException(params)
-        return cmd
+        else:
+            return True
