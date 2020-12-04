@@ -50,12 +50,7 @@ class ProjectParameters():
             if file.is_main:
                 template_code = ConfigTemplates.get_java_template()
             else:
-                file_path = Path(file.path)
-                template_code = '''package {}
-
-public class {)}{{
-    
-    }}'''.format(self.get_java_packages_route(file_path), file_path.stem.capitalize())
+                template_code = self.get_java_class_template(file)
 
         if self.language_name == 'javascript':
             template_code = ConfigTemplates.get_javascript_template()
@@ -74,9 +69,9 @@ public class {)}{{
         return file_path
 
     def get_file_name_with_ext(self, file_name):
-        if self.language == 'java':
-            file_name = file_name.capitalize()
-            
+        if self.language.name == 'java':
+            file_name = file_name[0].upper() + file_name[1:]
+
         extension = '.' + str(file_name).split('.')[-1]
 
         if extension == self.language.extension:
@@ -90,3 +85,11 @@ public class {)}{{
         packages = parent[src_index + 4:].replace('/', '.')
         return packages
 
+    def get_java_class_template(self, file):
+        file_path = Path(file.path)
+        template = '''package {}
+
+public class {} {{
+    
+    }}'''.format(self.get_java_packages_route(file_path), file_path.stem)
+        return template

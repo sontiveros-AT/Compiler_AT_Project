@@ -55,6 +55,8 @@ class FileManager:
             main_file = FileManager.create_file(project.id, file_name, path)
             main_file.is_main = True
             main_file.save()
+            code = parameters.get_template_code(main_file)
+            FileManager.update_file(main_file.id, code)
 
             return project
 
@@ -69,10 +71,9 @@ class FileManager:
 
     # create a file in the media directory based in the language
     @staticmethod
-    def create_file(project_id, file_name, path='', is_main=False):
+    def create_file(project_id, file_name, path=''):
         project = OrmProject.get_project(project_id)
         parameters = ProjectParameters(project_id)
-        code = parameters.get_template_code(is_main)
         file_name_ext = parameters.get_file_name_with_ext(file_name)
         file_path = Path(project.path) / path / file_name_ext
         full_path = BASE_DIR / file_path
@@ -82,6 +83,7 @@ class FileManager:
             return file
 
         file = OrmFile.create_file(file_name_ext, file_path, project_id)
+        code = parameters.get_template_code(file)
         os.makedirs(os.path.dirname(full_path), exist_ok=True)
         FileManager.update_file(file.id, code)
 
