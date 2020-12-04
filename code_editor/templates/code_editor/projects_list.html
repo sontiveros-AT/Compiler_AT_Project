@@ -28,11 +28,16 @@ with Jalasoft.
         <div class="col">
         </div>
         <div class="col">
-            <ol>
+            <ul class="list-group">
                 {% for id, project in projects %}
-                <li><a href="/api/v1/project/{{ id }}">{{ project }}</a></li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a href="/api/v1/project/{{ id }}">{{ project }}</a>
+                    <button class="btn btn-danger btn-sm" onclick="DeleteProject({{ id }})">
+                        Remove
+                    </button>
+                </li>
                 {% endfor %}
-            </ol>
+            </ul>
             <p>{{ message }}</p>
             <a href="/api/v1/project">Create new project</a>
         </div>
