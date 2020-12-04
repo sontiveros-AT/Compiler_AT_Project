@@ -11,11 +11,9 @@
 //
 // Author: Andres Cox
 // Version: 1.0
-
 var editor = ace.edit("editor");
 
 editor.setTheme("ace/theme/github");
-
 
 // get current project id
 url = window.location.href.split('/');
