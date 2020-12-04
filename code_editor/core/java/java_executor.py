@@ -42,7 +42,7 @@ class JavaExecutor(Executor):
             PathCompiler.get_path_compiler(self.__project.language))
         self.__params.set_binary(BASE_DIR / self.__project.path / 'bin')
         self.__params.set_package(
-            BASE_DIR / self.__project.path / 'src/**/*.java')
+            BASE_DIR / self.__project.path / 'src')
         self.__params.set_file_path('com.Main')
         self.__params.validate()
 
