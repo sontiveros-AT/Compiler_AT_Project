@@ -23,7 +23,7 @@ class OrmLanguage:
     # Returns an integer with the number of languages
     @staticmethod
     def count_all_language():
-        return OrmLanguage.get_languages().count()
+        return len(Language.objects.all())
 
     # Returns a list of all languages
     @staticmethod
@@ -60,3 +60,25 @@ class OrmLanguage:
     @staticmethod
     def get_extension(language_id):
         return OrmLanguage.get_language(language_id).language_extension
+
+    @staticmethod
+    def get_languages_labels():
+        lang_list = OrmLanguage.get_languages()
+        lang_label = []
+        for lang in lang_list:
+            if lang.name.capitalize() not in lang_label:
+                lang_label.append(lang.name.capitalize())
+
+        total = []
+        for la in lang_label:
+            partial = []
+            aux = []
+            for lang in lang_list:
+                if la == lang.name.capitalize():
+                    n = lang.name.capitalize() + ' ' + lang.version
+                    x = [lang.id, n]
+                    partial.append(x)
+            aux.append(partial)
+            aux.insert(0, la)
+            total.append(aux)
+        return total
