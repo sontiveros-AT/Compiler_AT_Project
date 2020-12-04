@@ -87,7 +87,7 @@ class ProjectParameters():
 
     def get_java_class_template(self, file):
         file_path = Path(file.path)
-        template = '''package {}
+        template = '''package {};
 
 public class {} {{
     
