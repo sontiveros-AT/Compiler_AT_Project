@@ -6,20 +6,22 @@ from code_editor.core.executor_facade import CompilerFactory
 
 # Create classes for test
 class TestExecutorFacade(unittest.TestCase):
-    def test_invalid_language_none(self):
+    def test_valid_language(self):
+        comp = CompilerFactory()
+        self.assertTrue(comp.validate('python'))
 
+    def test_invalid_language_none(self):
         comp = CompilerFactory()
         with self.assertRaises(NoneLanguageException):
             comp.validate(None)
 
-    def test_invalid_language_type(self):
-
+    def test_invalid_language_type_number(self):
         comp = CompilerFactory()
         with self.assertRaises(TypeLanguageException):
             comp.validate(123123)
 
-    def test_invalid_language_nofound(self):
-
+    def test_invalid_language_type_specialChar(self):
         comp = CompilerFactory()
-        with self.assertRaises(FoundLanguageException):
-            comp.validate('php')
+        with self.assertRaises(TypeLanguageException):
+            comp.validate('·$%$·%"')
+

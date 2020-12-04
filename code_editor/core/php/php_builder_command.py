@@ -23,8 +23,19 @@ from code_editor.core.php.php_parameters import PhpParameters
 # class compiler built, based in params class
 class PhpBuilderCommand(BuilderCommand):
     def command(self, params):
+        self.validate(params)
         cmd = params
         language_path = cmd.get_language_path()
         file_path = cmd.get_file_path()
 
         return [language_path, file_path]
+
+    def validate(self, params):
+        if params is None:
+            raise NoneCommandException(params)
+        elif params == '':
+            raise EmptyCommandException(params)
+        elif not isinstance(params, PhpParameters):
+            raise TypeCommandException(params)
+        else:
+            return True
