@@ -14,6 +14,7 @@
 # Version: 1.0
 
 import os
+import shutil
 from pathlib import Path
 from code_editor.orm_queries.orm_file import OrmFile
 from code_editor.orm_queries.orm_language import OrmLanguage
@@ -114,3 +115,10 @@ class FileManager:
             file_to_rem = Path(full_path)
             file_to_rem.unlink()
             OrmFile.delete_file(file_id)
+
+    @staticmethod
+    def remove_project(project_id):
+        project = OrmProject.get_project(project_id)
+        full_path = BASE_DIR / project.path
+        shutil.rmtree(full_path)
+        OrmProject.delete_project(project_id)
