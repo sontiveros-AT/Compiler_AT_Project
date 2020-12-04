@@ -22,18 +22,18 @@ from code_editor.core.java.java_parameters import JavaParameters
 # Class compiler built, based in params class
 class JavaBuilderCommand(BuilderCommand):
     def command(self, params):
-
+        self.validate(params)
         cmd = [params.get_language_path() / "javac", "-d", params.get_binary(), params.get_package(),
                "&&", params.get_language_path() / "java", "-cp", params.get_binary(), params.get_file_path()]
 
-        if params.get_language_path() is None:
-            raise NoneCommandException(params.get_language_path())
-        elif params.get_file_path() is None:
-            raise NoneCommandException(params.get_file_path())
-        elif params.get_language_path() == '':
-            raise EmptyCommandException(params.get_language_path())
-        elif params.get_file_path() == '':
-            raise EmptyCommandException(params.get_file_path())
+        return cmd
+
+    def validate(self, params):
+        if params is None:
+            raise NoneCommandException(params)
+        elif params == '':
+            raise EmptyCommandException(params)
         elif not isinstance(params, JavaParameters):
             raise TypeCommandException(params)
-        return cmd
+        else:
+            return True

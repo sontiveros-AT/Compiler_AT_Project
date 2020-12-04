@@ -19,9 +19,21 @@ from django.views.generic import TemplateView
 
 
 # HomeView class manages get requests for displaying Home page view
+from code_editor.orm_queries.orm_language import OrmLanguage
+
+
 class HomeView(TemplateView):
     template_name = 'accounts/home.html'
 
     def get(self, request):
         args = {'username': request.user.username}
+
+        if OrmLanguage.count_all_language() == 0:
+            print('No existe nada de nada ')
+            OrmLanguage.create_new_language('java', '13.0.2', '.java')
+            OrmLanguage.create_new_language('python', '3.9', '.py')
+            OrmLanguage.create_new_language('javascript', '14.15.1', '.js')
+            OrmLanguage.create_new_language('python', '2.7', '.py')
+            OrmLanguage.create_new_language('php', '7.4.11', '.php')
+
         return render(request, self.template_name, args)

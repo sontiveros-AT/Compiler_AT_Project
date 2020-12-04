@@ -14,6 +14,8 @@
 # Version: 1.0
 
 from django import forms
+
+from code_editor.exceptions.exceptions import DataBaseException
 from code_editor.orm_queries.orm_language import OrmLanguage
 
 
@@ -53,10 +55,11 @@ class FileForm(forms.Form):
 
 class ProjectForm(forms.Form):
 
-    if OrmLanguage.count_all_language() == 0:
-        LANGUAGES = ''
-    else:
+    try:
         LANGUAGES = get_languages_labels()
+    except Exception as e:
+        print('No Languages Found', e)
+        LANGUAGES = ''
 
     project_name = forms.CharField(max_length=100,
                                    widget=forms.TextInput(
