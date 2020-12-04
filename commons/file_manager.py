@@ -69,10 +69,10 @@ class FileManager:
 
     # create a file in the media directory based in the language
     @staticmethod
-    def create_file(project_id, file_name, path=''):
+    def create_file(project_id, file_name, path='', is_main=False):
         project = OrmProject.get_project(project_id)
         parameters = ProjectParameters(project_id)
-        code = parameters.get_template_code()
+        code = parameters.get_template_code(is_main)
         file_name_ext = parameters.get_file_name_with_ext(file_name)
         file_path = Path(project.path) / path / file_name_ext
         full_path = BASE_DIR / file_path

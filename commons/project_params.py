@@ -18,11 +18,6 @@ from pathlib import Path
 from code_editor.orm_queries.orm_language import OrmLanguage
 from code_editor.orm_queries.orm_project import OrmProject
 from commons.configuration.config_templates import ConfigTemplates
-from commons.settings import PYTHON2_HELLO_WORLD
-from commons.settings import PYTHON3_HELLO_WORLD
-from commons.settings import JAVA13_HELLO_WORLD
-from commons.settings import JAVASCRIPT14_HELLO_WORLD
-from commons.settings import PHP7_HELLO_WORLD
 
 
 class ProjectParameters():
@@ -42,7 +37,7 @@ class ProjectParameters():
 
         return Path(f'{file_name}{self.language.extension}')
 
-    def get_template_code(self):
+    def get_template_code(self, file):
         template_code = ''
 
         if self.language_name == 'python':
@@ -52,7 +47,15 @@ class ProjectParameters():
                 template_code = ConfigTemplates.get_python39_template()
 
         if self.language_name == 'java':
-            template_code = ConfigTemplates.get_java_template()
+            if file.is_main:
+                template_code = ConfigTemplates.get_java_template()
+            else:
+                file_path = Path(file.path)
+                template_code = '''package {}
+
+public class {)}{{
+    
+    }}'''.format(self.get_java_packages_route(file_path), file_path.stem.capitalize())
 
         if self.language_name == 'javascript':
             template_code = ConfigTemplates.get_javascript_template()
@@ -71,9 +74,19 @@ class ProjectParameters():
         return file_path
 
     def get_file_name_with_ext(self, file_name):
+        if self.language == 'java':
+            file_name = file_name.capitalize()
+            
         extension = '.' + str(file_name).split('.')[-1]
 
         if extension == self.language.extension:
             return file_name
 
         return file_name + self.language.extension
+
+    def get_java_packages_route(self, path):
+        parent = path.parent.as_posix()
+        src_index = str(parent).find('src')
+        packages = parent[src_index + 4:].replace('/', '.')
+        return packages
+
