@@ -17,13 +17,20 @@
 from code_editor.core.builder_command import BuilderCommand
 from code_editor.core.exceptions.command_exceptions import *
 from code_editor.core.java.java_parameters import JavaParameters
-
+from pathlib import Path
 
 # Class compiler built, based in params class
+
+
 class JavaBuilderCommand(BuilderCommand):
     def command(self, params):
         self.validate(params)
-        cmd = [params.get_language_path() / "javac", "-d", params.get_binary(), params.get_package(),
+        src_path = params.get_package().as_posix()
+        java_files = Path(src_path + '/*.java')
+        sources = Path(src_path + '/sources.txt')
+        cmd = ['dir', '/s', '/B', java_files, '>', sources,
+               "&&", params.get_language_path() / "javac", "-d", params.get_binary(), '@' +
+               src_path + '/sources.txt',
                "&&", params.get_language_path() / "java", "-cp", params.get_binary(), params.get_file_path()]
 
         return cmd

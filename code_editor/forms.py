@@ -19,31 +19,6 @@ from code_editor.exceptions.exceptions import DataBaseException
 from code_editor.orm_queries.orm_language import OrmLanguage
 
 
-# Tuple of (language_id, language_label) for dropdown list
-
-
-def get_languages_labels():
-    lang_list = OrmLanguage.get_languages()
-    lang_label = []
-    for lang in lang_list:
-        if lang.name not in lang_label:
-            lang_label.append(lang.name)
-
-    total = []
-    for la in lang_label:
-        partial = []
-        aux = []
-        for lang in lang_list:
-            if la == lang.name:
-                n = lang.name+' '+lang.version
-                x = [lang.id, n]
-                partial.append(x)
-        aux.append(partial)
-        aux.insert(0, la)
-        total.append(aux)
-    return total
-
-
 # file form to edit in html
 class FileForm(forms.Form):
     # program = forms.CharField(widget=forms.Textarea)
@@ -56,7 +31,7 @@ class FileForm(forms.Form):
 class ProjectForm(forms.Form):
 
     try:
-        LANGUAGES = get_languages_labels()
+        LANGUAGES = OrmLanguage.get_languages_labels()
     except Exception as e:
         print('No Languages Found', e)
         LANGUAGES = ''
