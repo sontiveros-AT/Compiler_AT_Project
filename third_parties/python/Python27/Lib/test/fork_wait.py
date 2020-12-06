@@ -13,9 +13,8 @@ the same application, the present example should work just fine.  DC
 """
 
 import os, sys, time, unittest
-import test.support as support
-
-threading = support.import_module('threading')
+import test.test_support as test_support
+thread = test_support.import_module('thread')
 
 LONGSLEEP = 2
 SHORTSLEEP = 0.5
@@ -24,19 +23,8 @@ NUM_THREADS = 4
 class ForkWait(unittest.TestCase):
 
     def setUp(self):
-        self._threading_key = support.threading_setup()
         self.alive = {}
         self.stop = 0
-        self.threads = []
-
-    def tearDown(self):
-        # Stop threads
-        self.stop = 1
-        for thread in self.threads:
-            thread.join()
-        thread = None
-        del self.threads[:]
-        support.threading_cleanup(*self._threading_key)
 
     def f(self, id):
         while not self.stop:
@@ -55,20 +43,18 @@ class ForkWait(unittest.TestCase):
                 break
             time.sleep(2 * SHORTSLEEP)
 
-        self.assertEqual(spid, cpid)
-        self.assertEqual(status, 0, "cause = %d, exit = %d" % (status&0xff, status>>8))
+        self.assertEquals(spid, cpid)
+        self.assertEquals(status, 0, "cause = %d, exit = %d" % (status&0xff, status>>8))
 
     def test_wait(self):
         for i in range(NUM_THREADS):
-            thread = threading.Thread(target=self.f, args=(i,))
-            thread.start()
-            self.threads.append(thread)
+            thread.start_new(self.f, (i,))
 
         time.sleep(LONGSLEEP)
 
         a = self.alive.keys()
         a.sort()
-        self.assertEqual(a, range(NUM_THREADS))
+        self.assertEquals(a, range(NUM_THREADS))
 
         prefork_lives = self.alive.copy()
 
@@ -88,3 +74,6 @@ class ForkWait(unittest.TestCase):
         else:
             # Parent
             self.wait_impl(cpid)
+            # Tell threads to die
+            self.stop = 1
+            time.sleep(2*SHORTSLEEP) # Wait for threads to die

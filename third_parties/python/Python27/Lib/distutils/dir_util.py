@@ -2,10 +2,9 @@
 
 Utility functions for manipulating directories and directory trees."""
 
-__revision__ = "$Id$"
+__revision__ = "$Id: dir_util.py 76956 2009-12-21 01:22:46Z tarek.ziade $"
 
 import os
-import errno
 from distutils.errors import DistutilsFileError, DistutilsInternalError
 from distutils import log
 
@@ -69,12 +68,11 @@ def mkpath(name, mode=0777, verbose=1, dry_run=0):
 
         if not dry_run:
             try:
-                os.mkdir(head, mode)
+                os.mkdir(head)
+                created_dirs.append(head)
             except OSError, exc:
-                if not (exc.errno == errno.EEXIST and os.path.isdir(head)):
-                    raise DistutilsFileError(
-                          "could not create '%s': %s" % (head, exc.args[-1]))
-            created_dirs.append(head)
+                raise DistutilsFileError, \
+                      "could not create '%s': %s" % (head, exc[-1])
 
         _path_created[abs_head] = 1
     return created_dirs
@@ -83,7 +81,7 @@ def create_tree(base_dir, files, mode=0777, verbose=1, dry_run=0):
     """Create all the empty directories under 'base_dir' needed to put 'files'
     there.
 
-    'base_dir' is just the name of a directory which doesn't necessarily
+    'base_dir' is just the a name of a directory which doesn't necessarily
     exist yet; 'files' is a list of filenames to be interpreted relative to
     'base_dir'.  'base_dir' + the directory portion of every file in 'files'
     will be created if it doesn't already exist.  'mode', 'verbose' and
@@ -144,10 +142,6 @@ def copy_tree(src, dst, preserve_mode=1, preserve_times=1,
         src_name = os.path.join(src, n)
         dst_name = os.path.join(dst, n)
 
-        if n.startswith('.nfs'):
-            # skip NFS rename files
-            continue
-
         if preserve_symlinks and os.path.islink(src_name):
             link_dest = os.readlink(src_name)
             if verbose >= 1:
@@ -185,6 +179,7 @@ def remove_tree(directory, verbose=1, dry_run=0):
     Any errors are ignored (apart from being reported to stdout if 'verbose'
     is true).
     """
+    from distutils.util import grok_environment_error
     global _path_created
 
     if verbose >= 1:
@@ -201,7 +196,8 @@ def remove_tree(directory, verbose=1, dry_run=0):
             if abspath in _path_created:
                 del _path_created[abspath]
         except (IOError, OSError), exc:
-            log.warn("error removing %s: %s", directory, exc)
+            log.warn(grok_environment_error(
+                    exc, "error removing %s: " % directory))
 
 def ensure_relative(path):
     """Take the full path 'path', and make it a relative path.

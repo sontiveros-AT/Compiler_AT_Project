@@ -1,6 +1,5 @@
-"""Simple implementation of the Level 1 DOM.
-
-Namespaces and other minor Level 2 features are also supported.
+"""\
+minidom.py -- a lightweight DOM implementation.
 
 parse("foo.xml")
 
@@ -292,10 +291,9 @@ def _in_document(node):
 
 def _write_data(writer, data):
     "Writes datachars to writer."
-    if data:
-        data = data.replace("&", "&amp;").replace("<", "&lt;"). \
-                    replace("\"", "&quot;").replace(">", "&gt;")
-        writer.write(data)
+    data = data.replace("&", "&amp;").replace("<", "&lt;")
+    data = data.replace("\"", "&quot;").replace(">", "&gt;")
+    writer.write(data)
 
 def _get_elements_by_tagName_helper(parent, name, rc):
     for node in parent.childNodes:
@@ -357,6 +355,9 @@ class Attr(Node):
 
     def _get_localName(self):
         return self.nodeName.split(":", 1)[-1]
+
+    def _get_name(self):
+        return self.name
 
     def _get_specified(self):
         return self.specified
@@ -804,16 +805,10 @@ class Element(Node):
             _write_data(writer, attrs[a_name].value)
             writer.write("\"")
         if self.childNodes:
-            writer.write(">")
-            if (len(self.childNodes) == 1 and
-                self.childNodes[0].nodeType == Node.TEXT_NODE):
-                self.childNodes[0].writexml(writer, '', '', '')
-            else:
-                writer.write(newl)
-                for node in self.childNodes:
-                    node.writexml(writer, indent+addindent, addindent, newl)
-                writer.write(indent)
-            writer.write("</%s>%s" % (self.tagName, newl))
+            writer.write(">%s"%(newl))
+            for node in self.childNodes:
+                node.writexml(writer,indent+addindent,addindent,newl)
+            writer.write("%s</%s>%s" % (indent,self.tagName,newl))
         else:
             writer.write("/>%s"%(newl))
 
@@ -894,10 +889,6 @@ class Childless:
     def removeChild(self, oldChild):
         raise xml.dom.NotFoundErr(
             self.nodeName + " nodes do not have children")
-
-    def normalize(self):
-        # For childless nodes, normalize() has nothing to do.
-        pass
 
     def replaceChild(self, newChild, oldChild):
         raise xml.dom.HierarchyRequestErr(
@@ -1035,7 +1026,7 @@ class Text(CharacterData):
         return newText
 
     def writexml(self, writer, indent="", addindent="", newl=""):
-        _write_data(writer, "%s%s%s" % (indent, self.data, newl))
+        _write_data(writer, "%s%s%s"%(indent, self.data, newl))
 
     # DOM Level 3 (WD 9 April 2002)
 
@@ -1273,7 +1264,7 @@ class DocumentType(Identified, Childless, Node):
                     entity.encoding = e.encoding
                     entity.version = e.version
                     clone.entities._seq.append(entity)
-                    e._call_user_data_handler(operation, e, entity)
+                    e._call_user_data_handler(operation, n, entity)
             self._call_user_data_handler(operation, self, clone)
             return clone
         else:
@@ -1345,9 +1336,11 @@ class Notation(Identified, Childless, Node):
 class DOMImplementation(DOMImplementationLS):
     _features = [("core", "1.0"),
                  ("core", "2.0"),
+                 ("core", "3.0"),
                  ("core", None),
                  ("xml", "1.0"),
                  ("xml", "2.0"),
+                 ("xml", "3.0"),
                  ("xml", None),
                  ("ls-load", "3.0"),
                  ("ls-load", None),
@@ -1450,7 +1443,7 @@ class ElementInfo(object):
         return False
 
     def isId(self, aname):
-        """Returns true iff the named attribute is a DTD-style ID."""
+        """Returns true iff the named attribte is a DTD-style ID."""
         return False
 
     def isIdNS(self, namespaceURI, localName):
@@ -1876,10 +1869,10 @@ def _clone_node(node, deep, newOwnerDocument):
                 entity.ownerDocument = newOwnerDocument
                 clone.entities._seq.append(entity)
                 if hasattr(e, '_call_user_data_handler'):
-                    e._call_user_data_handler(operation, e, entity)
+                    e._call_user_data_handler(operation, n, entity)
     else:
         # Note the cloning of Document and DocumentType nodes is
-        # implementation specific.  minidom handles those cases
+        # implemenetation specific.  minidom handles those cases
         # directly in the cloneNode() methods.
         raise xml.dom.NotSupportedErr("Cannot clone node %s" % repr(node))
 

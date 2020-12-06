@@ -19,8 +19,6 @@ __all__ = ["Driver", "load_grammar"]
 import codecs
 import os
 import logging
-import pkgutil
-import StringIO
 import sys
 
 # Pgen imports
@@ -103,15 +101,16 @@ class Driver(object):
 
     def parse_string(self, text, debug=False):
         """Parse a string and return the syntax tree."""
-        tokens = tokenize.generate_tokens(StringIO.StringIO(text).readline)
+        tokens = tokenize.generate_tokens(generate_lines(text).next)
         return self.parse_tokens(tokens, debug)
 
 
-def _generate_pickle_name(gt):
-    head, tail = os.path.splitext(gt)
-    if tail == ".txt":
-        tail = ""
-    return head + tail + ".".join(map(str, sys.version_info)) + ".pickle"
+def generate_lines(text):
+    """Generator that behaves like readline without using StringIO."""
+    for line in text.splitlines(True):
+        yield line
+    while True:
+        yield ""
 
 
 def load_grammar(gt="Grammar.txt", gp=None,
@@ -119,7 +118,11 @@ def load_grammar(gt="Grammar.txt", gp=None,
     """Load the grammar (maybe from a pickle)."""
     if logger is None:
         logger = logging.getLogger()
-    gp = _generate_pickle_name(gt) if gp is None else gp
+    if gp is None:
+        head, tail = os.path.splitext(gt)
+        if tail == ".txt":
+            tail = ""
+        gp = head + tail + ".".join(map(str, sys.version_info)) + ".pickle"
     if force or not _newer(gp, gt):
         logger.info("Generating grammar tables from %s", gt)
         g = pgen.generate_grammar(gt)
@@ -127,8 +130,8 @@ def load_grammar(gt="Grammar.txt", gp=None,
             logger.info("Writing grammar tables to %s", gp)
             try:
                 g.dump(gp)
-            except IOError as e:
-                logger.info("Writing failed: %s", e)
+            except IOError, e:
+                logger.info("Writing failed:"+str(e))
     else:
         g = grammar.Grammar()
         g.load(gp)
@@ -142,40 +145,3 @@ def _newer(a, b):
     if not os.path.exists(b):
         return True
     return os.path.getmtime(a) >= os.path.getmtime(b)
-
-
-def load_packaged_grammar(package, grammar_source):
-    """Normally, loads a pickled grammar by doing
-        pkgutil.get_data(package, pickled_grammar)
-    where *pickled_grammar* is computed from *grammar_source* by adding the
-    Python version and using a ``.pickle`` extension.
-
-    However, if *grammar_source* is an extant file, load_grammar(grammar_source)
-    is called instead. This facilitates using a packaged grammar file when needed
-    but preserves load_grammar's automatic regeneration behavior when possible.
-
-    """
-    if os.path.isfile(grammar_source):
-        return load_grammar(grammar_source)
-    pickled_name = _generate_pickle_name(os.path.basename(grammar_source))
-    data = pkgutil.get_data(package, pickled_name)
-    g = grammar.Grammar()
-    g.loads(data)
-    return g
-
-
-def main(*args):
-    """Main program, when run as a script: produce grammar pickle files.
-
-    Calls load_grammar for each argument, a path to a grammar text file.
-    """
-    if not args:
-        args = sys.argv[1:]
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout,
-                        format='%(message)s')
-    for gt in args:
-        load_grammar(gt, save=True, force=True)
-    return True
-
-if __name__ == "__main__":
-    sys.exit(int(not main()))

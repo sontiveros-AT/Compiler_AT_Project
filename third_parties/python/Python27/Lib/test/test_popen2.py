@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 """Test script for popen2.py"""
 
 import warnings
@@ -62,8 +63,8 @@ class Popen2Test(unittest.TestCase):
         w.write(teststr)
         w.close()
         got = r.read()
-        self.assertEqual(expected_out, got.strip(), "wrote %r read %r" %
-                         (teststr, got))
+        self.assertEquals(expected_out, got.strip(), "wrote %r read %r" %
+                          (teststr, got))
 
         if e is not None:
             got = e.read()
@@ -89,7 +90,7 @@ class Popen2Test(unittest.TestCase):
 
             w, r = os.popen2(["echo", self.teststr])
             got = r.read()
-            self.assertEqual(got, self.teststr + "\n")
+            self.assertEquals(got, self.teststr + "\n")
 
         w, r = os.popen2(self.cmd)
         self.validate_output(self.teststr, self.expected, r, w)
@@ -102,7 +103,7 @@ class Popen2Test(unittest.TestCase):
 
             w, r, e = os.popen3(["echo", self.teststr])
             got = r.read()
-            self.assertEqual(got, self.teststr + "\n")
+            self.assertEquals(got, self.teststr + "\n")
             got = e.read()
             self.assertFalse(got, "unexpected %r on stderr" % got)
 
@@ -116,7 +117,7 @@ class Popen2Test(unittest.TestCase):
 
             w, r = os.popen4(["echo", self.teststr])
             got = r.read()
-            self.assertEqual(got, self.teststr + "\n")
+            self.assertEquals(got, self.teststr + "\n")
 
         w, r = os.popen4(self.cmd)
         self.validate_output(self.teststr, self.expected, r, w)

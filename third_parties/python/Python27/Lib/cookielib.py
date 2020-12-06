@@ -1,4 +1,4 @@
-r"""HTTP cookie handling for web clients.
+"""HTTP cookie handling for web clients.
 
 This module has (now fairly distant) origins in Gisle Aas' Perl module
 HTTP::Cookies, from the libwww-perl library.
@@ -113,7 +113,7 @@ def time2netscape(t=None):
     """
     if t is None: t = time.time()
     year, mon, mday, hour, min, sec, wday = time.gmtime(t)[:7]
-    return "%s, %02d-%s-%04d %02d:%02d:%02d GMT" % (
+    return "%s %02d-%s-%04d %02d:%02d:%02d GMT" % (
         DAYS[wday], mday, MONTHS[mon-1], year, hour, min, sec)
 
 
@@ -205,14 +205,10 @@ LOOSE_HTTP_DATE_RE = re.compile(
        (?::(\d\d))?    # optional seconds
     )?                 # optional clock
        \s*
-    (?:
-       ([-+]?\d{2,4}|(?![APap][Mm]\b)[A-Za-z]+) # timezone
+    ([-+]?\d{2,4}|(?![APap][Mm]\b)[A-Za-z]+)? # timezone
        \s*
-    )?
-    (?:
-       \(\w+\)         # ASCII representation of timezone in parens.
-       \s*
-    )?$""", re.X)
+    (?:\(\w+\))?       # ASCII representation of timezone in parens.
+       \s*$""", re.X)
 def http2time(text):
     """Returns time in seconds since epoch of time represented by a string.
 
@@ -270,7 +266,7 @@ def http2time(text):
     return _str2time(day, mon, yr, hr, min, sec, tz)
 
 ISO_DATE_RE = re.compile(
-    r"""^
+    """^
     (\d{4})              # year
        [-\/]?
     (\d\d?)              # numerical month
@@ -282,11 +278,9 @@ ISO_DATE_RE = re.compile(
       (?::?(\d\d(?:\.\d*)?))?  # optional seconds (and fractional)
    )?                    # optional clock
       \s*
-   (?:
-      ([-+]?\d\d?:?(:?\d\d)?
-       |Z|z)             # timezone  (Z is "zero meridian", i.e. GMT)
-      \s*
-   )?$""", re.X)
+   ([-+]?\d\d?:?(:?\d\d)?
+    |Z|z)?               # timezone  (Z is "zero meridian", i.e. GMT)
+      \s*$""", re.X)
 def iso2time(text):
     """
     As for http2time, but parses the ISO 8601 formats:
@@ -470,42 +464,26 @@ def parse_ns_headers(ns_headers):
     for ns_header in ns_headers:
         pairs = []
         version_set = False
-
-        # XXX: The following does not strictly adhere to RFCs in that empty
-        # names and values are legal (the former will only appear once and will
-        # be overwritten if multiple occurrences are present). This is
-        # mostly to deal with backwards compatibility.
-        for ii, param in enumerate(ns_header.split(';')):
-            param = param.strip()
-
-            key, sep, val = param.partition('=')
-            key = key.strip()
-
-            if not key:
-                if ii == 0:
-                    break
-                else:
-                    continue
-
-            # allow for a distinction between present and empty and missing
-            # altogether
-            val = val.strip() if sep else None
-
+        for ii, param in enumerate(re.split(r";\s*", ns_header)):
+            param = param.rstrip()
+            if param == "": continue
+            if "=" not in param:
+                k, v = param, None
+            else:
+                k, v = re.split(r"\s*=\s*", param, 1)
+                k = k.lstrip()
             if ii != 0:
-                lc = key.lower()
+                lc = k.lower()
                 if lc in known_attrs:
-                    key = lc
-
-                if key == "version":
+                    k = lc
+                if k == "version":
                     # This is an RFC 2109 cookie.
-                    if val is not None:
-                        val = _strip_quotes(val)
+                    v = _strip_quotes(v)
                     version_set = True
-                elif key == "expires":
+                if k == "expires":
                     # convert expires date to seconds since epoch
-                    if val is not None:
-                        val = http2time(_strip_quotes(val))  # None if invalid
-            pairs.append((key, val))
+                    v = http2time(_strip_quotes(v))  # None if invalid
+            pairs.append((k, v))
 
         if pairs:
             if not version_set:
@@ -629,14 +607,19 @@ def eff_request_host(request):
     return req_host, erhn
 
 def request_path(request):
-    """Path component of request-URI, as defined by RFC 2965."""
+    """request-URI, as defined by RFC 2965."""
     url = request.get_full_url()
-    parts = urlparse.urlsplit(url)
-    path = escape_path(parts.path)
-    if not path.startswith("/"):
+    #scheme, netloc, path, parameters, query, frag = urlparse.urlparse(url)
+    #req_path = escape_path("".join(urlparse.urlparse(url)[2:]))
+    path, parameters, query, frag = urlparse.urlparse(url)[2:]
+    if parameters:
+        path = "%s;%s" % (path, parameters)
+    path = escape_path(path)
+    req_path = urlparse.urlunparse(("", "", path, "", query, frag))
+    if not req_path.startswith("/"):
         # fix bad RFC 2396 absoluteURI
-        path = "/" + path
-    return path
+        req_path = "/"+req_path
+    return req_path
 
 def request_port(request):
     host = request.get_host()
@@ -990,7 +973,7 @@ class DefaultCookiePolicy(CookiePolicy):
             req_path = request_path(request)
             if ((cookie.version > 0 or
                  (cookie.version == 0 and self.strict_ns_set_path)) and
-                not self.path_return_ok(cookie.path, request)):
+                not req_path.startswith(cookie.path)):
                 _debug("   path attribute %s is not a prefix of request "
                        "path %s", cookie.path, req_path)
                 return False
@@ -1036,7 +1019,7 @@ class DefaultCookiePolicy(CookiePolicy):
                     (not erhn.startswith(".") and
                      not ("."+erhn).endswith(domain))):
                     _debug("   effective request-host %s (even with added "
-                           "initial dot) does not end with %s",
+                           "initial dot) does not end end with %s",
                            erhn, domain)
                     return False
             if (cookie.version > 0 or
@@ -1145,11 +1128,6 @@ class DefaultCookiePolicy(CookiePolicy):
         req_host, erhn = eff_request_host(request)
         domain = cookie.domain
 
-        if domain and not domain.startswith("."):
-            dotdomain = "." + domain
-        else:
-            dotdomain = domain
-
         # strict check of non-domain cookies: Mozilla does this, MSIE5 doesn't
         if (cookie.version == 0 and
             (self.strict_ns_domain & self.DomainStrictNonDomain) and
@@ -1162,7 +1140,7 @@ class DefaultCookiePolicy(CookiePolicy):
             _debug("   effective request-host name %s does not domain-match "
                    "RFC 2965 cookie domain %s", erhn, domain)
             return False
-        if cookie.version == 0 and not ("."+erhn).endswith(dotdomain):
+        if cookie.version == 0 and not ("."+erhn).endswith(domain):
             _debug("   request-host %s does not match Netscape cookie domain "
                    "%s", req_host, domain)
             return False
@@ -1176,11 +1154,7 @@ class DefaultCookiePolicy(CookiePolicy):
             req_host = "."+req_host
         if not erhn.startswith("."):
             erhn = "."+erhn
-        if domain and not domain.startswith("."):
-            dotdomain = "." + domain
-        else:
-            dotdomain = domain
-        if not (req_host.endswith(dotdomain) or erhn.endswith(dotdomain)):
+        if not (req_host.endswith(domain) or erhn.endswith(domain)):
             #_debug("   request domain %s does not match cookie domain %s",
             #       req_host, domain)
             return False
@@ -1197,15 +1171,11 @@ class DefaultCookiePolicy(CookiePolicy):
     def path_return_ok(self, path, request):
         _debug("- checking cookie path=%s", path)
         req_path = request_path(request)
-        pathlen = len(path)
-        if req_path == path:
-            return True
-        elif (req_path.startswith(path) and
-              (path.endswith("/") or req_path[pathlen:pathlen+1] == "/")):
-            return True
+        if not req_path.startswith(path):
+            _debug("  %s does not path-match %s", req_path, path)
+            return False
+        return True
 
-        _debug("  %s does not path-match %s", req_path, path)
-        return False
 
 def vals_sorted_by_key(adict):
     keys = adict.keys()
@@ -1453,7 +1423,7 @@ class CookieJar:
                         break
                     # convert RFC 2965 Max-Age to seconds since epoch
                     # XXX Strictly you're supposed to follow RFC 2616
-                    #   age-calculation rules.  Remember that zero Max-Age
+                    #   age-calculation rules.  Remember that zero Max-Age is a
                     #   is a request to discard (old and new) cookie, though.
                     k = "expires"
                     v = self._now + v
@@ -1754,12 +1724,12 @@ class CookieJar:
     def __repr__(self):
         r = []
         for cookie in self: r.append(repr(cookie))
-        return "<%s[%s]>" % (self.__class__.__name__, ", ".join(r))
+        return "<%s[%s]>" % (self.__class__, ", ".join(r))
 
     def __str__(self):
         r = []
         for cookie in self: r.append(str(cookie))
-        return "<%s[%s]>" % (self.__class__.__name__, ", ".join(r))
+        return "<%s[%s]>" % (self.__class__, ", ".join(r))
 
 
 # derives from IOError for backwards-compatibility with Python 2.4.0

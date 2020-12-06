@@ -95,7 +95,7 @@ month_abbr = _localized_month('%b')
 
 
 def isleap(year):
-    """Return True for leap years, False for non-leap years."""
+    """Return 1 for leap years, 0 for non-leap years."""
     return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
 
 
@@ -142,7 +142,7 @@ class Calendar(object):
 
     def iterweekdays(self):
         """
-        Return an iterator for one week of weekday numbers starting with the
+        Return a iterator for one week of weekday numbers starting with the
         configured first one.
         """
         for i in range(self.firstweekday, self.firstweekday + 7):
@@ -161,11 +161,7 @@ class Calendar(object):
         oneday = datetime.timedelta(days=1)
         while True:
             yield date
-            try:
-                date += oneday
-            except OverflowError:
-                # Adding one day could fail after datetime.MAXYEAR
-                break
+            date += oneday
             if date.month != month and date.weekday() == self.firstweekday:
                 break
 
@@ -174,23 +170,22 @@ class Calendar(object):
         Like itermonthdates(), but will yield (day number, weekday number)
         tuples. For days outside the specified month the day number is 0.
         """
-        for i, d in enumerate(self.itermonthdays(year, month), self.firstweekday):
-            yield d, i % 7
+        for date in self.itermonthdates(year, month):
+            if date.month != month:
+                yield (0, date.weekday())
+            else:
+                yield (date.day, date.weekday())
 
     def itermonthdays(self, year, month):
         """
         Like itermonthdates(), but will yield day numbers. For days outside
         the specified month the day number is 0.
         """
-        day1, ndays = monthrange(year, month)
-        days_before = (day1 - self.firstweekday) % 7
-        for _ in range(days_before):
-            yield 0
-        for d in range(1, ndays + 1):
-            yield d
-        days_after = (self.firstweekday - day1 - ndays) % 7
-        for _ in range(days_after):
-            yield 0
+        for date in self.itermonthdates(year, month):
+            if date.month != month:
+                yield 0
+            else:
+                yield date.day
 
     def monthdatescalendar(self, year, month):
         """
@@ -221,7 +216,7 @@ class Calendar(object):
     def yeardatescalendar(self, year, width=3):
         """
         Return the data for the specified year ready for formatting. The return
-        value is a list of month rows. Each month row contains up to width months.
+        value is a list of month rows. Each month row contains upto width months.
         Each month contains between 4 and 6 weeks and each week contains 1-7
         days. Days are datetime.date objects.
         """
@@ -491,8 +486,7 @@ class TimeEncoding:
         self.locale = locale
 
     def __enter__(self):
-        self.oldlocale = _locale.getlocale(_locale.LC_TIME)
-        _locale.setlocale(_locale.LC_TIME, self.locale)
+        self.oldlocale = _locale.setlocale(_locale.LC_TIME, self.locale)
         return _locale.getlocale(_locale.LC_TIME)[1]
 
     def __exit__(self, *args):

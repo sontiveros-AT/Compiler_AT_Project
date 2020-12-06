@@ -8,7 +8,6 @@ from .. import fixer_base
 from ..fixer_util import Name
 
 class FixGetcwdu(fixer_base.BaseFix):
-    BM_compatible = True
 
     PATTERN = """
               power< 'os' trailer< dot='.' name='getcwdu' > any* >

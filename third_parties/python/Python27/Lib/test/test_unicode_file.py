@@ -5,8 +5,8 @@ import os, glob, time, shutil
 import unicodedata
 
 import unittest
-from test.test_support import run_unittest, change_cwd, TESTFN_UNICODE
-from test.test_support import TESTFN_ENCODING, TESTFN_UNENCODABLE
+from test.test_support import run_unittest, TESTFN_UNICODE
+from test.test_support import TESTFN_ENCODING, TESTFN_UNICODE_UNENCODEABLE
 try:
     TESTFN_ENCODED = TESTFN_UNICODE.encode(TESTFN_ENCODING)
 except (UnicodeError, TypeError):
@@ -114,11 +114,13 @@ class TestUnicodeFiles(unittest.TestCase):
         os.unlink(filename1 + ".new")
 
     def _do_directory(self, make_name, chdir_name, encoded):
+        cwd = os.getcwd()
         if os.path.isdir(make_name):
             os.rmdir(make_name)
         os.mkdir(make_name)
         try:
-            with change_cwd(chdir_name):
+            os.chdir(chdir_name)
+            try:
                 if not encoded:
                     cwd_result = os.getcwdu()
                     name_result = make_name
@@ -130,6 +132,8 @@ class TestUnicodeFiles(unittest.TestCase):
                 name_result = unicodedata.normalize("NFD", name_result)
 
                 self.assertEqual(os.path.basename(cwd_result),name_result)
+            finally:
+                os.chdir(cwd)
         finally:
             os.rmdir(make_name)
 
@@ -167,8 +171,8 @@ class TestUnicodeFiles(unittest.TestCase):
     def test_single_files(self):
         self._test_single(TESTFN_ENCODED)
         self._test_single(TESTFN_UNICODE)
-        if TESTFN_UNENCODABLE is not None:
-            self._test_single(TESTFN_UNENCODABLE)
+        if TESTFN_UNICODE_UNENCODEABLE is not None:
+            self._test_single(TESTFN_UNICODE_UNENCODEABLE)
 
     def test_equivalent_files(self):
         self._test_equivalent(TESTFN_ENCODED, TESTFN_UNICODE)
@@ -184,9 +188,9 @@ class TestUnicodeFiles(unittest.TestCase):
         self._do_directory(TESTFN_UNICODE+ext, TESTFN_ENCODED+ext, False)
         self._do_directory(TESTFN_UNICODE+ext, TESTFN_UNICODE+ext, False)
         # Our directory name that can't use a non-unicode name.
-        if TESTFN_UNENCODABLE is not None:
-            self._do_directory(TESTFN_UNENCODABLE+ext,
-                               TESTFN_UNENCODABLE+ext,
+        if TESTFN_UNICODE_UNENCODEABLE is not None:
+            self._do_directory(TESTFN_UNICODE_UNENCODEABLE+ext,
+                               TESTFN_UNICODE_UNENCODEABLE+ext,
                                False)
 
 def test_main():

@@ -23,21 +23,17 @@ class SimplePipeTests(unittest.TestCase):
         f = t.open(TESTFN, 'w')
         f.write('hello world #1')
         f.close()
-        with open(TESTFN) as f:
-            self.assertEqual(f.read(), 'HELLO WORLD #1')
+        self.assertEqual(open(TESTFN).read(), 'HELLO WORLD #1')
 
     def testSimplePipe2(self):
-        with open(TESTFN, 'w') as f:
-            f.write('hello world #2')
+        file(TESTFN, 'w').write('hello world #2')
         t = pipes.Template()
         t.append(s_command + ' < $IN > $OUT', pipes.FILEIN_FILEOUT)
         t.copy(TESTFN, TESTFN2)
-        with open(TESTFN2) as f:
-            self.assertEqual(f.read(), 'HELLO WORLD #2')
+        self.assertEqual(open(TESTFN2).read(), 'HELLO WORLD #2')
 
     def testSimplePipe3(self):
-        with open(TESTFN, 'w') as f:
-            f.write('hello world #2')
+        file(TESTFN, 'w').write('hello world #2')
         t = pipes.Template()
         t.append(s_command + ' < $IN', pipes.FILEIN_STDOUT)
         with t.open(TESTFN, 'r') as f:
@@ -46,20 +42,16 @@ class SimplePipeTests(unittest.TestCase):
     def testEmptyPipeline1(self):
         # copy through empty pipe
         d = 'empty pipeline test COPY'
-        with open(TESTFN, 'w') as f:
-            f.write(d)
-        with open(TESTFN2, 'w') as f:
-            f.write('')
+        file(TESTFN, 'w').write(d)
+        file(TESTFN2, 'w').write('')
         t=pipes.Template()
         t.copy(TESTFN, TESTFN2)
-        with open(TESTFN2) as f:
-            self.assertEqual(f.read(), d)
+        self.assertEqual(open(TESTFN2).read(), d)
 
     def testEmptyPipeline2(self):
         # read through empty pipe
         d = 'empty pipeline test READ'
-        with open(TESTFN, 'w') as f:
-            f.write(d)
+        file(TESTFN, 'w').write(d)
         t=pipes.Template()
         with t.open(TESTFN, 'r') as f:
             self.assertEqual(f.read(), d)
@@ -68,10 +60,8 @@ class SimplePipeTests(unittest.TestCase):
         # write through empty pipe
         d = 'empty pipeline test WRITE'
         t = pipes.Template()
-        with t.open(TESTFN, 'w') as f:
-            f.write(d)
-        with open(TESTFN) as f:
-            self.assertEqual(f.read(), d)
+        t.open(TESTFN, 'w').write(d)
+        self.assertEqual(open(TESTFN).read(), d)
 
     def testQuoting(self):
         safeunquoted = string.ascii_letters + string.digits + '@%_-+=:,./'

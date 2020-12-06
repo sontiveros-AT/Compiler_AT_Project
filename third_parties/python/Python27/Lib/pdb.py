@@ -183,18 +183,14 @@ class Pdb(bdb.Bdb, cmd.Cmd):
 
     def user_return(self, frame, return_value):
         """This function is called when a return trap is set here."""
-        if self._wait_for_mainpyfile:
-            return
         frame.f_locals['__return__'] = return_value
         print >>self.stdout, '--Return--'
         self.interaction(frame, None)
 
     def user_exception(self, frame, exc_info):
+        exc_type, exc_value, exc_traceback = exc_info
         """This function is called if an exception occurs,
         but only if we are to stop at or just below this level."""
-        if self._wait_for_mainpyfile:
-            return
-        exc_type, exc_value, exc_traceback = exc_info
         frame.f_locals['__exception__'] = exc_type, exc_value
         if type(exc_type) == type(''):
             exc_type_name = exc_type
@@ -281,10 +277,8 @@ class Pdb(bdb.Bdb, cmd.Cmd):
             return self.handle_command_def(line)
 
     def handle_command_def(self,line):
-        """Handles one command line during command list definition."""
+        """ Handles one command line during command list definition. """
         cmd, arg, line = self.parseline(line)
-        if not cmd:
-            return
         if cmd == 'silent':
             self.commands_silent[self.commands_bnum] = True
             return # continue to handle other cmd def in the cmd list
@@ -292,7 +286,7 @@ class Pdb(bdb.Bdb, cmd.Cmd):
             self.cmdqueue = []
             return 1 # end of cmd list
         cmdlist = self.commands[self.commands_bnum]
-        if arg:
+        if (arg):
             cmdlist.append(cmd+' '+arg)
         else:
             cmdlist.append(cmd)
@@ -335,11 +329,9 @@ class Pdb(bdb.Bdb, cmd.Cmd):
         prompt_back = self.prompt
         self.prompt = '(com) '
         self.commands_defining = True
-        try:
-            self.cmdloop()
-        finally:
-            self.commands_defining = False
-            self.prompt = prompt_back
+        self.cmdloop()
+        self.commands_defining = False
+        self.prompt = prompt_back
 
     def do_break(self, arg, temporary = 0):
         # break [ ([filename:]lineno | function) [, "condition"] ]
@@ -475,10 +467,7 @@ class Pdb(bdb.Bdb, cmd.Cmd):
         Return `lineno` if it is, 0 if not (e.g. a docstring, comment, blank
         line or EOF). Warning: testing is not comprehensive.
         """
-        # this method should be callable before starting debugging, so default
-        # to "no globals" if there is no current frame
-        globs = self.curframe.f_globals if hasattr(self, 'curframe') else None
-        line = linecache.getline(filename, lineno, globs)
+        line = linecache.getline(filename, lineno, self.curframe.f_globals)
         if not line:
             print >>self.stdout, 'End of file'
             return 0
@@ -1095,7 +1084,7 @@ command with a 'global' command, e.g.:
     def help_run(self):
         print """run [args...]
 Restart the debugged python program. If a string is supplied, it is
-split with "shlex" and the result is used as the new sys.argv.
+splitted with "shlex" and the result is used as the new sys.argv.
 History, breakpoints, actions and debugger options are preserved.
 "restart" is an alias for "run"."""
 
@@ -1229,7 +1218,7 @@ see no sign that the breakpoint was reached.
         self._wait_for_mainpyfile = 1
         self.mainpyfile = self.canonic(filename)
         self._user_requested_quit = 0
-        statement = 'execfile(%r)' % filename
+        statement = 'execfile( "%s")' % filename
         self.run(statement)
 
 # Simplified interface
@@ -1309,7 +1298,7 @@ def main():
     # changed by the user from the command line. There is a "restart" command
     # which allows explicit specification of command line arguments.
     pdb = Pdb()
-    while True:
+    while 1:
         try:
             pdb._runscript(mainpyfile)
             if pdb._user_requested_quit:
@@ -1322,9 +1311,6 @@ def main():
             # In most cases SystemExit does not warrant a post-mortem session.
             print "The program exited via sys.exit(). Exit status: ",
             print sys.exc_info()[1]
-        except SyntaxError:
-            traceback.print_exc()
-            sys.exit(1)
         except:
             traceback.print_exc()
             print "Uncaught exception. Entering post mortem debugging"

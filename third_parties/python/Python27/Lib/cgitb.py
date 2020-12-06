@@ -125,7 +125,7 @@ function calls leading up to the error, in the order they occurred.</p>'''
         args, varargs, varkw, locals = inspect.getargvalues(frame)
         call = ''
         if func != '?':
-            call = 'in ' + strong(pydoc.html.escape(func)) + \
+            call = 'in ' + strong(func) + \
                 inspect.formatargvalues(args, varargs, varkw, locals,
                     formatvalue=lambda value: '=' + pydoc.html.repr(value))
 
@@ -285,7 +285,7 @@ class Hook:
 
         if self.display:
             if plain:
-                doc = pydoc.html.escape(doc)
+                doc = doc.replace('&', '&amp;').replace('<', '&lt;')
                 self.file.write('<pre>' + doc + '</pre>\n')
             else:
                 self.file.write(doc + '\n')
@@ -295,19 +295,14 @@ class Hook:
         if self.logdir is not None:
             suffix = ['.txt', '.html'][self.format=="html"]
             (fd, path) = tempfile.mkstemp(suffix=suffix, dir=self.logdir)
-
             try:
                 file = os.fdopen(fd, 'w')
                 file.write(doc)
                 file.close()
-                msg = '%s contains the description of this error.' % path
+                msg = '<p> %s contains the description of this error.' % path
             except:
-                msg = 'Tried to save traceback to %s, but failed.' % path
-
-            if self.format == 'html':
-                self.file.write('<p>%s</p>\n' % msg)
-            else:
-                self.file.write(msg + '\n')
+                msg = '<p> Tried to save traceback to %s, but failed.' % path
+            self.file.write(msg + '\n')
         try:
             self.file.flush()
         except: pass

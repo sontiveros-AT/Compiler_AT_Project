@@ -12,8 +12,7 @@ from .. import fixer_base
 from ..fixer_util import Name
 
 class FixItertools(fixer_base.BaseFix):
-    BM_compatible = True
-    it_funcs = "('imap'|'ifilter'|'izip'|'izip_longest'|'ifilterfalse')"
+    it_funcs = "('imap'|'ifilter'|'izip'|'ifilterfalse')"
     PATTERN = """
               power< it='itertools'
                   trailer<
@@ -28,14 +27,13 @@ class FixItertools(fixer_base.BaseFix):
     def transform(self, node, results):
         prefix = None
         func = results['func'][0]
-        if ('it' in results and
-            func.value not in (u'ifilterfalse', u'izip_longest')):
+        if 'it' in results and func.value != u'ifilterfalse':
             dot, it = (results['dot'], results['it'])
             # Remove the 'itertools'
             prefix = it.prefix
             it.remove()
-            # Replace the node which contains ('.', 'function') with the
-            # function (to be consistent with the second part of the pattern)
+            # Replace the node wich contains ('.', 'function') with the
+            # function (to be consistant with the second part of the pattern)
             dot.remove()
             func.parent.replace(func)
 

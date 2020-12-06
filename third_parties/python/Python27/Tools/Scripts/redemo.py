@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-"""Basic regular expression demonstration facility (Perl style syntax)."""
+"""Basic regular expression demostration facility (Perl style syntax)."""
 
 from Tkinter import *
 import re

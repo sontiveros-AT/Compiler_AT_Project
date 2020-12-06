@@ -157,10 +157,7 @@ class TestProgram(object):
             self.test = self.testLoader.loadTestsFromNames(self.testNames,
                                                            self.module)
 
-    def _do_discovery(self, argv, Loader=None):
-        if Loader is None:
-            Loader = lambda: self.testLoader
-
+    def _do_discovery(self, argv, Loader=loader.TestLoader):
         # handle command line args for test discovery
         self.progName = '%s discover' % self.progName
         import optparse
@@ -174,7 +171,7 @@ class TestProgram(object):
                               action='store_true')
         if self.catchbreak != False:
             parser.add_option('-c', '--catch', dest='catchbreak', default=False,
-                              help='Catch Ctrl-C and display results so far',
+                              help='Catch ctrl-C and display results so far',
                               action='store_true')
         if self.buffer != False:
             parser.add_option('-b', '--buffer', dest='buffer', default=False,

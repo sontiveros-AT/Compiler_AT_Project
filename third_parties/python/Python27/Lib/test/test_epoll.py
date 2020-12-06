@@ -36,7 +36,6 @@ try:
 except IOError, e:
     if e.errno == errno.ENOSYS:
         raise unittest.SkipTest("kernel doesn't support epoll()")
-    raise
 
 class TestEPoll(unittest.TestCase):
 
@@ -57,7 +56,7 @@ class TestEPoll(unittest.TestCase):
         try:
             client.connect(('127.0.0.1', self.serverSocket.getsockname()[1]))
         except socket.error, e:
-            self.assertEqual(e.args[0], errno.EINPROGRESS)
+            self.assertEquals(e.args[0], errno.EINPROGRESS)
         else:
             raise AssertionError("Connect should have raised EINPROGRESS")
         server, addr = self.serverSocket.accept()
@@ -163,9 +162,12 @@ class TestEPoll(unittest.TestCase):
                     (server.fileno(), select.EPOLLOUT)]
         expected.sort()
 
-        self.assertEqual(events, expected)
+        self.assertEquals(events, expected)
+        self.assertFalse(then - now > 0.01, then - now)
 
+        now = time.time()
         events = ep.poll(timeout=2.1, maxevents=4)
+        then = time.time()
         self.assertFalse(events)
 
         client.send("Hello!")
@@ -181,7 +183,7 @@ class TestEPoll(unittest.TestCase):
                     (server.fileno(), select.EPOLLIN | select.EPOLLOUT)]
         expected.sort()
 
-        self.assertEqual(events, expected)
+        self.assertEquals(events, expected)
 
         ep.unregister(client.fileno())
         ep.modify(server.fileno(), select.EPOLLOUT)
@@ -191,7 +193,7 @@ class TestEPoll(unittest.TestCase):
         self.assertFalse(then - now > 0.01)
 
         expected = [(server.fileno(), select.EPOLLOUT)]
-        self.assertEqual(events, expected)
+        self.assertEquals(events, expected)
 
     def test_errors(self):
         self.assertRaises(ValueError, select.epoll, -2)

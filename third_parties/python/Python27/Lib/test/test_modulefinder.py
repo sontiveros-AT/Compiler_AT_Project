@@ -211,17 +211,11 @@ def open_file(path):
 
 def create_package(source):
     ofi = None
-    try:
-        for line in source.splitlines():
-            if line.startswith(" ") or line.startswith("\t"):
-                ofi.write(line.strip() + "\n")
-            else:
-                if ofi:
-                    ofi.close()
-                ofi = open_file(os.path.join(TEST_DIR, line.strip()))
-    finally:
-        if ofi:
-            ofi.close()
+    for line in source.splitlines():
+        if line.startswith(" ") or line.startswith("\t"):
+            ofi.write(line.strip() + "\n")
+        else:
+            ofi = open_file(os.path.join(TEST_DIR, line.strip()))
 
 class ModuleFinderTest(unittest.TestCase):
     def _do_test(self, info, report=False):
@@ -277,19 +271,6 @@ class ModuleFinderTest(unittest.TestCase):
 
         def test_relative_imports_3(self):
             self._do_test(relative_import_test_3)
-
-    def test_extended_opargs(self):
-        extended_opargs_test = [
-            "a",
-            ["a", "b"],
-            [], [],
-            """\
-a.py
-                                %r
-                                import b
-b.py
-""" % range(2**16)]  # 2**16 constants
-        self._do_test(extended_opargs_test)
 
 def test_main():
     distutils.log.set_threshold(distutils.log.WARN)

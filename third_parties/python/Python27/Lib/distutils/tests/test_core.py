@@ -6,10 +6,9 @@ import os
 import shutil
 import sys
 import test.test_support
-from test.test_support import captured_stdout, run_unittest
+from test.test_support import captured_stdout
 import unittest
 from distutils.tests import support
-from distutils import log
 
 # setup script that uses __file__
 setup_using___file__ = """\
@@ -37,7 +36,6 @@ class CoreTestCase(support.EnvironGuard, unittest.TestCase):
         self.old_stdout = sys.stdout
         self.cleanup_testfn()
         self.old_argv = sys.argv, sys.argv[:]
-        self.addCleanup(log.set_threshold, log._global_log.threshold)
 
     def tearDown(self):
         sys.stdout = self.old_stdout
@@ -54,11 +52,7 @@ class CoreTestCase(support.EnvironGuard, unittest.TestCase):
             shutil.rmtree(path)
 
     def write_setup(self, text, path=test.test_support.TESTFN):
-        f = open(path, "w")
-        try:
-            f.write(text)
-        finally:
-            f.close()
+        open(path, "w").write(text)
         return path
 
     def test_run_setup_provides_file(self):
@@ -91,7 +85,7 @@ class CoreTestCase(support.EnvironGuard, unittest.TestCase):
         with captured_stdout() as stdout:
             distutils.core.setup(name='bar')
         stdout.seek(0)
-        self.assertEqual(stdout.read(), 'bar\n')
+        self.assertEquals(stdout.read(), 'bar\n')
 
         distutils.core.DEBUG = True
         try:
@@ -101,10 +95,10 @@ class CoreTestCase(support.EnvironGuard, unittest.TestCase):
             distutils.core.DEBUG = False
         stdout.seek(0)
         wanted = "options (after parsing config files):\n"
-        self.assertEqual(stdout.readlines()[0], wanted)
+        self.assertEquals(stdout.readlines()[0], wanted)
 
 def test_suite():
     return unittest.makeSuite(CoreTestCase)
 
 if __name__ == "__main__":
-    run_unittest(test_suite())
+    unittest.main(defaultTest="test_suite")

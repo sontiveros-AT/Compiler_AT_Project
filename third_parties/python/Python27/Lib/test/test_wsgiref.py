@@ -1,19 +1,19 @@
+from __future__ import nested_scopes    # Backward compat for 2.1
 from unittest import TestCase
 from wsgiref.util import setup_testing_defaults
 from wsgiref.headers import Headers
 from wsgiref.handlers import BaseHandler, BaseCGIHandler
 from wsgiref import util
 from wsgiref.validate import validator
-from wsgiref.simple_server import WSGIServer, WSGIRequestHandler
+from wsgiref.simple_server import WSGIServer, WSGIRequestHandler, demo_app
 from wsgiref.simple_server import make_server
 from StringIO import StringIO
 from SocketServer import BaseServer
-
 import os
 import re
 import sys
 
-from test import support
+from test import test_support
 
 class MockServer(WSGIServer):
     """Non-socket HTTP server"""
@@ -39,6 +39,9 @@ class MockHandler(WSGIRequestHandler):
         pass
 
 
+
+
+
 def hello_app(environ,start_response):
     start_response("200 OK", [
         ('Content-Type','text/plain'),
@@ -57,6 +60,27 @@ def run_amock(app=hello_app, data="GET / HTTP/1.0\n\n"):
         sys.stderr = olderr
 
     return out.getvalue(), err.getvalue()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def compare_generic_iter(make_it,match):
@@ -96,6 +120,10 @@ def compare_generic_iter(make_it,match):
             raise AssertionError("Too many items from .next()",it)
 
 
+
+
+
+
 class IntegrationTests(TestCase):
 
     def check_hello(self, out, has_length=True):
@@ -112,11 +140,6 @@ class IntegrationTests(TestCase):
     def test_plain_hello(self):
         out, err = run_amock()
         self.check_hello(out)
-
-    def test_request_length(self):
-        out, err = run_amock(data="GET " + ("x" * 65537) + " HTTP/1.0\n\n")
-        self.assertEqual(out.splitlines()[0],
-                         "HTTP/1.0 414 Request-URI Too Long")
 
     def test_validated_hello(self):
         out, err = run_amock(validator(hello_app))
@@ -136,6 +159,10 @@ class IntegrationTests(TestCase):
             "AssertionError: Headers (('Content-Type', 'text/plain')) must"
             " be of type list: <type 'tuple'>"
         )
+
+
+
+
 
 
 class UtilityTests(TestCase):
@@ -160,7 +187,7 @@ class UtilityTests(TestCase):
         # Check existing value
         env = {key:alt}
         util.setup_testing_defaults(env)
-        self.assertIs(env[key], alt)
+        self.assertTrue(env[key] is alt)
 
     def checkCrossDefault(self,key,value,**kw):
         util.setup_testing_defaults(kw)
@@ -173,6 +200,11 @@ class UtilityTests(TestCase):
     def checkReqURI(self,uri,query=1,**kw):
         util.setup_testing_defaults(kw)
         self.assertEqual(util.request_uri(kw,query),uri)
+
+
+
+
+
 
     def checkFW(self,text,size,match):
 
@@ -192,12 +224,14 @@ class UtilityTests(TestCase):
         it.close()
         self.assertTrue(it.filelike.closed)
 
+
     def testSimpleShifts(self):
         self.checkShift('','/', '', '/', '')
         self.checkShift('','/x', 'x', '/x', '')
         self.checkShift('/','', None, '/', '')
         self.checkShift('/a','/x/y', 'x', '/a/x', '/y')
         self.checkShift('/a','/x/',  'x', '/a/x', '/')
+
 
     def testNormalizedShifts(self):
         self.checkShift('/a/b', '/../y', '..', '/a', '/y')
@@ -211,6 +245,7 @@ class UtilityTests(TestCase):
         self.checkShift('/a/b', '/.//', '', '/a/b/', '')
         self.checkShift('/a/b', '/x//', 'x', '/a/b/x', '/')
         self.checkShift('/a/b', '/.', None, '/a/b', '')
+
 
     def testDefaults(self):
         for key, value in [
@@ -231,6 +266,7 @@ class UtilityTests(TestCase):
         ]:
             self.checkDefault(key,value)
 
+
     def testCrossDefaults(self):
         self.checkCrossDefault('HTTP_HOST',"foo.bar",SERVER_NAME="foo.bar")
         self.checkCrossDefault('wsgi.url_scheme',"https",HTTPS="on")
@@ -240,6 +276,7 @@ class UtilityTests(TestCase):
         self.checkCrossDefault('SERVER_PORT',"80",HTTPS="foo")
         self.checkCrossDefault('SERVER_PORT',"443",HTTPS="on")
 
+
     def testGuessScheme(self):
         self.assertEqual(util.guess_scheme({}), "http")
         self.assertEqual(util.guess_scheme({'HTTPS':"foo"}), "http")
@@ -247,10 +284,13 @@ class UtilityTests(TestCase):
         self.assertEqual(util.guess_scheme({'HTTPS':"yes"}), "https")
         self.assertEqual(util.guess_scheme({'HTTPS':"1"}), "https")
 
+
+
+
+
     def testAppURIs(self):
         self.checkAppURI("http://127.0.0.1/")
         self.checkAppURI("http://127.0.0.1/spam", SCRIPT_NAME="/spam")
-        self.checkAppURI("http://127.0.0.1/sp%E4m", SCRIPT_NAME="/sp\xe4m")
         self.checkAppURI("http://spam.example.com:2071/",
             HTTP_HOST="spam.example.com:2071", SERVER_PORT="2071")
         self.checkAppURI("http://spam.example.com/",
@@ -264,19 +304,10 @@ class UtilityTests(TestCase):
     def testReqURIs(self):
         self.checkReqURI("http://127.0.0.1/")
         self.checkReqURI("http://127.0.0.1/spam", SCRIPT_NAME="/spam")
-        self.checkReqURI("http://127.0.0.1/sp%E4m", SCRIPT_NAME="/sp\xe4m")
         self.checkReqURI("http://127.0.0.1/spammity/spam",
             SCRIPT_NAME="/spammity", PATH_INFO="/spam")
-        self.checkReqURI("http://127.0.0.1/spammity/sp%E4m",
-            SCRIPT_NAME="/spammity", PATH_INFO="/sp\xe4m")
-        self.checkReqURI("http://127.0.0.1/spammity/spam;ham",
-            SCRIPT_NAME="/spammity", PATH_INFO="/spam;ham")
-        self.checkReqURI("http://127.0.0.1/spammity/spam;cookie=1234,5678",
-            SCRIPT_NAME="/spammity", PATH_INFO="/spam;cookie=1234,5678")
         self.checkReqURI("http://127.0.0.1/spammity/spam?say=ni",
             SCRIPT_NAME="/spammity", PATH_INFO="/spam",QUERY_STRING="say=ni")
-        self.checkReqURI("http://127.0.0.1/spammity/spam?s%E4y=ni",
-            SCRIPT_NAME="/spammity", PATH_INFO="/spam",QUERY_STRING="s%E4y=ni")
         self.checkReqURI("http://127.0.0.1/spammity/spam", 0,
             SCRIPT_NAME="/spammity", PATH_INFO="/spam",QUERY_STRING="say=ni")
 
@@ -307,7 +338,7 @@ class HeaderTests(TestCase):
         self.assertEqual(Headers(test[:]).keys(), ['x'])
         self.assertEqual(Headers(test[:]).values(), ['y'])
         self.assertEqual(Headers(test[:]).items(), test)
-        self.assertIsNot(Headers(test).items(), test)  # must be copy!
+        self.assertFalse(Headers(test).items() is test)  # must be copy!
 
         h=Headers([])
         del h['foo']   # should not raise an error
@@ -376,63 +407,42 @@ class TestHandler(ErrorHandler):
         raise   # for testing, we want to see what's happening
 
 
+
+
+
+
+
+
+
+
+
 class HandlerTests(TestCase):
-    # testEnviron() can produce long error message
-    maxDiff = 80 * 50
+
+    def checkEnvironAttrs(self, handler):
+        env = handler.environ
+        for attr in [
+            'version','multithread','multiprocess','run_once','file_wrapper'
+        ]:
+            if attr=='file_wrapper' and handler.wsgi_file_wrapper is None:
+                continue
+            self.assertEqual(getattr(handler,'wsgi_'+attr),env['wsgi.'+attr])
+
+    def checkOSEnviron(self,handler):
+        empty = {}; setup_testing_defaults(empty)
+        env = handler.environ
+        from os import environ
+        for k,v in environ.items():
+            if k not in empty:
+                self.assertEqual(env[k],v)
+        for k,v in empty.items():
+            self.assertIn(k, env)
 
     def testEnviron(self):
-        os_environ = {
-            # very basic environment
-            'HOME': '/my/home',
-            'PATH': '/my/path',
-            'LANG': 'fr_FR.UTF-8',
-
-            # set some WSGI variables
-            'SCRIPT_NAME': 'test_script_name',
-            'SERVER_NAME': 'test_server_name',
-        }
-
-        with support.swap_attr(TestHandler, 'os_environ', os_environ):
-            # override X and HOME variables
-            handler = TestHandler(X="Y", HOME="/override/home")
-            handler.setup_environ()
-
-        # Check that wsgi_xxx attributes are copied to wsgi.xxx variables
-        # of handler.environ
-        for attr in ('version', 'multithread', 'multiprocess', 'run_once',
-                     'file_wrapper'):
-            self.assertEqual(getattr(handler, 'wsgi_' + attr),
-                             handler.environ['wsgi.' + attr])
-
-        # Test handler.environ as a dict
-        expected = {}
-        setup_testing_defaults(expected)
-        # Handler inherits os_environ variables which are not overriden
-        # by SimpleHandler.add_cgi_vars() (SimpleHandler.base_env)
-        for key, value in os_environ.items():
-            if key not in expected:
-                expected[key] = value
-        expected.update({
-            # X doesn't exist in os_environ
-            "X": "Y",
-            # HOME is overriden by TestHandler
-            'HOME': "/override/home",
-
-            # overriden by setup_testing_defaults()
-            "SCRIPT_NAME": "",
-            "SERVER_NAME": "127.0.0.1",
-
-            # set by BaseHandler.setup_environ()
-            'wsgi.input': handler.get_stdin(),
-            'wsgi.errors': handler.get_stderr(),
-            'wsgi.version': (1, 0),
-            'wsgi.run_once': False,
-            'wsgi.url_scheme': 'http',
-            'wsgi.multithread': True,
-            'wsgi.multiprocess': True,
-            'wsgi.file_wrapper': util.FileWrapper,
-        })
-        self.assertDictEqual(handler.environ, expected)
+        h = TestHandler(X="Y")
+        h.setup_environ()
+        self.checkEnvironAttrs(h)
+        self.checkOSEnviron(h)
+        self.assertEqual(h.environ["X"],"Y")
 
     def testCGIEnviron(self):
         h = BaseCGIHandler(None,None,None,{})
@@ -446,6 +456,7 @@ class HandlerTests(TestCase):
         h=TestHandler(); h.setup_environ()
         self.assertEqual(h.environ['wsgi.url_scheme'],'http')
 
+
     def testAbstractMethods(self):
         h = BaseHandler()
         for name in [
@@ -453,6 +464,7 @@ class HandlerTests(TestCase):
         ]:
             self.assertRaises(NotImplementedError, getattr(h,name))
         self.assertRaises(NotImplementedError, h._write, "test")
+
 
     def testContentLength(self):
         # Demo one reason iteration is better than write()...  ;)
@@ -463,11 +475,6 @@ class HandlerTests(TestCase):
 
         def trivial_app2(e,s):
             s('200 OK',[])(e['wsgi.url_scheme'])
-            return []
-
-        def trivial_app4(e,s):
-            # Simulate a response to a HEAD request
-            s('200 OK',[('Content-Length', '12345')])
             return []
 
         h = TestHandler()
@@ -486,12 +493,10 @@ class HandlerTests(TestCase):
             "http")
 
 
-        h = TestHandler()
-        h.run(trivial_app4)
-        self.assertEqual(h.stdout.getvalue(),
-            b'Status: 200 OK\r\n'
-            b'Content-Length: 12345\r\n'
-            b'\r\n')
+
+
+
+
 
     def testBasicErrorOutput(self):
 
@@ -532,6 +537,7 @@ class HandlerTests(TestCase):
             "Status: 200 OK\r\n"
             "\r\n"+MSG)
         self.assertNotEqual(h.stderr.getvalue().find("AssertionError"), -1)
+
 
     def testHeaderFormats(self):
 
@@ -574,28 +580,40 @@ class HandlerTests(TestCase):
                             (stdpat%(version,sw), h.stdout.getvalue())
                         )
 
-    def testCloseOnError(self):
-        side_effects = {'close_called': False}
-        MSG = b"Some output has been sent"
-        def error_app(e,s):
-            s("200 OK",[])(MSG)
-            class CrashyIterable(object):
-                def __iter__(self):
-                    while True:
-                        yield b'blah'
-                        raise AssertionError("This should be caught by handler")
-
-                def close(self):
-                    side_effects['close_called'] = True
-            return CrashyIterable()
-
-        h = ErrorHandler()
-        h.run(error_app)
-        self.assertEqual(side_effects['close_called'], True)
-
+# This epilogue is needed for compatibility with the Python 2.5 regrtest module
 
 def test_main():
-    support.run_unittest(__name__)
+    test_support.run_unittest(__name__)
 
 if __name__ == "__main__":
     test_main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# the above lines intentionally left blank

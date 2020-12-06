@@ -2,7 +2,7 @@
 
 Implements the Distutils 'build' command."""
 
-__revision__ = "$Id$"
+__revision__ = "$Id: build.py 77761 2010-01-26 22:46:15Z tarek.ziade $"
 
 import sys, os
 
@@ -114,7 +114,7 @@ class build(Command):
             self.build_scripts = os.path.join(self.build_base,
                                               'scripts-' + sys.version[0:3])
 
-        if self.executable is None and sys.executable:
+        if self.executable is None:
             self.executable = os.path.normpath(sys.executable)
 
     def run(self):

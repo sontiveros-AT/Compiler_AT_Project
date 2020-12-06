@@ -315,7 +315,7 @@ def _reconstruct(x, info, deep, memo=None):
     if n > 2:
         state = info[2]
     else:
-        state = None
+        state = {}
     if n > 3:
         listiter = info[3]
     else:
@@ -328,8 +328,18 @@ def _reconstruct(x, info, deep, memo=None):
         args = deepcopy(args, memo)
     y = callable(*args)
     memo[id(x)] = y
-
-    if state is not None:
+    if listiter is not None:
+        for item in listiter:
+            if deep:
+                item = deepcopy(item, memo)
+            y.append(item)
+    if dictiter is not None:
+        for key, value in dictiter:
+            if deep:
+                key = deepcopy(key, memo)
+                value = deepcopy(value, memo)
+            y[key] = value
+    if state:
         if deep:
             state = deepcopy(state, memo)
         if hasattr(y, '__setstate__'):
@@ -344,18 +354,6 @@ def _reconstruct(x, info, deep, memo=None):
             if slotstate is not None:
                 for key, value in slotstate.iteritems():
                     setattr(y, key, value)
-
-    if listiter is not None:
-        for item in listiter:
-            if deep:
-                item = deepcopy(item, memo)
-            y.append(item)
-    if dictiter is not None:
-        for key, value in dictiter:
-            if deep:
-                key = deepcopy(key, memo)
-                value = deepcopy(value, memo)
-            y[key] = value
     return y
 
 del d
@@ -418,16 +416,6 @@ def _test():
     print map(repr.repr, l1)
     print map(repr.repr, l2)
     print map(repr.repr, l3)
-    class odict(dict):
-        def __init__(self, d = {}):
-            self.a = 99
-            dict.__init__(self, d)
-        def __setitem__(self, k, i):
-            dict.__setitem__(self, k, i)
-            self.a
-    o = odict({"A" : "B"})
-    x = deepcopy(o)
-    print(o, x)
 
 if __name__ == '__main__':
     _test()

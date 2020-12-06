@@ -9,8 +9,9 @@ import subprocess
 import traceback
 import sys, os, time, errno
 
-if sys.platform in ('os2', 'riscos'):
-    raise unittest.SkipTest("Can't test signal on %s" % sys.platform)
+if sys.platform[:3] in ('win', 'os2') or sys.platform == 'riscos':
+    raise unittest.SkipTest("Can't test signal on %s" % \
+                                   sys.platform)
 
 
 class HandlerBCalled(Exception):
@@ -36,7 +37,6 @@ def ignoring_eintr(__func, *args, **kwargs):
         return None
 
 
-@unittest.skipIf(sys.platform == "win32", "Not valid on Windows")
 class InterProcessSignalTests(unittest.TestCase):
     MAX_DURATION = 20   # Entire test should last at most 20 sec.
 
@@ -109,7 +109,7 @@ class InterProcessSignalTests(unittest.TestCase):
             # This wait should be interrupted by the signal's exception.
             self.wait(child)
             time.sleep(1)  # Give the signal time to be delivered.
-            self.fail('HandlerBCalled exception not raised')
+            self.fail('HandlerBCalled exception not thrown')
         except HandlerBCalled:
             self.assertTrue(self.b_called)
             self.assertFalse(self.a_called)
@@ -138,8 +138,6 @@ class InterProcessSignalTests(unittest.TestCase):
         else:
             self.fail("pause returned of its own accord, and the signal"
                       " didn't arrive after another second.")
-        finally:
-            signal.alarm(0)
 
     # Issue 3864. Unknown if this affects earlier versions of freebsd also.
     @unittest.skipIf(sys.platform=='freebsd6',
@@ -150,7 +148,7 @@ class InterProcessSignalTests(unittest.TestCase):
         # test-running process from all the signals. It then
         # communicates with that child process over a pipe and
         # re-raises information about any exceptions the child
-        # raises. The real work happens in self.run_test().
+        # throws. The real work happens in self.run_test().
         os_done_r, os_done_w = os.pipe()
         with closing(os.fdopen(os_done_r)) as done_r, \
              closing(os.fdopen(os_done_w, 'w')) as done_w:
@@ -187,11 +185,7 @@ class InterProcessSignalTests(unittest.TestCase):
                 self.fail('Test deadlocked after %d seconds.' %
                           self.MAX_DURATION)
 
-            # read the exit status to not leak a zombie process
-            os.waitpid(child, 0)
 
-
-@unittest.skipIf(sys.platform == "win32", "Not valid on Windows")
 class BasicSignalTests(unittest.TestCase):
     def trivial_signal_handler(self, *args):
         pass
@@ -208,38 +202,12 @@ class BasicSignalTests(unittest.TestCase):
 
     def test_getsignal(self):
         hup = signal.signal(signal.SIGHUP, self.trivial_signal_handler)
-        self.assertEqual(signal.getsignal(signal.SIGHUP),
-                         self.trivial_signal_handler)
+        self.assertEquals(signal.getsignal(signal.SIGHUP),
+                          self.trivial_signal_handler)
         signal.signal(signal.SIGHUP, hup)
-        self.assertEqual(signal.getsignal(signal.SIGHUP), hup)
+        self.assertEquals(signal.getsignal(signal.SIGHUP), hup)
 
 
-@unittest.skipUnless(sys.platform == "win32", "Windows specific")
-class WindowsSignalTests(unittest.TestCase):
-    def test_issue9324(self):
-        # Updated for issue #10003, adding SIGBREAK
-        handler = lambda x, y: None
-        for sig in (signal.SIGABRT, signal.SIGBREAK, signal.SIGFPE,
-                    signal.SIGILL, signal.SIGINT, signal.SIGSEGV,
-                    signal.SIGTERM):
-            # Set and then reset a handler for signals that work on windows
-            signal.signal(sig, signal.signal(sig, handler))
-
-        with self.assertRaises(ValueError):
-            signal.signal(-1, handler)
-
-        with self.assertRaises(ValueError):
-            signal.signal(7, handler)
-
-
-class WakeupFDTests(unittest.TestCase):
-
-    def test_invalid_fd(self):
-        fd = test_support.make_bad_fd()
-        self.assertRaises(ValueError, signal.set_wakeup_fd, fd)
-
-
-@unittest.skipIf(sys.platform == "win32", "Not valid on Windows")
 class WakeupSignalTests(unittest.TestCase):
     TIMEOUT_FULL = 10
     TIMEOUT_HALF = 5
@@ -248,15 +216,11 @@ class WakeupSignalTests(unittest.TestCase):
         import select
 
         signal.alarm(1)
-        try:
-            before_time = time.time()
-            # We attempt to get a signal during the sleep,
-            # before select is called
-            time.sleep(self.TIMEOUT_FULL)
-            mid_time = time.time()
-        finally:
-            signal.alarm(0)
-
+        before_time = time.time()
+        # We attempt to get a signal during the sleep,
+        # before select is called
+        time.sleep(self.TIMEOUT_FULL)
+        mid_time = time.time()
         self.assertTrue(mid_time - before_time < self.TIMEOUT_HALF)
         select.select([self.read], [], [], self.TIMEOUT_FULL)
         after_time = time.time()
@@ -266,15 +230,11 @@ class WakeupSignalTests(unittest.TestCase):
         import select
 
         signal.alarm(1)
-        try:
-            before_time = time.time()
-            # We attempt to get a signal during the select call
-            self.assertRaises(select.error, select.select,
-                [self.read], [], [], self.TIMEOUT_FULL)
-            after_time = time.time()
-        finally:
-            signal.alarm(0)
-
+        before_time = time.time()
+        # We attempt to get a signal during the select call
+        self.assertRaises(select.error, select.select,
+            [self.read], [], [], self.TIMEOUT_FULL)
+        after_time = time.time()
         self.assertTrue(after_time - before_time < self.TIMEOUT_HALF)
 
     def setUp(self):
@@ -293,15 +253,14 @@ class WakeupSignalTests(unittest.TestCase):
         os.close(self.write)
         signal.signal(signal.SIGALRM, self.alrm)
 
-@unittest.skipIf(sys.platform == "win32", "Not valid on Windows")
 class SiginterruptTest(unittest.TestCase):
+    signum = signal.SIGUSR1
 
     def setUp(self):
         """Install a no-op signal handler that can be set to allow
         interrupts or not, and arrange for the original signal handler to be
         re-installed when the test is finished.
         """
-        self.signum = signal.SIGUSR1
         oldhandler = signal.signal(self.signum, lambda x,y: None)
         self.addCleanup(signal.signal, self.signum, oldhandler)
 
@@ -395,7 +354,7 @@ class SiginterruptTest(unittest.TestCase):
         self.assertFalse(i)
 
 
-@unittest.skipIf(sys.platform == "win32", "Not valid on Windows")
+
 class ItimerTest(unittest.TestCase):
     def setUp(self):
         self.hndl_called = False
@@ -458,8 +417,8 @@ class ItimerTest(unittest.TestCase):
         self.assertEqual(self.hndl_called, True)
 
     # Issue 3864. Unknown if this affects earlier versions of freebsd also.
-    @unittest.skipIf(sys.platform in ('freebsd6', 'netbsd5'),
-        'itimer not reliable (does not mix well with threading) on some BSDs.')
+    @unittest.skipIf(sys.platform=='freebsd6',
+        'itimer not reliable (does not mix well with threading) on freebsd6')
     def test_itimer_virtual(self):
         self.itimer = signal.ITIMER_VIRTUAL
         signal.signal(signal.SIGVTALRM, self.sig_vtalrm)
@@ -476,9 +435,9 @@ class ItimerTest(unittest.TestCase):
                           "high")
 
         # virtual itimer should be (0.0, 0.0) now
-        self.assertEqual(signal.getitimer(self.itimer), (0.0, 0.0))
+        self.assertEquals(signal.getitimer(self.itimer), (0.0, 0.0))
         # and the handler should have been called
-        self.assertEqual(self.hndl_called, True)
+        self.assertEquals(self.hndl_called, True)
 
     # Issue 3864. Unknown if this affects earlier versions of freebsd also.
     @unittest.skipIf(sys.platform=='freebsd6',
@@ -499,25 +458,13 @@ class ItimerTest(unittest.TestCase):
                           "high")
 
         # profiling itimer should be (0.0, 0.0) now
-        self.assertEqual(signal.getitimer(self.itimer), (0.0, 0.0))
+        self.assertEquals(signal.getitimer(self.itimer), (0.0, 0.0))
         # and the handler should have been called
         self.assertEqual(self.hndl_called, True)
 
-    def test_setitimer_tiny(self):
-        # bpo-30807: C setitimer() takes a microsecond-resolution interval.
-        # Check that float -> timeval conversion doesn't round
-        # the interval down to zero, which would disable the timer.
-        self.itimer = signal.ITIMER_REAL
-        signal.setitimer(self.itimer, 1e-6)
-        time.sleep(1)
-        self.assertEqual(self.hndl_called, True)
-
-
 def test_main():
     test_support.run_unittest(BasicSignalTests, InterProcessSignalTests,
-                              WakeupFDTests, WakeupSignalTests,
-                              SiginterruptTest, ItimerTest,
-                              WindowsSignalTests)
+        WakeupSignalTests, SiginterruptTest, ItimerTest)
 
 
 if __name__ == "__main__":

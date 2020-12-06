@@ -13,20 +13,6 @@ import collections
 import errno
 
 try:
-    import zlib
-    del zlib
-    _ZLIB_SUPPORTED = True
-except ImportError:
-    _ZLIB_SUPPORTED = False
-
-try:
-    import bz2
-    del bz2
-    _BZ2_SUPPORTED = True
-except ImportError:
-    _BZ2_SUPPORTED = False
-
-try:
     from pwd import getpwnam
 except ImportError:
     getpwnam = None
@@ -39,8 +25,7 @@ except ImportError:
 __all__ = ["copyfileobj", "copyfile", "copymode", "copystat", "copy", "copy2",
            "copytree", "move", "rmtree", "Error", "SpecialFileError",
            "ExecError", "make_archive", "get_archive_formats",
-           "register_archive_format", "unregister_archive_format",
-           "ignore_patterns"]
+           "register_archive_format", "unregister_archive_format"]
 
 class Error(EnvironmentError):
     pass
@@ -105,13 +90,7 @@ def copymode(src, dst):
         os.chmod(dst, mode)
 
 def copystat(src, dst):
-    """Copy file metadata
-
-    Copy the permission bits, last access time, last modification time, and
-    flags from `src` to `dst`. On Linux, copystat() also copies the "extended
-    attributes" where possible. The file contents, owner, and group are
-    unaffected. `src` and `dst` are path names given as strings.
-    """
+    """Copy all stat info (mode bits, atime, mtime, flags) from src to dst"""
     st = os.stat(src)
     mode = stat.S_IMODE(st.st_mode)
     if hasattr(os, 'utime'):
@@ -122,10 +101,8 @@ def copystat(src, dst):
         try:
             os.chflags(dst, st.st_flags)
         except OSError, why:
-            for err in 'EOPNOTSUPP', 'ENOTSUP':
-                if hasattr(errno, err) and why.errno == getattr(errno, err):
-                    break
-            else:
+            if (not hasattr(errno, 'EOPNOTSUPP') or
+                why.errno != errno.EOPNOTSUPP):
                 raise
 
 def copy(src, dst):
@@ -140,10 +117,7 @@ def copy(src, dst):
     copymode(src, dst)
 
 def copy2(src, dst):
-    """Copy data and metadata. Return the file's destination.
-
-    Metadata is copied with copystat(). Please see the copystat function
-    for more information.
+    """Copy data and all stat info ("cp -p src dst").
 
     The destination may be a directory.
 
@@ -226,7 +200,7 @@ def copytree(src, dst, symlinks=False, ignore=None):
             # Copying file access times may fail on Windows
             pass
         else:
-            errors.append((src, dst, str(why)))
+            errors.extend((src, dst, str(why)))
     if errors:
         raise Error, errors
 
@@ -282,8 +256,7 @@ def rmtree(path, ignore_errors=False, onerror=None):
 def _basename(path):
     # A basename() variant which first strips the trailing slash, if present.
     # Thus we always get the last component of the path, even for directories.
-    sep = os.path.sep + (os.path.altsep or '')
-    return os.path.basename(path.rstrip(sep))
+    return os.path.basename(path.rstrip(os.path.sep))
 
 def move(src, dst):
     """Recursively move a file or directory to another location. This is
@@ -304,12 +277,6 @@ def move(src, dst):
     """
     real_dst = dst
     if os.path.isdir(dst):
-        if _samefile(src, dst):
-            # We might be on a case insensitive filesystem,
-            # perform the rename anyway.
-            os.rename(src, dst)
-            return
-
         real_dst = os.path.join(dst, _basename(src))
         if os.path.exists(real_dst):
             raise Error, "Destination path '%s' already exists" % real_dst
@@ -369,28 +336,24 @@ def _make_tarball(base_name, base_dir, compress="gzip", verbose=0, dry_run=0,
     archive that is being built. If not provided, the current owner and group
     will be used.
 
-    The output tar file will be named 'base_name' +  ".tar", possibly plus
+    The output tar file will be named 'base_dir' +  ".tar", possibly plus
     the appropriate compression extension (".gz", or ".bz2").
 
     Returns the output filename.
     """
-    if compress is None:
-        tar_compression = ''
-    elif _ZLIB_SUPPORTED and compress == 'gzip':
-        tar_compression = 'gz'
-    elif _BZ2_SUPPORTED and compress == 'bzip2':
-        tar_compression = 'bz2'
-    else:
-        raise ValueError("bad value for 'compress', or compression format not "
-                         "supported : {0}".format(compress))
+    tar_compression = {'gzip': 'gz', 'bzip2': 'bz2', None: ''}
+    compress_ext = {'gzip': '.gz', 'bzip2': '.bz2'}
 
-    compress_ext = '.' + tar_compression if compress else ''
-    archive_name = base_name + '.tar' + compress_ext
+    # flags for compression program, each element of list will be an argument
+    if compress is not None and compress not in compress_ext.keys():
+        raise ValueError, \
+              ("bad value for 'compress': must be None, 'gzip' or 'bzip2'")
+
+    archive_name = base_name + '.tar' + compress_ext.get(compress, '')
     archive_dir = os.path.dirname(archive_name)
 
-    if archive_dir and not os.path.exists(archive_dir):
-        if logger is not None:
-            logger.info("creating %s", archive_dir)
+    if not os.path.exists(archive_dir):
+        logger.info("creating %s" % archive_dir)
         if not dry_run:
             os.makedirs(archive_dir)
 
@@ -414,7 +377,7 @@ def _make_tarball(base_name, base_dir, compress="gzip", verbose=0, dry_run=0,
         return tarinfo
 
     if not dry_run:
-        tar = tarfile.open(archive_name, 'w|%s' % tar_compression)
+        tar = tarfile.open(archive_name, 'w|%s' % tar_compression[compress])
         try:
             tar.add(base_dir, filter=_set_uid_gid)
         finally:
@@ -422,21 +385,17 @@ def _make_tarball(base_name, base_dir, compress="gzip", verbose=0, dry_run=0,
 
     return archive_name
 
-def _call_external_zip(base_dir, zip_filename, verbose, dry_run, logger):
+def _call_external_zip(base_dir, zip_filename, verbose=False, dry_run=False):
     # XXX see if we want to keep an external call here
     if verbose:
         zipoptions = "-r"
     else:
         zipoptions = "-rq"
-    cmd = ["zip", zipoptions, zip_filename, base_dir]
-    if logger is not None:
-        logger.info(' '.join(cmd))
-    if dry_run:
-        return
-    import subprocess
+    from distutils.errors import DistutilsExecError
+    from distutils.spawn import spawn
     try:
-        subprocess.check_call(cmd)
-    except subprocess.CalledProcessError:
+        spawn(["zip", zipoptions, zip_filename, base_dir], dry_run=dry_run)
+    except DistutilsExecError:
         # XXX really should distinguish between "couldn't find
         # external 'zip' command" and "zip failed".
         raise ExecError, \
@@ -447,7 +406,7 @@ def _call_external_zip(base_dir, zip_filename, verbose, dry_run, logger):
 def _make_zipfile(base_name, base_dir, verbose=0, dry_run=0, logger=None):
     """Create a zip file from all the files under 'base_dir'.
 
-    The output zip file will be named 'base_name' + ".zip".  Uses either the
+    The output zip file will be named 'base_dir' + ".zip".  Uses either the
     "zipfile" Python module (if available) or the InfoZIP "zip" utility
     (if installed and found on the default search path).  If neither tool is
     available, raises ExecError.  Returns the name of the output zip
@@ -456,7 +415,7 @@ def _make_zipfile(base_name, base_dir, verbose=0, dry_run=0, logger=None):
     zip_filename = base_name + ".zip"
     archive_dir = os.path.dirname(base_name)
 
-    if archive_dir and not os.path.exists(archive_dir):
+    if not os.path.exists(archive_dir):
         if logger is not None:
             logger.info("creating %s", archive_dir)
         if not dry_run:
@@ -465,53 +424,38 @@ def _make_zipfile(base_name, base_dir, verbose=0, dry_run=0, logger=None):
     # If zipfile module is not available, try spawning an external 'zip'
     # command.
     try:
-        import zlib
         import zipfile
     except ImportError:
         zipfile = None
 
     if zipfile is None:
-        _call_external_zip(base_dir, zip_filename, verbose, dry_run, logger)
+        _call_external_zip(base_dir, zip_filename, verbose, dry_run)
     else:
         if logger is not None:
             logger.info("creating '%s' and adding '%s' to it",
                         zip_filename, base_dir)
 
         if not dry_run:
-            with zipfile.ZipFile(zip_filename, "w",
-                                 compression=zipfile.ZIP_DEFLATED) as zf:
-                path = os.path.normpath(base_dir)
-                if path != os.curdir:
-                    zf.write(path, path)
-                    if logger is not None:
-                        logger.info("adding '%s'", path)
-                for dirpath, dirnames, filenames in os.walk(base_dir):
-                    for name in sorted(dirnames):
-                        path = os.path.normpath(os.path.join(dirpath, name))
-                        zf.write(path, path)
+            zip = zipfile.ZipFile(zip_filename, "w",
+                                  compression=zipfile.ZIP_DEFLATED)
+
+            for dirpath, dirnames, filenames in os.walk(base_dir):
+                for name in filenames:
+                    path = os.path.normpath(os.path.join(dirpath, name))
+                    if os.path.isfile(path):
+                        zip.write(path, path)
                         if logger is not None:
                             logger.info("adding '%s'", path)
-                    for name in filenames:
-                        path = os.path.normpath(os.path.join(dirpath, name))
-                        if os.path.isfile(path):
-                            zf.write(path, path)
-                            if logger is not None:
-                                logger.info("adding '%s'", path)
+            zip.close()
 
     return zip_filename
 
 _ARCHIVE_FORMATS = {
+    'gztar': (_make_tarball, [('compress', 'gzip')], "gzip'ed tar-file"),
+    'bztar': (_make_tarball, [('compress', 'bzip2')], "bzip2'ed tar-file"),
     'tar':   (_make_tarball, [('compress', None)], "uncompressed tar file"),
-    'zip':   (_make_zipfile, [], "ZIP file")
-}
-
-if _ZLIB_SUPPORTED:
-    _ARCHIVE_FORMATS['gztar'] = (_make_tarball, [('compress', 'gzip')],
-                                "gzip'ed tar-file")
-
-if _BZ2_SUPPORTED:
-    _ARCHIVE_FORMATS['bztar'] = (_make_tarball, [('compress', 'bzip2')],
-                                "bzip2'ed tar-file")
+    'zip':   (_make_zipfile, [],"ZIP file")
+    }
 
 def get_archive_formats():
     """Returns a list of supported formats for archiving and unarchiving.
@@ -552,8 +496,8 @@ def make_archive(base_name, format, root_dir=None, base_dir=None, verbose=0,
     """Create an archive file (eg. zip or tar).
 
     'base_name' is the name of the file to create, minus any format-specific
-    extension; 'format' is the archive format: one of "zip", "tar", "gztar",
-    or "bztar".  Or any other registered format.
+    extension; 'format' is the archive format: one of "zip", "tar", "bztar"
+    or "gztar".
 
     'root_dir' is a directory that will be the root directory of the
     archive; ie. we typically chdir into 'root_dir' before creating the
