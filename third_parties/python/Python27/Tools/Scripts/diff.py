@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """ Command line interface to difflib.py providing diffs in four formats:
 
 * ndiff:    lists every line and highlights interline changes.
@@ -32,10 +31,8 @@ def main():
 
     fromdate = time.ctime(os.stat(fromfile).st_mtime)
     todate = time.ctime(os.stat(tofile).st_mtime)
-    with open(fromfile, 'U') as f:
-        fromlines = f.readlines()
-    with open(tofile, 'U') as f:
-        tolines = f.readlines()
+    fromlines = open(fromfile, 'U').readlines()
+    tolines = open(tofile, 'U').readlines()
 
     if options.u:
         diff = difflib.unified_diff(fromlines, tolines, fromfile, tofile, fromdate, todate, n=n)

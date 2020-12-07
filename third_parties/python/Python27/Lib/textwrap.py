@@ -5,17 +5,9 @@
 # Copyright (C) 2002, 2003 Python Software Foundation.
 # Written by Greg Ward <gward@python.net>
 
-__revision__ = "$Id$"
+__revision__ = "$Id: textwrap.py 74912 2009-09-18 16:19:56Z georg.brandl $"
 
 import string, re
-
-try:
-    _unicode = unicode
-except NameError:
-    # If Python is built without Unicode support, the unicode type
-    # will not exist. Fake one.
-    class _unicode(object):
-        pass
 
 # Do the right thing with boolean values for all known Python versions
 # (so this module can be copied to projects that don't depend on Python
@@ -147,7 +139,7 @@ class TextWrapper:
         """_munge_whitespace(text : string) -> string
 
         Munge whitespace in text: expand tabs and convert all other
-        whitespace characters to spaces.  Eg. " foo\\tbar\\n\\nbaz"
+        whitespace characters to spaces.  Eg. " foo\tbar\n\nbaz"
         becomes " foo    bar  baz".
         """
         if self.expand_tabs:
@@ -155,7 +147,7 @@ class TextWrapper:
         if self.replace_whitespace:
             if isinstance(text, str):
                 text = text.translate(self.whitespace_trans)
-            elif isinstance(text, _unicode):
+            elif isinstance(text, unicode):
                 text = text.translate(self.unicode_whitespace_trans)
         return text
 
@@ -175,7 +167,7 @@ class TextWrapper:
           'use', ' ', 'the', ' ', '-b', ' ', option!'
         otherwise.
         """
-        if isinstance(text, _unicode):
+        if isinstance(text, unicode):
             if self.break_on_hyphens:
                 pat = self.wordsep_re_uni
             else:
@@ -193,7 +185,7 @@ class TextWrapper:
         """_fix_sentence_endings(chunks : [string])
 
         Correct for sentence endings buried in 'chunks'.  Eg. when the
-        original text contains "... foo.\\nBar ...", munge_whitespace()
+        original text contains "... foo.\nBar ...", munge_whitespace()
         and split() will convert that to [..., "foo.", " ", "Bar", ...]
         which has one too few spaces; this method simply changes the one
         space to two.
@@ -379,12 +371,10 @@ def dedent(text):
     in indented form.
 
     Note that tabs and spaces are both treated as whitespace, but they
-    are not equal: the lines "  hello" and "\\thello" are
+    are not equal: the lines "  hello" and "\thello" are
     considered to have no common leading whitespace.  (This behaviour is
     new in Python 2.5; older versions of this module incorrectly
     expanded tabs before searching for common leading whitespace.)
-
-    Entirely blank lines are normalized to a newline character.
     """
     # Look for the longest leading string of spaces and tabs common to
     # all lines.
@@ -405,15 +395,11 @@ def dedent(text):
         elif margin.startswith(indent):
             margin = indent
 
-        # Find the largest common whitespace between current line and previous
-        # winner.
+        # Current line and previous winner have no common whitespace:
+        # there is no margin.
         else:
-            for i, (x, y) in enumerate(zip(margin, indent)):
-                if x != y:
-                    margin = margin[:i]
-                    break
-            else:
-                margin = margin[:len(indent)]
+            margin = ""
+            break
 
     # sanity check (testing/debugging only)
     if 0 and margin:

@@ -4,33 +4,7 @@
 #
 # multiprocessing/managers.py
 #
-# Copyright (c) 2006-2008, R Oudkerk
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-#
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-# 3. Neither the name of author nor the names of any contributors may be
-#    used to endorse or promote products derived from this software
-#    without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-# SUCH DAMAGE.
+# Copyright (c) 2006-2008, R Oudkerk --- see COPYING.txt
 #
 
 __all__ = [ 'BaseManager', 'SyncManager', 'BaseProxy', 'Token' ]
@@ -159,7 +133,7 @@ class Server(object):
         Listener, Client = listener_client[serializer]
 
         # do authentication later
-        self.listener = Listener(address=address, backlog=16)
+        self.listener = Listener(address=address, backlog=5)
         self.address = self.listener.address
 
         self.id_to_obj = {'0': (None, ())}
@@ -287,7 +261,7 @@ class Server(object):
                 try:
                     send(msg)
                 except Exception, e:
-                    send(('#UNSERIALIZABLE', format_exc()))
+                    send(('#UNSERIALIZABLE', repr(msg)))
             except Exception, e:
                 util.info('exception in thread serving %r',
                         threading.current_thread().name)
@@ -763,7 +737,6 @@ class BaseProxy(object):
         elif kind == '#PROXY':
             exposed, token = result
             proxytype = self._manager._registry[token.typeid][-1]
-            token.address = self._token.address
             proxy = proxytype(
                 token, self._serializer, manager=self._manager,
                 authkey=self._authkey, exposed=exposed
@@ -884,7 +857,7 @@ def RebuildProxy(func, token, serializer, kwds):
 
 def MakeProxyType(name, exposed, _cache={}):
     '''
-    Return a proxy type whose methods are given by `exposed`
+    Return an proxy type whose methods are given by `exposed`
     '''
     exposed = tuple(exposed)
     try:
@@ -1059,13 +1032,10 @@ class ListProxy(BaseListProxy):
 
 
 DictProxy = MakeProxyType('DictProxy', (
-    '__contains__', '__delitem__', '__getitem__', '__iter__', '__len__',
+    '__contains__', '__delitem__', '__getitem__', '__len__',
     '__setitem__', 'clear', 'copy', 'get', 'has_key', 'items',
     'keys', 'pop', 'popitem', 'setdefault', 'update', 'values'
     ))
-DictProxy._method_to_typeid_ = {
-    '__iter__': 'Iterator',
-    }
 
 
 ArrayProxy = MakeProxyType('ArrayProxy', (

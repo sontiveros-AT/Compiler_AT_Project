@@ -1,12 +1,9 @@
-from io import BytesIO
 from test.test_support import run_unittest, check_warnings
 import cgi
 import os
 import sys
 import tempfile
 import unittest
-
-from collections import namedtuple
 
 class HackedSysModule:
     # The regression test will have real values in sys.argv, which
@@ -123,11 +120,6 @@ def gen_result(data, environ):
 
 class CgiTests(unittest.TestCase):
 
-    def test_escape(self):
-        self.assertEqual("test &amp; string", cgi.escape("test & string"))
-        self.assertEqual("&lt;test string&gt;", cgi.escape("<test string>"))
-        self.assertEqual("&quot;test string&quot;", cgi.escape('"test string"', True))
-
     def test_strict(self):
         for orig, expect in parse_strict_test_cases:
             # Test basic parsing
@@ -233,15 +225,7 @@ class CgiTests(unittest.TestCase):
         # if we're not chunking properly, readline is only called twice
         # (by read_binary); if we are chunking properly, it will be called 5 times
         # as long as the chunksize is 1 << 16.
-        self.assertGreater(f.numcalls, 2)
-
-    def test_fieldstorage_invalid(self):
-        fs = cgi.FieldStorage()
-        self.assertFalse(fs)
-        self.assertRaises(TypeError, bool(fs))
-        self.assertEqual(list(fs), list(fs.keys()))
-        fs.list.append(namedtuple('MockFieldStorage', 'name')('fieldvalue'))
-        self.assertTrue(fs)
+        self.assertTrue(f.numcalls > 2)
 
     def test_fieldstorage_multipart(self):
         #Test basic FieldStorage multipart parsing
@@ -267,7 +251,7 @@ Content-Disposition: form-data; name="submit"
 -----------------------------721837373350705526688164684--
 """
         fs = cgi.FieldStorage(fp=StringIO(postdata), environ=env)
-        self.assertEqual(len(fs.list), 4)
+        self.assertEquals(len(fs.list), 4)
         expect = [{'name':'id', 'filename':None, 'value':'1234'},
                   {'name':'title', 'filename':None, 'value':''},
                   {'name':'file', 'filename':'test.txt','value':'Testing 123.\n'},
@@ -275,30 +259,7 @@ Content-Disposition: form-data; name="submit"
         for x in range(len(fs.list)):
             for k, exp in expect[x].items():
                 got = getattr(fs.list[x], k)
-                self.assertEqual(got, exp)
-
-    def test_fieldstorage_multipart_maxline(self):
-        # Issue #18167
-        maxline = 1 << 16
-        self.maxDiff = None
-        def check(content):
-            data = """
----123
-Content-Disposition: form-data; name="upload"; filename="fake.txt"
-Content-Type: text/plain
-
-%s
----123--
-""".replace('\n', '\r\n') % content
-            environ = {
-                'CONTENT_LENGTH':   str(len(data)),
-                'CONTENT_TYPE':     'multipart/form-data; boundary=-123',
-                'REQUEST_METHOD':   'POST',
-            }
-            self.assertEqual(gen_result(data, environ), {'upload': content})
-        check('x' * (maxline - 1))
-        check('x' * (maxline - 1) + '\r')
-        check('x' * (maxline - 1) + '\r' + 'y' * (maxline - 1))
+                self.assertEquals(got, exp)
 
     _qs_result = {
         'key1': 'value1',
@@ -316,60 +277,6 @@ Content-Type: text/plain
         }
         v = gen_result(data, environ)
         self.assertEqual(self._qs_result, v)
-
-    def test_max_num_fields(self):
-        # For application/x-www-form-urlencoded
-        data = '&'.join(['a=a']*11)
-        environ = {
-            'CONTENT_LENGTH': str(len(data)),
-            'CONTENT_TYPE': 'application/x-www-form-urlencoded',
-            'REQUEST_METHOD': 'POST',
-        }
-
-        with self.assertRaises(ValueError):
-            cgi.FieldStorage(
-                fp=BytesIO(data.encode()),
-                environ=environ,
-                max_num_fields=10,
-            )
-
-        # For multipart/form-data
-        data = """---123
-Content-Disposition: form-data; name="a"
-
-3
----123
-Content-Type: application/x-www-form-urlencoded
-
-a=4
----123
-Content-Type: application/x-www-form-urlencoded
-
-a=5
----123--
-"""
-        environ = {
-            'CONTENT_LENGTH':   str(len(data)),
-            'CONTENT_TYPE':     'multipart/form-data; boundary=-123',
-            'QUERY_STRING':     'a=1&a=2',
-            'REQUEST_METHOD':   'POST',
-        }
-
-        # 2 GET entities
-        # 1 top level POST entities
-        # 1 entity within the second POST entity
-        # 1 entity within the third POST entity
-        with self.assertRaises(ValueError):
-            cgi.FieldStorage(
-                fp=BytesIO(data.encode()),
-                environ=environ,
-                max_num_fields=4,
-            )
-        cgi.FieldStorage(
-            fp=BytesIO(data.encode()),
-            environ=environ,
-            max_num_fields=5,
-        )
 
     def testQSAndFormData(self):
         data = """
@@ -470,9 +377,6 @@ this is the content of the fake file
         self.assertEqual(
             cgi.parse_header('attachment; filename="strange;name";size=123;'),
             ("attachment", {"filename": "strange;name", "size": "123"}))
-        self.assertEqual(
-            cgi.parse_header('form-data; name="files"; filename="fo\\"o;bar"'),
-            ("form-data", {"name": "files", "filename": 'fo"o;bar'}))
 
 
 def test_main():

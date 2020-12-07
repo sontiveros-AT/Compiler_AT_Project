@@ -1,11 +1,8 @@
-import unittest
+
 import struct
 import sys
 from test import test_support, string_tests
 
-
-class StrSubclass(str):
-    pass
 
 class StrTest(
     string_tests.CommonTest,
@@ -37,18 +34,6 @@ class StrTest(
     def test_formatting(self):
         string_tests.MixinStrUnicodeUserStringTest.test_formatting(self)
         self.assertRaises(OverflowError, '%c'.__mod__, 0x1234)
-
-    @test_support.cpython_only
-    def test_formatting_huge_precision(self):
-        from _testcapi import INT_MAX
-        format_string = "%.{}f".format(INT_MAX + 1)
-        with self.assertRaises(ValueError):
-            result = format_string % 2.34
-
-    def test_formatting_huge_width(self):
-        format_string = "%{}f".format(sys.maxsize + 1)
-        with self.assertRaises(ValueError):
-            result = format_string % 2.34
 
     def test_conversion(self):
         # Make sure __str__() behaves properly
@@ -110,18 +95,15 @@ class StrTest(
         self.assertEqual(str(Foo6("bar")), "foos")
         self.assertEqual(str(Foo7("bar")), "foos")
         self.assertEqual(str(Foo8("foo")), "foofoo")
-        self.assertIs(type(str(Foo8("foo"))), Foo8)
-        self.assertEqual(StrSubclass(Foo8("foo")), "foofoo")
-        self.assertIs(type(StrSubclass(Foo8("foo"))), StrSubclass)
         self.assertEqual(str(Foo9("foo")), "string")
         self.assertEqual(unicode(Foo9("foo")), u"not unicode")
 
-    # This test only affects 32-bit platforms because expandtabs can only take
-    # an int as the max value, not a 64-bit C long.  If expandtabs is changed
-    # to take a 64-bit long, this test should apply to all platforms.
-    @unittest.skipIf(sys.maxint > (1 << 32) or struct.calcsize('P') != 4,
-                     'only applies to 32-bit platforms')
     def test_expandtabs_overflows_gracefully(self):
+        # This test only affects 32-bit platforms because expandtabs can only take
+        # an int as the max value, not a 64-bit C long.  If expandtabs is changed
+        # to take a 64-bit long, this test should apply to all platforms.
+        if sys.maxint > (1 << 32) or struct.calcsize('P') != 4:
+            return
         self.assertRaises(OverflowError, 't\tt\t'.expandtabs, sys.maxint)
 
     def test__format__(self):
@@ -294,7 +276,7 @@ class StrTest(
         # format specifiers for user defined type
         self.assertEqual('{0:abc}'.format(C()), 'abc')
 
-        # !r and !s coercions
+        # !r and !s coersions
         self.assertEqual('{0!s}'.format('Hello'), 'Hello')
         self.assertEqual('{0!s:}'.format('Hello'), 'Hello')
         self.assertEqual('{0!s:15}'.format('Hello'), 'Hello          ')
@@ -308,14 +290,11 @@ class StrTest(
         self.assertEqual('{0}'.format([]), '[]')
         self.assertEqual('{0}'.format([1]), '[1]')
         self.assertEqual('{0}'.format(E('data')), 'E(data)')
+        self.assertEqual('{0:^10}'.format(E('data')), ' E(data)  ')
+        self.assertEqual('{0:^10s}'.format(E('data')), ' E(data)  ')
         self.assertEqual('{0:d}'.format(G('data')), 'G(data)')
+        self.assertEqual('{0:>15s}'.format(G('data')), ' string is data')
         self.assertEqual('{0!s}'.format(G('data')), 'string is data')
-
-        msg = 'object.__format__ with a non-empty format string is deprecated'
-        with test_support.check_warnings((msg, PendingDeprecationWarning)):
-            self.assertEqual('{0:^10}'.format(E('data')), ' E(data)  ')
-            self.assertEqual('{0:^10s}'.format(E('data')), ' E(data)  ')
-            self.assertEqual('{0:>15s}'.format(G('data')), ' string is data')
 
         self.assertEqual("{0:date: %Y-%m-%d}".format(I(year=2007,
                                                        month=8,
@@ -389,21 +368,6 @@ class StrTest(
         self.assertRaises(ValueError, format, "", "-")
         self.assertRaises(ValueError, "{0:=s}".format, '')
 
-    def test_format_huge_precision(self):
-        format_string = ".{}f".format(sys.maxsize + 1)
-        with self.assertRaises(ValueError):
-            result = format(2.34, format_string)
-
-    def test_format_huge_width(self):
-        format_string = "{}f".format(sys.maxsize + 1)
-        with self.assertRaises(ValueError):
-            result = format(2.34, format_string)
-
-    def test_format_huge_item_number(self):
-        format_string = "{{{}:.6f}}".format(sys.maxsize + 1)
-        with self.assertRaises(ValueError):
-            result = format_string.format(2.34)
-
     def test_format_auto_numbering(self):
         class C:
             def __init__(self, x=100):
@@ -434,11 +398,6 @@ class StrTest(
         self.assertEqual('{:{f}}{g}{}'.format(1, 3, g='g', f=2), ' 1g3')
         self.assertEqual('{f:{}}{}{g}'.format(2, 4, f=1, g='g'), ' 14g')
 
-    def test_format_c_overflow(self):
-        # issue #7267
-        self.assertRaises(OverflowError, '{0:c}'.format, -1)
-        self.assertRaises(OverflowError, '{0:c}'.format, 256)
-
     def test_buffer_is_readonly(self):
         self.assertRaises(TypeError, sys.stdin.readinto, b"")
 
@@ -452,128 +411,10 @@ class StrTest(
         self.assertEqual('Andr\202 x'.decode('ascii', 'replace'),
                          'Andr\202 x'.decode(encoding='ascii', errors='replace'))
 
-    def test_startswith_endswith_errors(self):
-        with self.assertRaises(UnicodeDecodeError):
-            '\xff'.startswith(u'x')
-        with self.assertRaises(UnicodeDecodeError):
-            '\xff'.endswith(u'x')
-        for meth in ('foo'.startswith, 'foo'.endswith):
-            with self.assertRaises(TypeError) as cm:
-                meth(['f'])
-            exc = str(cm.exception)
-            self.assertIn('unicode', exc)
-            self.assertIn('str', exc)
-            self.assertIn('tuple', exc)
-
-    def test_issue28598_strsubclass_rhs(self):
-        # A subclass of str with an __rmod__ method should be able to hook
-        # into the % operator
-        class SubclassedStr(str):
-            def __rmod__(self, other):
-                return 'Success, self.__rmod__({!r}) was called'.format(other)
-        self.assertEqual('lhs %% %r' % SubclassedStr('rhs'),
-                         "Success, self.__rmod__('lhs %% %r') was called")
-
-
-class CAPITest(unittest.TestCase):
-
-    # Test PyString_FromFormat()
-    def test_from_format(self):
-        ctypes = test_support.import_module('ctypes')
-        _testcapi = test_support.import_module('_testcapi')
-        from ctypes import pythonapi, py_object
-        from ctypes import (
-            c_int, c_uint,
-            c_long, c_ulong,
-            c_size_t, c_ssize_t,
-            c_char_p)
-
-        PyString_FromFormat = pythonapi.PyString_FromFormat
-        PyString_FromFormat.restype = py_object
-
-        # basic tests
-        self.assertEqual(PyString_FromFormat(b'format'),
-                         b'format')
-        self.assertEqual(PyString_FromFormat(b'Hello %s !', b'world'),
-                         b'Hello world !')
-
-        # test formatters
-        self.assertEqual(PyString_FromFormat(b'c=%c', c_int(0)),
-                         b'c=\0')
-        self.assertEqual(PyString_FromFormat(b'c=%c', c_int(ord('@'))),
-                         b'c=@')
-        self.assertEqual(PyString_FromFormat(b'c=%c', c_int(255)),
-                         b'c=\xff')
-        self.assertEqual(PyString_FromFormat(b'd=%d ld=%ld zd=%zd',
-                                            c_int(1), c_long(2),
-                                            c_size_t(3)),
-                         b'd=1 ld=2 zd=3')
-        self.assertEqual(PyString_FromFormat(b'd=%d ld=%ld zd=%zd',
-                                            c_int(-1), c_long(-2),
-                                            c_size_t(-3)),
-                         b'd=-1 ld=-2 zd=-3')
-        self.assertEqual(PyString_FromFormat(b'u=%u lu=%lu zu=%zu',
-                                            c_uint(123), c_ulong(456),
-                                            c_size_t(789)),
-                         b'u=123 lu=456 zu=789')
-        self.assertEqual(PyString_FromFormat(b'i=%i', c_int(123)),
-                         b'i=123')
-        self.assertEqual(PyString_FromFormat(b'i=%i', c_int(-123)),
-                         b'i=-123')
-        self.assertEqual(PyString_FromFormat(b'x=%x', c_int(0xabc)),
-                         b'x=abc')
-
-        self.assertEqual(PyString_FromFormat(b's=%s', c_char_p(b'cstr')),
-                         b's=cstr')
-
-        # test minimum and maximum integer values
-        size_max = c_size_t(-1).value
-        for formatstr, ctypes_type, value, py_formatter in (
-            (b'%d', c_int, _testcapi.INT_MIN, str),
-            (b'%d', c_int, _testcapi.INT_MAX, str),
-            (b'%ld', c_long, _testcapi.LONG_MIN, str),
-            (b'%ld', c_long, _testcapi.LONG_MAX, str),
-            (b'%lu', c_ulong, _testcapi.ULONG_MAX, str),
-            (b'%zd', c_ssize_t, _testcapi.PY_SSIZE_T_MIN, str),
-            (b'%zd', c_ssize_t, _testcapi.PY_SSIZE_T_MAX, str),
-            (b'%zu', c_size_t, size_max, str),
-        ):
-            self.assertEqual(PyString_FromFormat(formatstr, ctypes_type(value)),
-                             py_formatter(value).encode('ascii')),
-
-        # width and precision (width is currently ignored)
-        self.assertEqual(PyString_FromFormat(b'%5s', b'a'),
-                         b'a')
-        self.assertEqual(PyString_FromFormat(b'%.3s', b'abcdef'),
-                         b'abc')
-
-        # '%%' formatter
-        self.assertEqual(PyString_FromFormat(b'%%'),
-                         b'%')
-        self.assertEqual(PyString_FromFormat(b'[%%]'),
-                         b'[%]')
-        self.assertEqual(PyString_FromFormat(b'%%%c', c_int(ord('_'))),
-                         b'%_')
-        self.assertEqual(PyString_FromFormat(b'%%s'),
-                         b'%s')
-
-        # Invalid formats and partial formatting
-        self.assertEqual(PyString_FromFormat(b'%'), b'%')
-        self.assertEqual(PyString_FromFormat(b'x=%i y=%', c_int(2), c_int(3)),
-                         b'x=2 y=%')
-
-        self.assertEqual(PyString_FromFormat(b'%c', c_int(-1)), b'\xff')
-        self.assertEqual(PyString_FromFormat(b'%c', c_int(256)), b'\0')
-
-        # Issue #33817: empty strings
-        self.assertEqual(PyString_FromFormat(b''),
-                         b'')
-        self.assertEqual(PyString_FromFormat(b'%s', b''),
-                         b'')
 
 
 def test_main():
-    test_support.run_unittest(StrTest, CAPITest)
+    test_support.run_unittest(StrTest)
 
 if __name__ == "__main__":
     test_main()

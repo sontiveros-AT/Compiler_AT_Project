@@ -21,17 +21,17 @@ class SimpleHTTPRequestHandlerTestCase(unittest.TestCase):
 
     def test_queryArguments (self):
         path = self.handler.translate_path ('/filename')
-        self.assertEqual (path, self.translated)
+        self.assertEquals (path, self.translated)
         path = self.handler.translate_path ('/filename?foo=bar')
-        self.assertEqual (path, self.translated)
+        self.assertEquals (path, self.translated)
         path = self.handler.translate_path ('/filename?a=b&spam=eggs#zot')
-        self.assertEqual (path, self.translated)
+        self.assertEquals (path, self.translated)
 
     def test_startWithDoubleSlash (self):
         path = self.handler.translate_path ('//filename')
-        self.assertEqual (path, self.translated)
+        self.assertEquals (path, self.translated)
         path = self.handler.translate_path ('//filename?foo=bar')
-        self.assertEqual (path, self.translated)
+        self.assertEquals (path, self.translated)
 
 
 def test_main():

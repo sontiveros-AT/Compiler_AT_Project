@@ -1,5 +1,5 @@
 """
-Test suite to check compliance with PEP 247, the standard API
+Test suite to check compilance with PEP 247, the standard API
 for hashing algorithms
 """
 
@@ -39,24 +39,24 @@ class Pep247Test(unittest.TestCase):
             obj3.update('string')
             h2 = obj3.digest()
 
-        self.assertEqual(h1, h2)
+        self.assertEquals(h1, h2)
 
         self.assertTrue(hasattr(obj1, 'digest_size'))
 
         if not module.digest_size is None:
-            self.assertEqual(obj1.digest_size, module.digest_size)
+            self.assertEquals(obj1.digest_size, module.digest_size)
 
-        self.assertEqual(obj1.digest_size, len(h1))
+        self.assertEquals(obj1.digest_size, len(h1))
         obj1.update('string')
         obj_copy = obj1.copy()
-        self.assertEqual(obj1.digest(), obj_copy.digest())
-        self.assertEqual(obj1.hexdigest(), obj_copy.hexdigest())
+        self.assertEquals(obj1.digest(), obj_copy.digest())
+        self.assertEquals(obj1.hexdigest(), obj_copy.hexdigest())
 
         digest, hexdigest = obj1.digest(), obj1.hexdigest()
         hd2 = ""
         for byte in digest:
             hd2 += '%02x' % ord(byte)
-        self.assertEqual(hd2, hexdigest)
+        self.assertEquals(hd2, hexdigest)
 
     def test_md5(self):
         self.check_module(md5)

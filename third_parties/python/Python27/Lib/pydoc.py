@@ -17,8 +17,7 @@ Run "pydoc -k <keyword>" to search for a keyword in the synopsis lines
 of all available modules.
 
 Run "pydoc -p <port>" to start an HTTP server on a given port on the
-local machine to generate documentation web pages.  Port number 0 can be
-used to get an arbitrary unused port.
+local machine to generate documentation web pages.
 
 For platforms without a command line, "pydoc -g" starts the HTTP server
 and also pops up a little window for controlling it.
@@ -28,7 +27,7 @@ to a file named "<name>.html".
 
 Module docs for core modules are assumed to be in
 
-    https://docs.python.org/library/
+    http://docs.python.org/library/
 
 This can be overridden by setting the PYTHONDOCS environment variable
 to a different URL or to a local directory containing the Library
@@ -38,7 +37,7 @@ Reference Manual pages.
 __author__ = "Ka-Ping Yee <ping@lfw.org>"
 __date__ = "26 February 2001"
 
-__version__ = "$Revision: 88564 $"
+__version__ = "$Revision: 80804 $"
 __credits__ = """Guido van Rossum, for an excellent programming language.
 Tommy Burnette, the original creator of manpy.
 Paul Prescod, for all his work on onlinehelp.
@@ -53,7 +52,7 @@ Richard Chamberlain, for the first implementation of textdoc.
 #     the current directory is changed with os.chdir(), an incorrect
 #     path will be displayed.
 
-import sys, imp, os, re, types, inspect, __builtin__, pkgutil, warnings
+import sys, imp, os, re, types, inspect, __builtin__, pkgutil
 from repr import Repr
 from string import expandtabs, find, join, lower, split, strip, rfind, rstrip
 from traceback import extract_tb
@@ -82,7 +81,6 @@ def pathdirs():
 def getdoc(object):
     """Get the doc string or comments for an object."""
     result = inspect.getdoc(object) or inspect.getcomments(object)
-    result = _encode(result)
     return result and re.sub('^ *\n', '', rstrip(result)) or ''
 
 def splitdoc(doc):
@@ -158,7 +156,7 @@ def _split_list(s, predicate):
             no.append(x)
     return yes, no
 
-def visiblename(name, all=None, obj=None):
+def visiblename(name, all=None):
     """Decide whether to show documentation on a variable."""
     # Certain special names are redundant.
     _hidden_names = ('__builtins__', '__doc__', '__file__', '__path__',
@@ -166,9 +164,6 @@ def visiblename(name, all=None, obj=None):
     if name in _hidden_names: return 0
     # Private names are hidden, but special names are displayed.
     if name.startswith('__') and name.endswith('__'): return 1
-    # Namedtuples have public fields and methods with a single leading underscore
-    if name.startswith('_') and hasattr(obj, '_fields'):
-        return 1
     if all is not None:
         # only document that which the programmer exported in __all__
         return name in all
@@ -183,36 +178,6 @@ def classify_class_attrs(object):
             kind = 'data descriptor'
         return name, kind, cls, value
     return map(fixup, inspect.classify_class_attrs(object))
-
-# ----------------------------------------------------- Unicode support helpers
-
-try:
-    _unicode = unicode
-except NameError:
-    # If Python is built without Unicode support, the unicode type
-    # will not exist. Fake one that nothing will match, and make
-    # the _encode function that do nothing.
-    class _unicode(object):
-        pass
-    _encoding = 'ascii'
-    def _encode(text, encoding='ascii'):
-        return text
-else:
-    import locale
-    _encoding = locale.getpreferredencoding()
-
-    def _encode(text, encoding=None):
-        if isinstance(text, unicode):
-            return text.encode(encoding or _encoding, 'xmlcharrefreplace')
-        else:
-            return text
-
-def _binstr(obj):
-    # Ensure that we have an encoded (binary) string representation of obj,
-    # even if it is a unicode string.
-    if isinstance(obj, _unicode):
-        return obj.encode(_encoding, 'xmlcharrefreplace')
-    return str(obj)
 
 # ----------------------------------------------------- module manipulation
 
@@ -244,8 +209,8 @@ def source_synopsis(file):
 def synopsis(filename, cache={}):
     """Get the one-line summary out of a module file."""
     mtime = os.stat(filename).st_mtime
-    lastupdate, result = cache.get(filename, (None, None))
-    if lastupdate is None or lastupdate < mtime:
+    lastupdate, result = cache.get(filename, (0, None))
+    if lastupdate < mtime:
         info = inspect.getmoduleinfo(filename)
         try:
             file = open(filename)
@@ -255,7 +220,7 @@ def synopsis(filename, cache={}):
         if info and 'b' in info[2]: # binary modules have to be imported
             try: module = imp.load_module('__temp__', file, filename, info[1:])
             except: return None
-            result = module.__doc__.splitlines()[0] if module.__doc__ else None
+            result = (module.__doc__ or '').splitlines()[0]
             del sys.modules['__temp__']
         else: # text modules can be directly examined
             result = source_synopsis(file)
@@ -374,9 +339,7 @@ class Doc:
 
     docmodule = docclass = docroutine = docother = docproperty = docdata = fail
 
-    def getdocloc(self, object,
-                  basedir=os.path.join(sys.exec_prefix, "lib",
-                                       "python"+sys.version[0:3])):
+    def getdocloc(self, object):
         """Return the location of module docs or None"""
 
         try:
@@ -385,8 +348,9 @@ class Doc:
             file = '(built-in)'
 
         docloc = os.environ.get("PYTHONDOCS",
-                                "https://docs.python.org/library")
-        basedir = os.path.normcase(basedir)
+                                "http://docs.python.org/library")
+        basedir = os.path.join(sys.exec_prefix, "lib",
+                               "python"+sys.version[0:3])
         if (isinstance(object, type(os)) and
             (object.__name__ in ('errno', 'exceptions', 'gc', 'imp',
                                  'marshal', 'posix', 'signal', 'sys',
@@ -394,10 +358,10 @@ class Doc:
              (file.startswith(basedir) and
               not file.startswith(os.path.join(basedir, 'site-packages')))) and
             object.__name__ not in ('xml.etree', 'test.pydoc_mod')):
-            if docloc.startswith(("http://", "https://")):
-                docloc = "%s/%s" % (docloc.rstrip("/"), object.__name__.lower())
+            if docloc.startswith("http://"):
+                docloc = "%s/%s" % (docloc.rstrip("/"), object.__name__)
             else:
-                docloc = os.path.join(docloc, object.__name__.lower() + ".html")
+                docloc = os.path.join(docloc, object.__name__ + ".html")
         else:
             docloc = None
         return docloc
@@ -457,13 +421,12 @@ class HTMLDoc(Doc):
 
     def page(self, title, contents):
         """Format an HTML page."""
-        return _encode('''
+        return '''
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html><head><title>Python: %s</title>
-<meta charset="utf-8">
 </head><body bgcolor="#f0f0f8">
 %s
-</body></html>''' % (title, contents), 'ascii')
+</body></html>''' % (title, contents)
 
     def heading(self, title, fgcol, bgcol, extras=''):
         """Format a page heading."""
@@ -512,9 +475,9 @@ class HTMLDoc(Doc):
     def multicolumn(self, list, format, cols=4):
         """Format a list of items into a multi-column list."""
         result = ''
-        rows = (len(list)+cols-1)//cols
+        rows = (len(list)+cols-1)/cols
         for col in range(cols):
-            result = result + '<td width="%d%%" valign=top>' % (100//cols)
+            result = result + '<td width="%d%%" valign=top>' % (100/cols)
             for i in range(rows*col, rows*col+rows):
                 if i < len(list):
                     result = result + format(list[i]) + '<br>\n'
@@ -583,15 +546,10 @@ class HTMLDoc(Doc):
             elif pep:
                 url = 'http://www.python.org/dev/peps/pep-%04d/' % int(pep)
                 results.append('<a href="%s">%s</a>' % (url, escape(all)))
-            elif selfdot:
-                # Create a link for methods like 'self.method(...)'
-                # and use <strong> for attributes like 'self.attr'
-                if text[end:end+1] == '(':
-                    results.append('self.' + self.namelink(name, methods))
-                else:
-                    results.append('self.<strong>%s</strong>' % name)
             elif text[end:end+1] == '(':
                 results.append(self.namelink(name, methods, funcs, classes))
+            elif selfdot:
+                results.append('self.<strong>%s</strong>' % name)
             else:
                 results.append(self.namelink(name, classes))
             here = end
@@ -645,12 +603,12 @@ class HTMLDoc(Doc):
             filelink = '(built-in)'
         info = []
         if hasattr(object, '__version__'):
-            version = _binstr(object.__version__)
+            version = str(object.__version__)
             if version[:11] == '$' + 'Revision: ' and version[-1:] == '$':
                 version = strip(version[11:-1])
             info.append('version %s' % self.escape(version))
         if hasattr(object, '__date__'):
-            info.append(self.escape(_binstr(object.__date__)))
+            info.append(self.escape(str(object.__date__)))
         if info:
             head = head + ' (%s)' % join(info, ', ')
         docloc = self.getdocloc(object)
@@ -669,7 +627,7 @@ class HTMLDoc(Doc):
             # if __all__ exists, believe it.  Otherwise use old heuristic.
             if (all is not None or
                 (inspect.getmodule(value) or object) is object):
-                if visiblename(key, all, object):
+                if visiblename(key, all):
                     classes.append((key, value))
                     cdict[key] = cdict[value] = '#' + key
         for key, value in classes:
@@ -685,13 +643,13 @@ class HTMLDoc(Doc):
             # if __all__ exists, believe it.  Otherwise use old heuristic.
             if (all is not None or
                 inspect.isbuiltin(value) or inspect.getmodule(value) is object):
-                if visiblename(key, all, object):
+                if visiblename(key, all):
                     funcs.append((key, value))
                     fdict[key] = '#-' + key
                     if inspect.isfunction(value): fdict[value] = fdict[key]
         data = []
         for key, value in inspect.getmembers(object, isdata):
-            if visiblename(key, all, object):
+            if visiblename(key, all):
                 data.append((key, value))
 
         doc = self.markup(getdoc(object), self.preformat, fdict, cdict)
@@ -733,11 +691,11 @@ class HTMLDoc(Doc):
             result = result + self.bigsection(
                 'Data', '#ffffff', '#55aa55', join(contents, '<br>\n'))
         if hasattr(object, '__author__'):
-            contents = self.markup(_binstr(object.__author__), self.preformat)
+            contents = self.markup(str(object.__author__), self.preformat)
             result = result + self.bigsection(
                 'Author', '#ffffff', '#7799ee', contents)
         if hasattr(object, '__credits__'):
-            contents = self.markup(_binstr(object.__credits__), self.preformat)
+            contents = self.markup(str(object.__credits__), self.preformat)
             result = result + self.bigsection(
                 'Credits', '#ffffff', '#7799ee', contents)
 
@@ -779,15 +737,8 @@ class HTMLDoc(Doc):
                 hr.maybe()
                 push(msg)
                 for name, kind, homecls, value in ok:
-                    try:
-                        value = getattr(object, name)
-                    except Exception:
-                        # Some descriptors may meet a failure in their __get__.
-                        # (bug #1785)
-                        push(self._docdescriptor(name, value, mod))
-                    else:
-                        push(self.document(value, name, mod,
-                                        funcs, classes, mdict, object))
+                    push(self.document(getattr(object, name), name, mod,
+                                       funcs, classes, mdict, object))
                     push('\n')
             return attrs
 
@@ -822,17 +773,12 @@ class HTMLDoc(Doc):
                     push('\n')
             return attrs
 
-        attrs = filter(lambda data: visiblename(data[0], obj=object),
+        attrs = filter(lambda data: visiblename(data[0]),
                        classify_class_attrs(object))
         mdict = {}
         for key, kind, homecls, value in attrs:
             mdict[key] = anchor = '#' + name + '-' + key
-            try:
-                value = getattr(object, name)
-            except Exception:
-                # Some descriptors may meet a failure in their __get__.
-                # (bug #1785)
-                pass
+            value = getattr(object, key)
             try:
                 # The value may not be hashable (e.g., a data attr with
                 # a dict or list value).
@@ -1096,18 +1042,18 @@ class TextDoc(Doc):
             # if __all__ exists, believe it.  Otherwise use old heuristic.
             if (all is not None
                 or (inspect.getmodule(value) or object) is object):
-                if visiblename(key, all, object):
+                if visiblename(key, all):
                     classes.append((key, value))
         funcs = []
         for key, value in inspect.getmembers(object, inspect.isroutine):
             # if __all__ exists, believe it.  Otherwise use old heuristic.
             if (all is not None or
                 inspect.isbuiltin(value) or inspect.getmodule(value) is object):
-                if visiblename(key, all, object):
+                if visiblename(key, all):
                     funcs.append((key, value))
         data = []
         for key, value in inspect.getmembers(object, isdata):
-            if visiblename(key, all, object):
+            if visiblename(key, all):
                 data.append((key, value))
 
         modpkgs = []
@@ -1155,19 +1101,19 @@ class TextDoc(Doc):
             result = result + self.section('DATA', join(contents, '\n'))
 
         if hasattr(object, '__version__'):
-            version = _binstr(object.__version__)
+            version = str(object.__version__)
             if version[:11] == '$' + 'Revision: ' and version[-1:] == '$':
                 version = strip(version[11:-1])
             result = result + self.section('VERSION', version)
         if hasattr(object, '__date__'):
-            result = result + self.section('DATE', _binstr(object.__date__))
+            result = result + self.section('DATE', str(object.__date__))
         if hasattr(object, '__author__'):
-            result = result + self.section('AUTHOR', _binstr(object.__author__))
+            result = result + self.section('AUTHOR', str(object.__author__))
         if hasattr(object, '__credits__'):
-            result = result + self.section('CREDITS', _binstr(object.__credits__))
+            result = result + self.section('CREDITS', str(object.__credits__))
         return result
 
-    def docclass(self, object, name=None, mod=None, *ignored):
+    def docclass(self, object, name=None, mod=None):
         """Produce text documentation for a given class object."""
         realname = object.__name__
         name = name or realname
@@ -1212,15 +1158,8 @@ class TextDoc(Doc):
                 hr.maybe()
                 push(msg)
                 for name, kind, homecls, value in ok:
-                    try:
-                        value = getattr(object, name)
-                    except Exception:
-                        # Some descriptors may meet a failure in their __get__.
-                        # (bug #1785)
-                        push(self._docdescriptor(name, value, mod))
-                    else:
-                        push(self.document(value,
-                                        name, mod, object))
+                    push(self.document(getattr(object, name),
+                                       name, mod, object))
             return attrs
 
         def spilldescriptors(msg, attrs, predicate):
@@ -1247,7 +1186,7 @@ class TextDoc(Doc):
                                        name, mod, maxlen=70, doc=doc) + '\n')
             return attrs
 
-        attrs = filter(lambda data: visiblename(data[0], obj=object),
+        attrs = filter(lambda data: visiblename(data[0]),
                        classify_class_attrs(object))
         while attrs:
             if mro:
@@ -1379,8 +1318,6 @@ def getpager():
     """Decide what method to use for paging through text."""
     if type(sys.stdout) is not types.FileType:
         return plainpager
-    if not hasattr(sys.stdin, "isatty"):
-        return plainpager
     if not sys.stdin.isatty() or not sys.stdout.isatty():
         return plainpager
     if 'PAGER' in os.environ:
@@ -1416,7 +1353,7 @@ def pipepager(text, cmd):
     """Page through text by feeding it to another program."""
     pipe = os.popen(cmd, 'w')
     try:
-        pipe.write(_encode(text))
+        pipe.write(text)
         pipe.close()
     except IOError:
         pass # Ignore broken pipes caused by quitting the pager program.
@@ -1426,7 +1363,7 @@ def tempfilepager(text, cmd):
     import tempfile
     filename = tempfile.mktemp()
     file = open(filename, 'w')
-    file.write(_encode(text))
+    file.write(text)
     file.close()
     try:
         os.system(cmd + ' "' + filename + '"')
@@ -1435,7 +1372,7 @@ def tempfilepager(text, cmd):
 
 def ttypager(text):
     """Page through text on a text terminal."""
-    lines = plain(_encode(plain(text), getattr(sys.stdout, 'encoding', _encoding))).split('\n')
+    lines = split(plain(text), '\n')
     try:
         import tty
         fd = sys.stdin.fileno()
@@ -1447,13 +1384,7 @@ def ttypager(text):
         getchar = lambda: sys.stdin.readline()[:-1][:1]
 
     try:
-        try:
-            h = int(os.environ.get('LINES', 0))
-        except ValueError:
-            h = 0
-        if h <= 1:
-            h = 25
-        r = inc = h - 1
+        r = inc = os.environ.get('LINES', 25) - 1
         sys.stdout.write(join(lines[:inc], '\n') + '\n')
         while lines[r:]:
             sys.stdout.write('-- more --')
@@ -1479,7 +1410,7 @@ def ttypager(text):
 
 def plainpager(text):
     """Simply print unformatted text.  This is the ultimate fallback."""
-    sys.stdout.write(_encode(plain(text), getattr(sys.stdout, 'encoding', _encoding)))
+    sys.stdout.write(plain(text))
 
 def describe(thing):
     """Produce a short description of the given thing."""
@@ -1520,14 +1451,13 @@ def locate(path, forceload=0):
         else: break
     if module:
         object = module
+        for part in parts[n:]:
+            try: object = getattr(object, part)
+            except AttributeError: return None
+        return object
     else:
-        object = __builtin__
-    for part in parts[n:]:
-        try:
-            object = getattr(object, part)
-        except AttributeError:
-            return None
-    return object
+        if hasattr(__builtin__, path):
+            return getattr(__builtin__, path)
 
 # --------------------------------------- interactive interpreter interface
 
@@ -1541,12 +1471,11 @@ def resolve(thing, forceload=0):
     """Given an object or a path to an object, get the object and its name."""
     if isinstance(thing, str):
         object = locate(thing, forceload)
-        if object is None:
+        if not object:
             raise ImportError, 'no Python documentation found for %r' % thing
         return object, thing
     else:
-        name = getattr(thing, '__name__', None)
-        return thing, name if isinstance(name, str) else None
+        return thing, getattr(thing, '__name__', None)
 
 def render_doc(thing, title='Python Library Documentation: %s', forceload=0):
     """Render text documentation, given an object or a path to an object."""
@@ -1607,7 +1536,7 @@ class Helper:
     # in pydoc_data/topics.py.
     #
     # CAUTION: if you change one of these dictionaries, be sure to adapt the
-    #          list of needed labels in Doc/tools/pyspecific.py and
+    #          list of needed labels in Doc/tools/sphinxext/pyspecific.py and
     #          regenerate the pydoc_data/topics.py file by running
     #              make pydoc-topics
     #          in Doc/ and copying the output file into the Lib/ directory.
@@ -1647,9 +1576,8 @@ class Helper:
     }
     # Either add symbols to this dictionary or to the symbols dictionary
     # directly: Whichever is easier. They are merged later.
-    _strprefixes = tuple(p + q for p in ('b', 'r', 'u') for q in ("'", '"'))
     _symbols_inverse = {
-        'STRINGS' : ("'", "'''", '"""', '"') + _strprefixes,
+        'STRINGS' : ("'", "'''", "r'", "u'", '"""', '"', 'r"', 'u"'),
         'OPERATORS' : ('+', '-', '*', '**', '/', '//', '%', '<<', '>>', '&',
                        '|', '^', '~', '<', '>', '<=', '>=', '==', '!=', '<>'),
         'COMPARISON' : ('<', '>', '<=', '>=', '==', '!=', '<>'),
@@ -1777,12 +1705,9 @@ class Helper:
         'CONTEXTMANAGERS': ('context-managers', 'with'),
     }
 
-    def __init__(self, input=None, output=None):
-        self._input = input
-        self._output = output
-
-    input  = property(lambda self: self._input or sys.stdin)
-    output = property(lambda self: self._output or sys.stdout)
+    def __init__(self, input, output):
+        self.input = input
+        self.output = output
 
     def __repr__(self):
         if inspect.stack()[1][3] == '?':
@@ -1790,9 +1715,8 @@ class Helper:
             return ''
         return '<pydoc.Helper instance>'
 
-    _GoInteractive = object()
-    def __call__(self, request=_GoInteractive):
-        if request is not self._GoInteractive:
+    def __call__(self, request=None):
+        if request is not None:
             self.help(request)
         else:
             self.intro()
@@ -1812,12 +1736,7 @@ has the same effect as typing a particular string at the help> prompt.
                 if not request: break
             except (KeyboardInterrupt, EOFError):
                 break
-            request = strip(request)
-            # Make sure significant trailing quotation marks of literals don't
-            # get deleted while cleaning input
-            if (len(request) > 2 and request[0] == request[-1] in ("'", '"')
-                    and request[0] not in request[1:-1]):
-                request = request[1:-1]
+            request = strip(replace(request, '"', '', "'", ''))
             if lower(request) in ('q', 'quit'): break
             self.help(request)
 
@@ -1853,7 +1772,7 @@ has the same effect as typing a particular string at the help> prompt.
 Welcome to Python %s!  This is the online help utility.
 
 If this is your first time using Python, you should definitely check out
-the tutorial on the Internet at http://docs.python.org/%s/tutorial/.
+the tutorial on the Internet at http://docs.python.org/tutorial/.
 
 Enter the name of any module, keyword, or topic to get help on writing
 Python programs and using Python modules.  To quit this help utility and
@@ -1863,7 +1782,7 @@ To get a list of available modules, keywords, or topics, type "modules",
 "keywords", or "topics".  Each module also comes with a one-line summary
 of what it does; to list the modules whose summaries contain a given word
 such as "spam", type "modules spam".
-''' % tuple([sys.version[:3]]*2))
+''' % sys.version[:3])
 
     def list(self, items, columns=4, width=80):
         items = items[:]
@@ -1965,7 +1884,7 @@ Enter any module name to get more help.  Or, type "modules spam" to search
 for modules whose descriptions contain the word "spam".
 ''')
 
-help = Helper()
+help = Helper(sys.stdin, sys.stdout)
 
 class Scanner:
     """A generic tree iterator."""
@@ -2027,7 +1946,7 @@ class ModuleScanner:
                         path = None
                 else:
                     module = loader.load_module(modname)
-                    desc = module.__doc__.splitlines()[0] if module.__doc__ else ''
+                    desc = (module.__doc__ or '').splitlines()[0]
                     path = getattr(module,'__file__',None)
                 if find(lower(modname + ' - ' + desc), key) >= 0:
                     callback(path, modname, desc)
@@ -2041,11 +1960,10 @@ def apropos(key):
         if modname[-9:] == '.__init__':
             modname = modname[:-9] + ' (package)'
         print modname, desc and '- ' + desc
-    def onerror(modname):
-        pass
-    with warnings.catch_warnings():
-        warnings.filterwarnings('ignore') # ignore problems during import
-        ModuleScanner().run(callback, key, onerror=onerror)
+    try: import warnings
+    except ImportError: pass
+    else: warnings.filterwarnings('ignore') # ignore problems during import
+    ModuleScanner().run(callback, key)
 
 # --------------------------------------------------- web browser interface
 
@@ -2111,7 +2029,8 @@ pydoc</strong> by Ka-Ping Yee &lt;ping@lfw.org&gt;</font>'''
     class DocServer(BaseHTTPServer.HTTPServer):
         def __init__(self, port, callback):
             host = 'localhost'
-            self.address = (host, port)
+            self.address = ('', port)
+            self.url = 'http://%s:%d/' % (host, port)
             self.callback = callback
             self.base.__init__(self, self.address, self.handler)
 
@@ -2124,7 +2043,6 @@ pydoc</strong> by Ka-Ping Yee &lt;ping@lfw.org&gt;</font>'''
 
         def server_activate(self):
             self.base.server_activate(self)
-            self.url = 'http://%s:%d/' % (self.address[0], self.server_port)
             if self.callback: self.callback(self)
 
     DocServer.base = BaseHTTPServer.HTTPServer
@@ -2251,11 +2169,8 @@ def gui():
             if self.scanner:
                 self.scanner.quit = 1
             self.scanner = ModuleScanner()
-            def onerror(modname):
-                pass
             threading.Thread(target=self.scanner.run,
-                             args=(self.update, key, self.done),
-                             kwargs=dict(onerror=onerror)).start()
+                             args=(self.update, key, self.done)).start()
 
         def update(self, path, modname, desc):
             if modname[-9:] == '.__init__':
@@ -2401,8 +2316,7 @@ def cli():
     Search for a keyword in the synopsis lines of all available modules.
 
 %s -p <port>
-    Start an HTTP server on the given port on the local machine.  Port
-    number 0 can be used to get an arbitrary unused port.
+    Start an HTTP server on the given port on the local machine.
 
 %s -g
     Pop up a graphical interface for finding and serving documentation.

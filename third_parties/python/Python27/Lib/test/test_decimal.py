@@ -16,7 +16,7 @@ test the pythonic behaviour according to PEP 327.
 
 Cowlishaw's tests can be downloaded from:
 
-   http://speleotrove.com/decimal/dectest.zip
+   www2.hursley.ibm.com/decimal/dectest.zip
 
 This test module can be called from command line with one parameter (Arithmetic
 or Behaviour) to test each part, or without parameter to test both parts. If
@@ -31,9 +31,8 @@ import pickle, copy
 import unittest
 from decimal import *
 import numbers
-from test.test_support import (run_unittest, run_doctest, requires_unicode, u,
-                               is_resource_enabled, check_py3k_warnings,
-                               run_with_locale)
+from test.test_support import (run_unittest, run_doctest,
+                               is_resource_enabled, check_py3k_warnings)
 import random
 try:
     import threading
@@ -78,41 +77,10 @@ skip_expected = not os.path.isdir(directory)
 
 # list of individual .decTest test ids that correspond to tests that
 # we're skipping for one reason or another.
-skipped_test_ids = set([
-    # Skip implementation-specific scaleb tests.
-    'scbx164',
-    'scbx165',
-
-    # For some operations (currently exp, ln, log10, power), the decNumber
-    # reference implementation imposes additional restrictions on the context
-    # and operands.  These restrictions are not part of the specification;
-    # however, the effect of these restrictions does show up in some of the
-    # testcases.  We skip testcases that violate these restrictions, since
-    # Decimal behaves differently from decNumber for these testcases so these
-    # testcases would otherwise fail.
-    'expx901',
-    'expx902',
-    'expx903',
-    'expx905',
-    'lnx901',
-    'lnx902',
-    'lnx903',
-    'lnx905',
-    'logx901',
-    'logx902',
-    'logx903',
-    'logx905',
-    'powx1183',
-    'powx1184',
-    'powx4001',
-    'powx4002',
-    'powx4003',
-    'powx4005',
-    'powx4008',
-    'powx4010',
-    'powx4012',
-    'powx4014',
-    ])
+skipped_test_ids = [
+    'scbx164',  # skipping apparently implementation-specific scaleb
+    'scbx165',  # tests, pending clarification of scaleb rules.
+]
 
 # Make sure it actually raises errors when not expected and caught in flags
 # Slower, since it runs some things several times.
@@ -203,6 +171,27 @@ LOGICAL_FUNCTIONS = (
     'same_quantum',
     )
 
+# For some operations (currently exp, ln, log10, power), the decNumber
+# reference implementation imposes additional restrictions on the
+# context and operands.  These restrictions are not part of the
+# specification; however, the effect of these restrictions does show
+# up in some of the testcases.  We skip testcases that violate these
+# restrictions, since Decimal behaves differently from decNumber for
+# these testcases so these testcases would otherwise fail.
+
+decNumberRestricted = ('power', 'ln', 'log10', 'exp')
+DEC_MAX_MATH = 999999
+def outside_decNumber_bounds(v, context):
+    if (context.prec > DEC_MAX_MATH or
+        context.Emax > DEC_MAX_MATH or
+        -context.Emin > DEC_MAX_MATH):
+        return True
+    if not v._is_special and v and (
+        v.adjusted() > DEC_MAX_MATH or
+        v.adjusted() < 1-2*DEC_MAX_MATH):
+        return True
+    return False
+
 class DecimalTest(unittest.TestCase):
     """Class which tests the Decimal class against the test cases.
 
@@ -224,16 +213,17 @@ class DecimalTest(unittest.TestCase):
         global skip_expected
         if skip_expected:
             raise unittest.SkipTest
-        with open(file) as f:
-            for line in f:
-                line = line.replace('\r\n', '').replace('\n', '')
-                #print line
-                try:
-                    t = self.eval_line(line)
-                except DecimalException as exception:
-                    #Exception raised where there shouldn't have been one.
-                    self.fail('Exception "'+exception.__class__.__name__ + '" raised on line '+line)
+            return
+        for line in open(file):
+            line = line.replace('\r\n', '').replace('\n', '')
+            #print line
+            try:
+                t = self.eval_line(line)
+            except DecimalException, exception:
+                #Exception raised where there shoudn't have been one.
+                self.fail('Exception "'+exception.__class__.__name__ + '" raised on line '+line)
 
+        return
 
     def eval_line(self, s):
         if s.find(' -> ') >= 0 and s[:2] != '--' and not s.startswith('  --'):
@@ -339,6 +329,22 @@ class DecimalTest(unittest.TestCase):
 
         ans = FixQuotes(ans)
 
+        # skip tests that are related to bounds imposed in the decNumber
+        # reference implementation
+        if fname in decNumberRestricted:
+            if fname == 'power':
+                if not (vals[1]._isinteger() and
+                        -1999999997 <= vals[1] <= 999999999):
+                    if outside_decNumber_bounds(vals[0], self.context) or \
+                            outside_decNumber_bounds(vals[1], self.context):
+                        #print "Skipping test %s" % s
+                        return
+            else:
+                if outside_decNumber_bounds(vals[0], self.context):
+                    #print "Skipping test %s" % s
+                    return
+
+
         if EXTENDEDERRORTEST and fname not in ('to_sci_string', 'to_eng_string'):
             for error in theirexceptions:
                 self.context.traps[error] = 1
@@ -390,6 +396,7 @@ class DecimalTest(unittest.TestCase):
                          'Incorrect answer for ' + s + ' -- got ' + result)
         self.assertItemsEqual(myexceptions, theirexceptions,
               'Incorrect flags set in ' + s + ' -- got ' + str(myexceptions))
+        return
 
     def getexceptions(self):
         return [e for e in Signals if self.context.flags[e]]
@@ -596,12 +603,11 @@ class DecimalExplicitConstructionTest(unittest.TestCase):
         d = nc.create_decimal(prevdec)
         self.assertEqual(str(d), '5.00E+8')
 
-    @requires_unicode
     def test_unicode_digits(self):
         test_values = {
-            u(r'\uff11'): '1',
-            u(r'\u0660.\u0660\u0663\u0667\u0662e-\u0663') : '0.0000372',
-            u(r'-nan\u0c68\u0c6a\u0c66\u0c66') : '-NaN2400',
+            u'\uff11': '1',
+            u'\u0660.\u0660\u0663\u0667\u0662e-\u0663' : '0.0000372',
+            u'-nan\u0c68\u0c6a\u0c66\u0c66' : '-NaN2400',
             }
         for input, expected in test_values.items():
             self.assertEqual(str(Decimal(input)), expected)
@@ -825,11 +831,6 @@ class DecimalFormatTest(unittest.TestCase):
 
             # issue 6850
             ('a=-7.0', '0.12345', 'aaaa0.1'),
-
-            # issue 22090
-            ('<^+15.20%', 'inf', '<<+Infinity%<<<'),
-            ('\x07>,%', 'sNaN1234567', 'sNaN1234567%'),
-            ('=10.10%', 'NaN123', '   NaN123%'),
             ]
         for fmt, d, result in test_values:
             self.assertEqual(format(Decimal(d), fmt), result)
@@ -838,7 +839,7 @@ class DecimalFormatTest(unittest.TestCase):
         try:
             from locale import CHAR_MAX
         except ImportError:
-            self.skipTest('locale.CHAR_MAX not available')
+            return
 
         # Set up some localeconv-like dictionaries
         en_US = {
@@ -905,23 +906,6 @@ class DecimalFormatTest(unittest.TestCase):
         self.assertEqual(get_fmt(123456, crazy, '011n'), '0-01-2345-6')
         self.assertEqual(get_fmt(123456, crazy, '012n'), '00-01-2345-6')
         self.assertEqual(get_fmt(123456, crazy, '013n'), '000-01-2345-6')
-
-    @run_with_locale('LC_ALL', 'ps_AF.UTF-8')
-    def test_wide_char_separator_decimal_point(self):
-        # locale with wide char separator and decimal point
-        import locale
-
-        decimal_point = locale.localeconv()['decimal_point']
-        thousands_sep = locale.localeconv()['thousands_sep']
-        if decimal_point != '\xd9\xab':
-            self.skipTest('inappropriate decimal point separator '
-                          '({!r} not {!r})'.format(decimal_point, '\xd9\xab'))
-        if thousands_sep != '\xd9\xac':
-            self.skipTest('inappropriate thousands separator '
-                          '({!r} not {!r})'.format(thousands_sep, '\xd9\xac'))
-
-        self.assertEqual(format(Decimal('100000000.123'), 'n'),
-                         '100\xd9\xac000\xd9\xac000\xd9\xab123')
 
 
 class DecimalArithmeticOperatorsTest(unittest.TestCase):
@@ -1217,6 +1201,7 @@ def thfunc1(cls):
 
     cls.assertEqual(test1, Decimal('0.3333333333333333333333333333'))
     cls.assertEqual(test2, Decimal('0.3333333333333333333333333333'))
+    return
 
 def thfunc2(cls):
     d1 = Decimal(1)
@@ -1230,11 +1215,16 @@ def thfunc2(cls):
 
     cls.assertEqual(test1, Decimal('0.3333333333333333333333333333'))
     cls.assertEqual(test2, Decimal('0.333333333333333333'))
+    return
 
 
-@unittest.skipUnless(threading, 'threading required')
 class DecimalUseOfContextTest(unittest.TestCase):
     '''Unit tests for Use of Context cases in Decimal.'''
+
+    try:
+        import threading
+    except ImportError:
+        threading = None
 
     # Take care executing this test from IDLE, there's an issue in threading
     # that hangs IDLE and I couldn't find it
@@ -1254,6 +1244,10 @@ class DecimalUseOfContextTest(unittest.TestCase):
 
         self.finish1.wait()
         self.finish2.wait()
+        return
+
+    if threading is None:
+        del test_threading
 
 
 class DecimalUsabilityTest(unittest.TestCase):
@@ -1459,18 +1453,6 @@ class DecimalUsabilityTest(unittest.TestCase):
         self.assertEqual(float(d1), 66)
         self.assertEqual(float(d2), 15.32)
 
-    def test_nan_to_float(self):
-        # Test conversions of decimal NANs to float.
-        # See http://bugs.python.org/issue15544
-        for s in ('nan', 'nan1234', '-nan', '-nan2468'):
-            f = float(Decimal(s))
-            self.assertTrue(math.isnan(f))
-
-    def test_snan_to_float(self):
-        for s in ('snan', '-snan', 'snan1357', '-snan1234'):
-            d = Decimal(s)
-            self.assertRaises(ValueError, float, d)
-
     def test_eval_round_trip(self):
 
         #with zero
@@ -1551,6 +1533,7 @@ class DecimalUsabilityTest(unittest.TestCase):
                 self.assertEqual(d1._sign, b1._sign)
                 self.assertEqual(d1._int, b1._int)
                 self.assertEqual(d1._exp, b1._exp)
+            return
 
         Decimal(d1)
         self.assertEqual(d1._sign, b1._sign)
@@ -1682,10 +1665,9 @@ class DecimalPythonAPItests(unittest.TestCase):
 
     def test_pickle(self):
         d = Decimal('-3.141590000')
-        for proto in range(pickle.HIGHEST_PROTOCOL + 1):
-            p = pickle.dumps(d, proto)
-            e = pickle.loads(p)
-            self.assertEqual(d, e)
+        p = pickle.dumps(d)
+        e = pickle.loads(p)
+        self.assertEqual(d, e)
 
     def test_int(self):
         for x in range(-250, 250):
@@ -1769,13 +1751,12 @@ class DecimalPythonAPItests(unittest.TestCase):
 class ContextAPItests(unittest.TestCase):
 
     def test_pickle(self):
-        for proto in range(pickle.HIGHEST_PROTOCOL + 1):
-            c = Context()
-            e = pickle.loads(pickle.dumps(c, proto))
-            for k in vars(c):
-                v1 = vars(c)[k]
-                v2 = vars(e)[k]
-                self.assertEqual(v1, v2)
+        c = Context()
+        e = pickle.loads(pickle.dumps(c))
+        for k in vars(c):
+            v1 = vars(c)[k]
+            v2 = vars(e)[k]
+            self.assertEqual(v1, v2)
 
     def test_equality_with_other_types(self):
         self.assertIn(Decimal(10), ['a', 1.0, Decimal(10), (1,2), {}])
@@ -2297,7 +2278,7 @@ class ContextFlags(unittest.TestCase):
                                   "operation raises different flags depending on flags set: " +
                                   "expected %s, got %s" % (expected_flags, new_flags))
 
-def test_main(arith=None, verbose=None, todo_tests=None, debug=None):
+def test_main(arith=False, verbose=None, todo_tests=None, debug=None):
     """ Execute the tests.
 
     Runs all arithmetic tests if arith is True or if the "decimal" resource
@@ -2306,7 +2287,7 @@ def test_main(arith=None, verbose=None, todo_tests=None, debug=None):
 
     init()
     global TEST_ALL, DEBUG
-    TEST_ALL = arith if arith is not None else is_resource_enabled('decimal')
+    TEST_ALL = arith or is_resource_enabled('decimal')
     DEBUG = debug
 
     if todo_tests is None:

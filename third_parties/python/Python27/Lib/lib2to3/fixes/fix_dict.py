@@ -40,8 +40,6 @@ iter_exempt = fixer_util.consuming_calls | set(["iter"])
 
 
 class FixDict(fixer_base.BaseFix):
-    BM_compatible = True
-
     PATTERN = """
     power< head=any+
          trailer< '.' method=('keys'|'items'|'values'|

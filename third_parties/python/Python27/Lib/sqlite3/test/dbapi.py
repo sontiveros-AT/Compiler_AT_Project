@@ -24,7 +24,6 @@
 import unittest
 import sys
 import sqlite3 as sqlite
-from test import test_support
 try:
     import threading
 except ImportError:
@@ -45,8 +44,8 @@ class ModuleTests(unittest.TestCase):
                          sqlite.paramstyle)
 
     def CheckWarning(self):
-        self.assertTrue(issubclass(sqlite.Warning, StandardError),
-                        "Warning is not a subclass of StandardError")
+        self.assert_(issubclass(sqlite.Warning, StandardError),
+                     "Warning is not a subclass of StandardError")
 
     def CheckError(self):
         self.assertTrue(issubclass(sqlite.Error, StandardError),
@@ -203,13 +202,6 @@ class CursorTests(unittest.TestCase):
 
     def CheckExecuteArgString(self):
         self.cu.execute("insert into test(name) values (?)", ("Hugo",))
-
-    def CheckExecuteArgStringWithZeroByte(self):
-        self.cu.execute("insert into test(name) values (?)", ("Hu\x00go",))
-
-        self.cu.execute("select name from test where id=?", (self.cu.lastrowid,))
-        row = self.cu.fetchone()
-        self.assertEqual(row[0], "Hu\x00go")
 
     def CheckExecuteWrongNoOfArgs1(self):
         # too many parameters
@@ -654,8 +646,7 @@ class ConstructorTests(unittest.TestCase):
         ts = sqlite.TimestampFromTicks(42)
 
     def CheckBinary(self):
-        with test_support.check_py3k_warnings():
-            b = sqlite.Binary(chr(0) + "'")
+        b = sqlite.Binary(chr(0) + "'")
 
 class ExtensionTests(unittest.TestCase):
     def CheckScriptStringSql(self):

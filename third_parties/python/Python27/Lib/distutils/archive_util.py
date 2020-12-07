@@ -3,7 +3,7 @@
 Utility functions for creating archive files (tarballs, zip files,
 that sort of thing)."""
 
-__revision__ = "$Id$"
+__revision__ = "$Id: archive_util.py 75659 2009-10-24 13:29:44Z tarek.ziade $"
 
 import os
 from warnings import warn
@@ -121,7 +121,7 @@ def make_tarball(base_name, base_dir, compress="gzip", verbose=0, dry_run=0,
 def make_zipfile(base_name, base_dir, verbose=0, dry_run=0):
     """Create a zip file from all the files under 'base_dir'.
 
-    The output zip file will be named 'base_name' + ".zip".  Uses either the
+    The output zip file will be named 'base_dir' + ".zip".  Uses either the
     "zipfile" Python module (if available) or the InfoZIP "zip" utility
     (if installed and found on the default search path).  If neither tool is
     available, raises DistutilsExecError.  Returns the name of the output zip
@@ -162,15 +162,7 @@ def make_zipfile(base_name, base_dir, verbose=0, dry_run=0):
             zip = zipfile.ZipFile(zip_filename, "w",
                                   compression=zipfile.ZIP_DEFLATED)
 
-            if base_dir != os.curdir:
-                path = os.path.normpath(os.path.join(base_dir, ''))
-                zip.write(path, path)
-                log.info("adding '%s'", path)
             for dirpath, dirnames, filenames in os.walk(base_dir):
-                for name in dirnames:
-                    path = os.path.normpath(os.path.join(dirpath, name, ''))
-                    zip.write(path, path)
-                    log.info("adding '%s'", path)
                 for name in filenames:
                     path = os.path.normpath(os.path.join(dirpath, name))
                     if os.path.isfile(path):

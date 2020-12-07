@@ -4,7 +4,7 @@ import re
 import sys
 import struct
 
-from json import scanner
+from json.scanner import make_scanner
 try:
     from _json import scanstring as c_scanstring
 except ImportError:
@@ -15,8 +15,10 @@ __all__ = ['JSONDecoder']
 FLAGS = re.VERBOSE | re.MULTILINE | re.DOTALL
 
 def _floatconstants():
-    nan, = struct.unpack('>d', b'\x7f\xf8\x00\x00\x00\x00\x00\x00')
-    inf, = struct.unpack('>d', b'\x7f\xf0\x00\x00\x00\x00\x00\x00')
+    _BYTES = '7FF80000000000007FF0000000000000'.decode('hex')
+    if sys.byteorder != 'big':
+        _BYTES = _BYTES[:8][::-1] + _BYTES[8:][::-1]
+    nan, inf = struct.unpack('dd', _BYTES)
     return nan, inf, -inf
 
 NaN, PosInf, NegInf = _floatconstants()
@@ -25,7 +27,7 @@ NaN, PosInf, NegInf = _floatconstants()
 def linecol(doc, pos):
     lineno = doc.count('\n', 0, pos) + 1
     if lineno == 1:
-        colno = pos + 1
+        colno = pos
     else:
         colno = pos - doc.rindex('\n', 0, pos)
     return lineno, colno
@@ -59,16 +61,6 @@ BACKSLASH = {
 }
 
 DEFAULT_ENCODING = "utf-8"
-
-def _decode_uXXXX(s, pos):
-    esc = s[pos + 1:pos + 5]
-    if len(esc) == 4 and esc[1] not in 'xX':
-        try:
-            return int(esc, 16)
-        except ValueError:
-            pass
-    msg = "Invalid \\uXXXX escape"
-    raise ValueError(errmsg(msg, s, pos))
 
 def py_scanstring(s, end, encoding=None, strict=True,
         _b=BACKSLASH, _m=STRINGCHUNK.match):
@@ -124,16 +116,25 @@ def py_scanstring(s, end, encoding=None, strict=True,
             end += 1
         else:
             # Unicode escape sequence
-            uni = _decode_uXXXX(s, end)
-            end += 5
+            esc = s[end + 1:end + 5]
+            next_end = end + 5
+            if len(esc) != 4:
+                msg = "Invalid \\uXXXX escape"
+                raise ValueError(errmsg(msg, s, end))
+            uni = int(esc, 16)
             # Check for surrogate pair on UCS-4 systems
-            if sys.maxunicode > 65535 and \
-               0xd800 <= uni <= 0xdbff and s[end:end + 2] == '\\u':
-                uni2 = _decode_uXXXX(s, end + 1)
-                if 0xdc00 <= uni2 <= 0xdfff:
-                    uni = 0x10000 + (((uni - 0xd800) << 10) | (uni2 - 0xdc00))
-                    end += 6
+            if 0xd800 <= uni <= 0xdbff and sys.maxunicode > 65535:
+                msg = "Invalid \\uXXXX\\uXXXX surrogate pair"
+                if not s[end + 5:end + 7] == '\\u':
+                    raise ValueError(errmsg(msg, s, end))
+                esc2 = s[end + 7:end + 11]
+                if len(esc2) != 4:
+                    raise ValueError(errmsg(msg, s, end))
+                uni2 = int(esc2, 16)
+                uni = 0x10000 + (((uni - 0xd800) << 10) | (uni2 - 0xdc00))
+                next_end += 6
             char = unichr(uni)
+            end = next_end
         # Append the unescaped character
         _append(char)
     return u''.join(chunks), end
@@ -160,16 +161,9 @@ def JSONObject(s_and_end, encoding, strict, scan_once, object_hook,
             nextchar = s[end:end + 1]
         # Trivial empty object
         if nextchar == '}':
-            if object_pairs_hook is not None:
-                result = object_pairs_hook(pairs)
-                return result, end + 1
-            pairs = {}
-            if object_hook is not None:
-                pairs = object_hook(pairs)
             return pairs, end + 1
         elif nextchar != '"':
-            raise ValueError(errmsg(
-                "Expecting property name enclosed in double quotes", s, end))
+            raise ValueError(errmsg("Expecting property name", s, end))
     end += 1
     while True:
         key, end = scanstring(s, end, encoding, strict)
@@ -179,7 +173,8 @@ def JSONObject(s_and_end, encoding, strict, scan_once, object_hook,
         if s[end:end + 1] != ':':
             end = _w(s, end).end()
             if s[end:end + 1] != ':':
-                raise ValueError(errmsg("Expecting ':' delimiter", s, end))
+                raise ValueError(errmsg("Expecting : delimiter", s, end))
+
         end += 1
 
         try:
@@ -208,7 +203,7 @@ def JSONObject(s_and_end, encoding, strict, scan_once, object_hook,
         if nextchar == '}':
             break
         elif nextchar != ',':
-            raise ValueError(errmsg("Expecting ',' delimiter", s, end - 1))
+            raise ValueError(errmsg("Expecting , delimiter", s, end - 1))
 
         try:
             nextchar = s[end]
@@ -223,8 +218,8 @@ def JSONObject(s_and_end, encoding, strict, scan_once, object_hook,
 
         end += 1
         if nextchar != '"':
-            raise ValueError(errmsg(
-                "Expecting property name enclosed in double quotes", s, end - 1))
+            raise ValueError(errmsg("Expecting property name", s, end - 1))
+
     if object_pairs_hook is not None:
         result = object_pairs_hook(pairs)
         return result, end
@@ -258,7 +253,8 @@ def JSONArray(s_and_end, scan_once, _w=WHITESPACE.match, _ws=WHITESPACE_STR):
         if nextchar == ']':
             break
         elif nextchar != ',':
-            raise ValueError(errmsg("Expecting ',' delimiter", s, end))
+            raise ValueError(errmsg("Expecting , delimiter", s, end))
+
         try:
             if s[end] in _ws:
                 end += 1
@@ -314,15 +310,6 @@ class JSONDecoder(object):
         place of the given ``dict``.  This can be used to provide custom
         deserializations (e.g. to support JSON-RPC class hinting).
 
-        ``object_pairs_hook``, if specified will be called with the result of
-        every JSON object decoded with an ordered list of pairs.  The return
-        value of ``object_pairs_hook`` will be used instead of the ``dict``.
-        This feature can be used to implement custom decoders that rely on the
-        order that the key and value pairs are decoded (for example,
-        collections.OrderedDict will remember the order of insertion). If
-        ``object_hook`` is also defined, the ``object_pairs_hook`` takes
-        priority.
-
         ``parse_float``, if specified, will be called with the string
         of every JSON float to be decoded. By default this is equivalent to
         float(num_str). This can be used to use another datatype or parser
@@ -338,11 +325,6 @@ class JSONDecoder(object):
         This can be used to raise an exception if invalid JSON numbers
         are encountered.
 
-        If ``strict`` is false (true is the default), then control
-        characters will be allowed inside strings.  Control characters in
-        this context are those with character codes in the 0-31 range,
-        including ``'\\t'`` (tab), ``'\\n'``, ``'\\r'`` and ``'\\0'``.
-
         """
         self.encoding = encoding
         self.object_hook = object_hook
@@ -354,7 +336,7 @@ class JSONDecoder(object):
         self.parse_object = JSONObject
         self.parse_array = JSONArray
         self.parse_string = scanstring
-        self.scan_once = scanner.make_scanner(self)
+        self.scan_once = make_scanner(self)
 
     def decode(self, s, _w=WHITESPACE.match):
         """Return the Python representation of ``s`` (a ``str`` or ``unicode``

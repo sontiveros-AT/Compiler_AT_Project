@@ -2,7 +2,6 @@ import copy
 import unittest
 from test.test_support import run_unittest, TestFailed, check_warnings
 
-
 # Fake a number that implements numeric methods through __coerce__
 class CoerceNumber:
     def __init__(self, arg):
@@ -223,11 +222,6 @@ def process_infix_results():
             infix_results[key] = res
 
 
-with check_warnings(("classic (int|long) division", DeprecationWarning),
-                    quiet=True):
-    process_infix_results()
-    # now infix_results has two lists of results for every pairing.
-
 prefix_binops = [ 'divmod' ]
 prefix_results = [
     [(1,0), (1L,0L), (0.0,2.0), ((1+0j),0j), TE, TE, TE, TE, (1,0)],
@@ -266,9 +260,9 @@ class CoercionTest(unittest.TestCase):
                         self.assertRaises(TypeError, eval,
                                           'a %s b' % op, {'a': a, 'b': b})
                     else:
-                        self.assertEqual(format_result(res),
-                                         format_result(eval('a %s b' % op)),
-                                         '%s %s %s == %s failed' % (a, op, b, res))
+                        self.assertEquals(format_result(res),
+                                          format_result(eval('a %s b' % op)),
+                                          '%s %s %s == %s failed' % (a, op, b, res))
                     try:
                         z = copy.copy(a)
                     except copy.Error:
@@ -282,7 +276,7 @@ class CoercionTest(unittest.TestCase):
                             self.fail("TypeError not raised")
                     else:
                         exec('z %s= b' % op)
-                        self.assertEqual(ires, z)
+                        self.assertEquals(ires, z)
 
     def test_prefix_binops(self):
         for ia, a in enumerate(candidates):
@@ -293,9 +287,9 @@ class CoercionTest(unittest.TestCase):
                         self.assertRaises(TypeError, eval,
                                           '%s(a, b)' % op, {'a': a, 'b': b})
                     else:
-                        self.assertEqual(format_result(res),
-                                         format_result(eval('%s(a, b)' % op)),
-                                         '%s(%s, %s) == %s failed' % (op, a, b, res))
+                        self.assertEquals(format_result(res),
+                                          format_result(eval('%s(a, b)' % op)),
+                                          '%s(%s, %s) == %s failed' % (op, a, b, res))
 
     def test_cmptypes(self):
         # Built-in tp_compare slots expect their arguments to have the
@@ -303,21 +297,21 @@ class CoercionTest(unittest.TestCase):
         # SF #980352
         evil_coercer = CoerceTo(42)
         # Make sure these don't crash any more
-        self.assertNotEqual(cmp(u'fish', evil_coercer), 0)
-        self.assertNotEqual(cmp(slice(1), evil_coercer), 0)
+        self.assertNotEquals(cmp(u'fish', evil_coercer), 0)
+        self.assertNotEquals(cmp(slice(1), evil_coercer), 0)
         # ...but that this still works
         class WackyComparer(object):
             def __cmp__(slf, other):
                 self.assertTrue(other == 42, 'expected evil_coercer, got %r' % other)
                 return 0
             __hash__ = None # Invalid cmp makes this unhashable
-        self.assertEqual(cmp(WackyComparer(), evil_coercer), 0)
+        self.assertEquals(cmp(WackyComparer(), evil_coercer), 0)
         # ...and classic classes too, since that code path is a little different
         class ClassicWackyComparer:
             def __cmp__(slf, other):
                 self.assertTrue(other == 42, 'expected evil_coercer, got %r' % other)
                 return 0
-        self.assertEqual(cmp(ClassicWackyComparer(), evil_coercer), 0)
+        self.assertEquals(cmp(ClassicWackyComparer(), evil_coercer), 0)
 
     def test_infinite_rec_classic_classes(self):
         # if __coerce__() returns its arguments reversed it causes an infinite
@@ -342,6 +336,9 @@ def test_main():
                          DeprecationWarning),
                         ("classic (int|long) division", DeprecationWarning),
                         quiet=True):
+        process_infix_results()
+        # now infix_results has two lists of results for every pairing.
+
         run_unittest(CoercionTest)
 
 if __name__ == "__main__":

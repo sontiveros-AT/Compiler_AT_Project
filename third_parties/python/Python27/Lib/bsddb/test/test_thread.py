@@ -35,6 +35,10 @@ class BaseThreadedTestCase(unittest.TestCase):
     dbsetflags   = 0
     envflags     = 0
 
+    if sys.version_info < (2, 4) :
+        def assertTrue(self, expr, msg=None):
+            self.failUnless(expr,msg=msg)
+
     def setUp(self):
         if verbose:
             dbutils._deadlock_VerboseFile = sys.stdout
@@ -85,7 +89,7 @@ class ConcurrentDataStoreBase(BaseThreadedTestCase):
         readers_per_writer=self.readers//self.writers
         self.assertEqual(self.records,self.writers*records_per_writer)
         self.assertEqual(self.readers,self.writers*readers_per_writer)
-        self.assertEqual(records_per_writer%readers_per_writer, 0)
+        self.assertTrue((records_per_writer%readers_per_writer)==0)
         readers = []
 
         for x in xrange(self.readers):
@@ -213,7 +217,7 @@ class SimpleThreadedBase(BaseThreadedTestCase):
         readers_per_writer=self.readers//self.writers
         self.assertEqual(self.records,self.writers*records_per_writer)
         self.assertEqual(self.readers,self.writers*readers_per_writer)
-        self.assertEqual(records_per_writer%readers_per_writer, 0)
+        self.assertTrue((records_per_writer%readers_per_writer)==0)
 
         readers = []
         for x in xrange(self.readers):
@@ -339,7 +343,7 @@ class ThreadedTransactionsBase(BaseThreadedTestCase):
         readers_per_writer=self.readers//self.writers
         self.assertEqual(self.records,self.writers*records_per_writer)
         self.assertEqual(self.readers,self.writers*readers_per_writer)
-        self.assertEqual(records_per_writer%readers_per_writer, 0)
+        self.assertTrue((records_per_writer%readers_per_writer)==0)
 
         readers=[]
         for x in xrange(self.readers):

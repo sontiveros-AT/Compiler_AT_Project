@@ -40,7 +40,6 @@ def build_pattern():
 
 
 class FixRenames(fixer_base.BaseFix):
-    BM_compatible = True
     PATTERN = "|".join(build_pattern())
 
     order = "pre" # Pre-order tree traversal

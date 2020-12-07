@@ -55,8 +55,6 @@ MSG_OOB = 0x1                           # Process data out of band
 
 # The standard FTP server control port
 FTP_PORT = 21
-# The sizehint parameter passed to readline() calls
-MAXLINE = 8192
 
 
 # Exception raised when an error or invalid response is received
@@ -103,7 +101,6 @@ class FTP:
     debugging = 0
     host = ''
     port = FTP_PORT
-    maxline = MAXLINE
     sock = None
     file = None
     welcome = None
@@ -171,8 +168,6 @@ class FTP:
 
     # Internal: send one line to the server, appending CRLF
     def putline(self, line):
-        if '\r' in line or '\n' in line:
-            raise ValueError('an illegal newline character should not be contained')
         line = line + CRLF
         if self.debugging > 1: print '*put*', self.sanitize(line)
         self.sock.sendall(line)
@@ -185,9 +180,7 @@ class FTP:
     # Internal: return one line from the server, stripping CRLF.
     # Raise EOFError if the connection is closed
     def getline(self):
-        line = self.file.readline(self.maxline + 1)
-        if len(line) > self.maxline:
-            raise Error("got more than %d bytes" % self.maxline)
+        line = self.file.readline()
         if self.debugging > 1:
             print '*get*', self.sanitize(line)
         if not line: raise EOFError
@@ -266,7 +259,7 @@ class FTP:
         return self.voidcmd(cmd)
 
     def sendeprt(self, host, port):
-        '''Send an EPRT command with the current host and the given port number.'''
+        '''Send a EPRT command with the current host and the given port number.'''
         af = 0
         if self.af == socket.AF_INET:
             af = 1
@@ -280,24 +273,21 @@ class FTP:
 
     def makeport(self):
         '''Create a new socket and send a PORT command for it.'''
-        err = None
+        msg = "getaddrinfo returns an empty list"
         sock = None
         for res in socket.getaddrinfo(None, 0, self.af, socket.SOCK_STREAM, 0, socket.AI_PASSIVE):
             af, socktype, proto, canonname, sa = res
             try:
                 sock = socket.socket(af, socktype, proto)
                 sock.bind(sa)
-            except socket.error, err:
+            except socket.error, msg:
                 if sock:
                     sock.close()
                 sock = None
                 continue
             break
-        if sock is None:
-            if err is not None:
-                raise err
-            else:
-                raise socket.error("getaddrinfo returns an empty list")
+        if not sock:
+            raise socket.error, msg
         sock.listen(1)
         port = sock.getsockname()[1] # Get proper port
         host = self.sock.getsockname()[0] # Get proper host
@@ -335,39 +325,32 @@ class FTP:
         if self.passiveserver:
             host, port = self.makepasv()
             conn = socket.create_connection((host, port), self.timeout)
-            try:
-                if rest is not None:
-                    self.sendcmd("REST %s" % rest)
-                resp = self.sendcmd(cmd)
-                # Some servers apparently send a 200 reply to
-                # a LIST or STOR command, before the 150 reply
-                # (and way before the 226 reply). This seems to
-                # be in violation of the protocol (which only allows
-                # 1xx or error messages for LIST), so we just discard
-                # this response.
-                if resp[0] == '2':
-                    resp = self.getresp()
-                if resp[0] != '1':
-                    raise error_reply, resp
-            except:
-                conn.close()
-                raise
+            if rest is not None:
+                self.sendcmd("REST %s" % rest)
+            resp = self.sendcmd(cmd)
+            # Some servers apparently send a 200 reply to
+            # a LIST or STOR command, before the 150 reply
+            # (and way before the 226 reply). This seems to
+            # be in violation of the protocol (which only allows
+            # 1xx or error messages for LIST), so we just discard
+            # this response.
+            if resp[0] == '2':
+                resp = self.getresp()
+            if resp[0] != '1':
+                raise error_reply, resp
         else:
             sock = self.makeport()
-            try:
-                if rest is not None:
-                    self.sendcmd("REST %s" % rest)
-                resp = self.sendcmd(cmd)
-                # See above.
-                if resp[0] == '2':
-                    resp = self.getresp()
-                if resp[0] != '1':
-                    raise error_reply, resp
-                conn, sockaddr = sock.accept()
-                if self.timeout is not _GLOBAL_DEFAULT_TIMEOUT:
-                    conn.settimeout(self.timeout)
-            finally:
-                sock.close()
+            if rest is not None:
+                self.sendcmd("REST %s" % rest)
+            resp = self.sendcmd(cmd)
+            # See above.
+            if resp[0] == '2':
+                resp = self.getresp()
+            if resp[0] != '1':
+                raise error_reply, resp
+            conn, sockaddr = sock.accept()
+            if self.timeout is not _GLOBAL_DEFAULT_TIMEOUT:
+                conn.settimeout(self.timeout)
         if resp[:3] == '150':
             # this is conditional in case we received a 125
             size = parse150(resp)
@@ -414,14 +397,12 @@ class FTP:
         """
         self.voidcmd('TYPE I')
         conn = self.transfercmd(cmd, rest)
-        try:
-            while 1:
-                data = conn.recv(blocksize)
-                if not data:
-                    break
-                callback(data)
-        finally:
-            conn.close()
+        while 1:
+            data = conn.recv(blocksize)
+            if not data:
+                break
+            callback(data)
+        conn.close()
         return self.voidresp()
 
     def retrlines(self, cmd, callback = None):
@@ -439,25 +420,19 @@ class FTP:
         if callback is None: callback = print_line
         resp = self.sendcmd('TYPE A')
         conn = self.transfercmd(cmd)
-        fp = None
-        try:
-            fp = conn.makefile('rb')
-            while 1:
-                line = fp.readline(self.maxline + 1)
-                if len(line) > self.maxline:
-                    raise Error("got more than %d bytes" % self.maxline)
-                if self.debugging > 2: print '*retr*', repr(line)
-                if not line:
-                    break
-                if line[-2:] == CRLF:
-                    line = line[:-2]
-                elif line[-1:] == '\n':
-                    line = line[:-1]
-                callback(line)
-        finally:
-            if fp:
-                fp.close()
-            conn.close()
+        fp = conn.makefile('rb')
+        while 1:
+            line = fp.readline()
+            if self.debugging > 2: print '*retr*', repr(line)
+            if not line:
+                break
+            if line[-2:] == CRLF:
+                line = line[:-2]
+            elif line[-1:] == '\n':
+                line = line[:-1]
+            callback(line)
+        fp.close()
+        conn.close()
         return self.voidresp()
 
     def storbinary(self, cmd, fp, blocksize=8192, callback=None, rest=None):
@@ -469,7 +444,7 @@ class FTP:
           blocksize: The maximum data size to read from fp and send over
                      the connection at once.  [default: 8192]
           callback: An optional single parameter callable that is called on
-                    each block of data after it is sent.  [default: None]
+                    on each block of data after it is sent.  [default: None]
           rest: Passed to transfercmd().  [default: None]
 
         Returns:
@@ -477,14 +452,12 @@ class FTP:
         """
         self.voidcmd('TYPE I')
         conn = self.transfercmd(cmd, rest)
-        try:
-            while 1:
-                buf = fp.read(blocksize)
-                if not buf: break
-                conn.sendall(buf)
-                if callback: callback(buf)
-        finally:
-            conn.close()
+        while 1:
+            buf = fp.read(blocksize)
+            if not buf: break
+            conn.sendall(buf)
+            if callback: callback(buf)
+        conn.close()
         return self.voidresp()
 
     def storlines(self, cmd, fp, callback=None):
@@ -494,26 +467,22 @@ class FTP:
           cmd: A STOR command.
           fp: A file-like object with a readline() method.
           callback: An optional single parameter callable that is called on
-                    each line after it is sent.  [default: None]
+                    on each line after it is sent.  [default: None]
 
         Returns:
           The response code.
         """
         self.voidcmd('TYPE A')
         conn = self.transfercmd(cmd)
-        try:
-            while 1:
-                buf = fp.readline(self.maxline + 1)
-                if len(buf) > self.maxline:
-                    raise Error("got more than %d bytes" % self.maxline)
-                if not buf: break
-                if buf[-2:] != CRLF:
-                    if buf[-1] in CRLF: buf = buf[:-1]
-                    buf = buf + CRLF
-                conn.sendall(buf)
-                if callback: callback(buf)
-        finally:
-            conn.close()
+        while 1:
+            buf = fp.readline()
+            if not buf: break
+            if buf[-2:] != CRLF:
+                if buf[-1] in CRLF: buf = buf[:-1]
+                buf = buf + CRLF
+            conn.sendall(buf)
+            if callback: callback(buf)
+        conn.close()
         return self.voidresp()
 
     def acct(self, password):
@@ -606,16 +575,11 @@ class FTP:
 
     def close(self):
         '''Close the connection without assuming anything about it.'''
-        try:
-            file = self.file
-            self.file = None
-            if file is not None:
-                file.close()
-        finally:
-            sock = self.sock
-            self.sock = None
-            if sock is not None:
-                sock.close()
+        if self.file:
+            self.file.close()
+            self.sock.close()
+            self.file = self.sock = None
+
 
 try:
     import ssl
@@ -635,7 +599,7 @@ else:
         Usage example:
         >>> from ftplib import FTP_TLS
         >>> ftps = FTP_TLS('ftp.python.org')
-        >>> ftps.login()  # login anonymously previously securing control channel
+        >>> ftps.login()  # login anonimously previously securing control channel
         '230 Guest login ok, access restrictions apply.'
         >>> ftps.prot_p()  # switch to secure data connection
         '200 Protection level set to P'
@@ -655,24 +619,12 @@ else:
         '221 Goodbye.'
         >>>
         '''
-        ssl_version = ssl.PROTOCOL_SSLv23
+        ssl_version = ssl.PROTOCOL_TLSv1
 
         def __init__(self, host='', user='', passwd='', acct='', keyfile=None,
-                     certfile=None, context=None,
-                     timeout=_GLOBAL_DEFAULT_TIMEOUT, source_address=None):
-            if context is not None and keyfile is not None:
-                raise ValueError("context and keyfile arguments are mutually "
-                                 "exclusive")
-            if context is not None and certfile is not None:
-                raise ValueError("context and certfile arguments are mutually "
-                                 "exclusive")
+                     certfile=None, timeout=_GLOBAL_DEFAULT_TIMEOUT):
             self.keyfile = keyfile
             self.certfile = certfile
-            if context is None:
-                context = ssl._create_stdlib_context(self.ssl_version,
-                                                     certfile=certfile,
-                                                     keyfile=keyfile)
-            self.context = context
             self._prot_p = False
             FTP.__init__(self, host, user, passwd, acct, timeout)
 
@@ -685,12 +637,12 @@ else:
             '''Set up secure control connection by using TLS/SSL.'''
             if isinstance(self.sock, ssl.SSLSocket):
                 raise ValueError("Already using TLS")
-            if self.ssl_version >= ssl.PROTOCOL_SSLv23:
+            if self.ssl_version == ssl.PROTOCOL_TLSv1:
                 resp = self.voidcmd('AUTH TLS')
             else:
                 resp = self.voidcmd('AUTH SSL')
-            self.sock = self.context.wrap_socket(self.sock,
-                                                 server_hostname=self.host)
+            self.sock = ssl.wrap_socket(self.sock, self.keyfile, self.certfile,
+                                        ssl_version=self.ssl_version)
             self.file = self.sock.makefile(mode='rb')
             return resp
 
@@ -721,8 +673,8 @@ else:
         def ntransfercmd(self, cmd, rest=None):
             conn, size = FTP.ntransfercmd(self, cmd, rest)
             if self._prot_p:
-                conn = self.context.wrap_socket(conn,
-                                                server_hostname=self.host)
+                conn = ssl.wrap_socket(conn, self.keyfile, self.certfile,
+                                       ssl_version=self.ssl_version)
             return conn, size
 
         def retrbinary(self, cmd, callback, blocksize=8192, rest=None):
@@ -748,9 +700,7 @@ else:
             fp = conn.makefile('rb')
             try:
                 while 1:
-                    line = fp.readline(self.maxline + 1)
-                    if len(line) > self.maxline:
-                        raise Error("got more than %d bytes" % self.maxline)
+                    line = fp.readline()
                     if self.debugging > 2: print '*retr*', repr(line)
                     if not line:
                         break
@@ -788,9 +738,7 @@ else:
             conn = self.transfercmd(cmd)
             try:
                 while 1:
-                    buf = fp.readline(self.maxline + 1)
-                    if len(buf) > self.maxline:
-                        raise Error("got more than %d bytes" % self.maxline)
+                    buf = fp.readline()
                     if not buf: break
                     if buf[-2:] != CRLF:
                         if buf[-1] in CRLF: buf = buf[:-1]
@@ -854,7 +802,7 @@ def parse227(resp):
 
 
 def parse229(resp, peer):
-    '''Parse the '229' response for an EPSV request.
+    '''Parse the '229' response for a EPSV request.
     Raises error_proto if it does not contain '(|||port|)'
     Return ('host.addr.as.numbers', port#) tuple.'''
 
@@ -947,9 +895,7 @@ class Netrc:
         fp = open(filename, "r")
         in_macro = 0
         while 1:
-            line = fp.readline(self.maxline + 1)
-            if len(line) > self.maxline:
-                raise Error("got more than %d bytes" % self.maxline)
+            line = fp.readline()
             if not line: break
             if in_macro and line.strip():
                 macro_lines.append(line)

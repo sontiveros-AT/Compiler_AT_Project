@@ -35,7 +35,7 @@ tabnanny.py, reindent should do a good job.
 
 The backup file is a copy of the one that is being reindented. The ".bak"
 file is generated with shutil.copy(), but some corner cases regarding
-user/group and permissions could leave the backup file more readable than
+user/group and permissions could leave the backup file more readable that
 you'd prefer. You can always use the --nobackup option to prevent this.
 """
 
@@ -44,7 +44,6 @@ __version__ = "1"
 import tokenize
 import os, shutil
 import sys
-import io
 
 verbose    = 0
 recurse    = 0
@@ -109,19 +108,13 @@ def check(file):
     if verbose:
         print "checking", file, "...",
     try:
-        f = open(file, "rb")
+        f = open(file)
     except IOError, msg:
         errprint("%s: I/O Error: %s" % (file, str(msg)))
         return
 
     r = Reindenter(f)
     f.close()
-
-    newline = r.newlines
-    if isinstance(newline, tuple):
-        errprint("%s: mixed newlines detected; cannot process file" % file)
-        return
-
     if r.run():
         if verbose:
             print "changed."
@@ -133,7 +126,7 @@ def check(file):
                 shutil.copyfile(file, bak)
                 if verbose:
                     print "backed up", file, "to", bak
-            f = open(file, "wb")
+            f = open(file, "w")
             r.write(f)
             f.close()
             if verbose:
@@ -144,21 +137,7 @@ def check(file):
             print "unchanged."
         return False
 
-def _detect_newlines(lines):
-    newlines = {'\r\n' if line[-2:] == '\r\n' else
-                '\n' if line[-1:] == '\n' else
-                '\r' if line[-1:] == '\r' else
-                ''
-                for line in lines}
-    newlines.discard('')
-    newlines = tuple(sorted(newlines))
-    if not newlines:
-        return '\n'
-    if len(newlines) == 1:
-        return newlines[0]
-    return newlines
-
-def _rstrip(line, JUNK='\r\n \t'):
+def _rstrip(line, JUNK='\n \t'):
     """Return line stripped of trailing spaces, tabs, newlines.
 
     Note that line.rstrip() instead also strips sundry control characters,
@@ -180,18 +159,10 @@ class Reindenter:
         # Raw file lines.
         self.raw = f.readlines()
 
-        # Save the newlines found in the file so they can be used to
-        #  create output without mutating the newlines.
-        self.newlines = _detect_newlines(self.raw)
-        if isinstance(self.newlines, tuple):
-            self.newline = self.newlines[0]
-        else:
-            self.newline = self.newlines
-
         # File lines, rstripped & tab-expanded.  Dummy at start is so
         # that we can use tokenize's 1-based line numbering easily.
-        # Note that a line is all-blank iff it's newline.
-        self.lines = [_rstrip(line).expandtabs() + self.newline
+        # Note that a line is all-blank iff it's "\n".
+        self.lines = [_rstrip(line).expandtabs() + "\n"
                       for line in self.raw]
         self.lines.insert(0, None)
         self.index = 1  # index into self.lines of next line
@@ -206,7 +177,7 @@ class Reindenter:
         tokenize.tokenize(self.getline, self.tokeneater)
         # Remove trailing empty lines.
         lines = self.lines
-        while lines and lines[-1] == self.newline:
+        while lines and lines[-1] == "\n":
             lines.pop()
         # Sentinel.
         stats = self.stats
@@ -262,7 +233,7 @@ class Reindenter:
             else:
                 for line in lines[thisstmt:nextstmt]:
                     if diff > 0:
-                        if line == self.newline:
+                        if line == "\n":
                             after.append(line)
                         else:
                             after.append(" " * diff + line)

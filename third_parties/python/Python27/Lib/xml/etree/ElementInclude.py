@@ -75,13 +75,14 @@ class FatalIncludeError(SyntaxError):
 # @throws IOError If the loader fails to load the resource.
 
 def default_loader(href, parse, encoding=None):
-    with open(href) as file:
-        if parse == "xml":
-            data = ElementTree.parse(file).getroot()
-        else:
-            data = file.read()
-            if encoding:
-                data = data.decode(encoding)
+    file = open(href)
+    if parse == "xml":
+        data = ElementTree.parse(file).getroot()
+    else:
+        data = file.read()
+        if encoding:
+            data = data.decode(encoding)
+    file.close()
     return data
 
 ##
@@ -124,7 +125,7 @@ def include(elem, loader=None):
                         )
                 if i:
                     node = elem[i-1]
-                    node.tail = (node.tail or "") + text + (e.tail or "")
+                    node.tail = (node.tail or "") + text
                 else:
                     elem.text = (elem.text or "") + text + (e.tail or "")
                 del elem[i]

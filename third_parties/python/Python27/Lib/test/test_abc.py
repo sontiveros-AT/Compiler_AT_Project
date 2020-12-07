@@ -3,7 +3,7 @@
 
 """Unit tests for abc.py."""
 
-import unittest, weakref
+import unittest
 from test import test_support
 
 import abc
@@ -15,16 +15,16 @@ class TestABC(unittest.TestCase):
     def test_abstractmethod_basics(self):
         @abc.abstractmethod
         def foo(self): pass
-        self.assertTrue(foo.__isabstractmethod__)
+        self.assertEqual(foo.__isabstractmethod__, True)
         def bar(self): pass
-        self.assertFalse(hasattr(bar, "__isabstractmethod__"))
+        self.assertEqual(hasattr(bar, "__isabstractmethod__"), False)
 
     def test_abstractproperty_basics(self):
         @abc.abstractproperty
         def foo(self): pass
-        self.assertTrue(foo.__isabstractmethod__)
+        self.assertEqual(foo.__isabstractmethod__, True)
         def bar(self): pass
-        self.assertFalse(hasattr(bar, "__isabstractmethod__"))
+        self.assertEqual(hasattr(bar, "__isabstractmethod__"), False)
 
         class C:
             __metaclass__ = abc.ABCMeta
@@ -87,20 +87,20 @@ class TestABC(unittest.TestCase):
         class B(object):
             pass
         b = B()
-        self.assertFalse(issubclass(B, A))
-        self.assertFalse(issubclass(B, (A,)))
+        self.assertEqual(issubclass(B, A), False)
+        self.assertEqual(issubclass(B, (A,)), False)
         self.assertNotIsInstance(b, A)
         self.assertNotIsInstance(b, (A,))
         A.register(B)
-        self.assertTrue(issubclass(B, A))
-        self.assertTrue(issubclass(B, (A,)))
+        self.assertEqual(issubclass(B, A), True)
+        self.assertEqual(issubclass(B, (A,)), True)
         self.assertIsInstance(b, A)
         self.assertIsInstance(b, (A,))
         class C(B):
             pass
         c = C()
-        self.assertTrue(issubclass(C, A))
-        self.assertTrue(issubclass(C, (A,)))
+        self.assertEqual(issubclass(C, A), True)
+        self.assertEqual(issubclass(C, (A,)), True)
         self.assertIsInstance(c, A)
         self.assertIsInstance(c, (A,))
 
@@ -110,11 +110,11 @@ class TestABC(unittest.TestCase):
         class B(object):
             pass
         b = B()
-        self.assertFalse(isinstance(b, A))
-        self.assertFalse(isinstance(b, (A,)))
+        self.assertEqual(isinstance(b, A), False)
+        self.assertEqual(isinstance(b, (A,)), False)
         A.register(B)
-        self.assertTrue(isinstance(b, A))
-        self.assertTrue(isinstance(b, (A,)))
+        self.assertEqual(isinstance(b, A), True)
+        self.assertEqual(isinstance(b, (A,)), True)
 
     def test_registration_builtins(self):
         class A:
@@ -122,15 +122,15 @@ class TestABC(unittest.TestCase):
         A.register(int)
         self.assertIsInstance(42, A)
         self.assertIsInstance(42, (A,))
-        self.assertTrue(issubclass(int, A))
-        self.assertTrue(issubclass(int, (A,)))
+        self.assertEqual(issubclass(int, A), True)
+        self.assertEqual(issubclass(int, (A,)), True)
         class B(A):
             pass
         B.register(basestring)
         self.assertIsInstance("", A)
         self.assertIsInstance("", (A,))
-        self.assertTrue(issubclass(str, A))
-        self.assertTrue(issubclass(str, (A,)))
+        self.assertEqual(issubclass(str, A), True)
+        self.assertEqual(issubclass(str, (A,)), True)
 
     def test_registration_edge_cases(self):
         class A:
@@ -208,23 +208,6 @@ class TestABC(unittest.TestCase):
         C()
         self.assertEqual(B.counter, 1)
 
-    @test_support.requires_type_collecting
-    def test_cache_leak(self):
-        # See issue #2521.
-        class A(object):
-            __metaclass__ = abc.ABCMeta
-            @abc.abstractmethod
-            def f(self):
-                pass
-        class C(A):
-            def f(self):
-                A.f(self)
-        r = weakref.ref(C)
-        # Trigger cache.
-        C().f()
-        del C
-        test_support.gc_collect()
-        self.assertEqual(r(), None)
 
 def test_main():
     test_support.run_unittest(TestABC)

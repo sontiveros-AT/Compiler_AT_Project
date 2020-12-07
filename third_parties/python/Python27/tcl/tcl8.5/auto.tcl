@@ -3,6 +3,8 @@
 # utility procs formerly in init.tcl dealing with auto execution
 # of commands and can be auto loaded themselves.
 #
+# RCS: @(#) $Id: auto.tcl,v 1.28 2006/11/03 00:34:52 hobbs Exp $
+#
 # Copyright (c) 1991-1993 The Regents of the University of California.
 # Copyright (c) 1994-1998 Sun Microsystems, Inc.
 #
@@ -16,24 +18,23 @@
 # so that the information gets recomputed the next time it's needed.
 # Also delete any commands that are listed in the auto-load index.
 #
-# Arguments:
+# Arguments: 
 # None.
 
 proc auto_reset {} {
-    global auto_execs auto_index auto_path
-    if {[array exists auto_index]} {
-	foreach cmdName [array names auto_index] {
+    if {[array exists ::auto_index]} {
+	foreach cmdName [array names ::auto_index] {
 	    set fqcn [namespace which $cmdName]
 	    if {$fqcn eq ""} {continue}
 	    rename $fqcn {}
 	}
     }
-    unset -nocomplain auto_execs auto_index ::tcl::auto_oldpath
-    if {[catch {llength $auto_path}]} {
-	set auto_path [list [info library]]
+    unset -nocomplain ::auto_execs ::auto_index ::tcl::auto_oldpath
+    if {[catch {llength $::auto_path}]} {
+	set ::auto_path [list [info library]]
     } else {
-	if {[info library] ni $auto_path} {
-	    lappend auto_path [info library]
+	if {[info library] ni $::auto_path} {
+	    lappend ::auto_path [info library]
 	}
     }
 }
@@ -54,7 +55,7 @@ proc auto_reset {} {
 
 proc tcl_findLibrary {basename version patch initScript enVarName varName} {
     upvar #0 $varName the_library
-    global auto_path env tcl_platform
+    global env
 
     set dirs {}
     set errors {}
@@ -87,10 +88,10 @@ proc tcl_findLibrary {basename version patch initScript enVarName varName} {
 	# 3. Relative to auto_path directories.  This checks relative to the
 	# Tcl library as well as allowing loading of libraries added to the
 	# auto_path that is not relative to the core library or binary paths.
-	foreach d $auto_path {
+	foreach d $::auto_path {
 	    lappend dirs [file join $d $basename$version]
-	    if {$tcl_platform(platform) eq "unix"
-		    && $tcl_platform(os) eq "Darwin"} {
+	    if {$::tcl_platform(platform) eq "unix"
+		&& $::tcl_platform(os) eq "Darwin"} {
 		# 4. On MacOSX, check the Resources/Scripts subdir too
 		lappend dirs [file join $d $basename$version Resources Scripts]
 	    }
@@ -172,7 +173,7 @@ proc tcl_findLibrary {basename version patch initScript enVarName varName} {
 # parse Tcl source files, writing out index entries as "proc"
 # commands are encountered.  This implementation won't work in a
 # safe interpreter, since a safe interpreter can't create the
-# special parser and mess with its commands.
+# special parser and mess with its commands.  
 
 if {[interp issafe]} {
     return	;# Stop sourcing the file here
@@ -184,7 +185,7 @@ if {[interp issafe]} {
 # followed by any number of glob patterns to use in that directory to
 # locate all of the relevant files.
 #
-# Arguments:
+# Arguments: 
 # dir -		Name of the directory in which to create an index.
 # args -	Any number of additional arguments giving the
 #		names of files within dir.  If no additional
@@ -338,7 +339,7 @@ namespace eval auto_mkindex_parser {
 # handles things like the "proc" command by adding an entry for the
 # index file.  Returns a string that represents the index file.
 #
-# Arguments:
+# Arguments: 
 #	file	Name of Tcl source file to be indexed.
 
 proc auto_mkindex_parser::mkindex {file} {
@@ -455,7 +456,7 @@ proc auto_mkindex_parser::commandInit {name arglist body} {
     if {[string match *::* $name]} {
         set exportCmd [list _%@namespace export [namespace tail $name]]
         $parser eval [list _%@namespace eval $ns $exportCmd]
-
+ 
 	# The following proc definition does not work if you
 	# want to tolerate space or something else diabolical
 	# in the procedure name, (i.e., space in $alias)
@@ -528,7 +529,7 @@ auto_mkindex_parser::command proc {name args} {
     variable scriptFile
     # Do some fancy reformatting on the "source" call to handle platform
     # differences with respect to pathnames.  Use format just so that the
-    # command is a little easier to read (otherwise it'd be full of
+    # command is a little easier to read (otherwise it'd be full of 
     # backslashed dollar signs, etc.
     append index [list set auto_index([fullname $name])] \
 	    [format { [list source [file join $dir %s]]} \
@@ -553,7 +554,7 @@ auto_mkindex_parser::hook {
 
 	# AUTO MKINDEX:  tbcload::bcproc name arglist body
 	# Adds an entry to the auto index list for the given pre-compiled
-	# procedure name.
+	# procedure name.  
 
 	auto_mkindex_parser::commandInit tbcload::bcproc {name args} {
 	    variable index
@@ -603,15 +604,6 @@ auto_mkindex_parser::command namespace {op args} {
             }
             catch {$parser eval "_%@namespace import $args"}
         }
-	ensemble {
-	    variable parser
-	    variable contextStack
-	    if {[lindex $args 0] eq "create"} {
-		set name ::[join [lreverse $contextStack] ::]
-		# create artifical proc to force an entry in the tclIndex
-		$parser eval [list ::proc $name {} {}]
-	    }
-	}
     }
 }
 

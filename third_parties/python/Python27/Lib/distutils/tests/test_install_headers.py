@@ -6,7 +6,6 @@ import getpass
 
 from distutils.command.install_headers import install_headers
 from distutils.tests import support
-from test.test_support import run_unittest
 
 class InstallHeadersTestCase(support.TempdirManager,
                              support.LoggingSilencer,
@@ -24,7 +23,7 @@ class InstallHeadersTestCase(support.TempdirManager,
 
         pkg_dir, dist = self.create_dist(headers=headers)
         cmd = install_headers(dist)
-        self.assertEqual(cmd.get_inputs(), headers)
+        self.assertEquals(cmd.get_inputs(), headers)
 
         # let's run the command
         cmd.install_dir = os.path.join(pkg_dir, 'inst')
@@ -32,10 +31,10 @@ class InstallHeadersTestCase(support.TempdirManager,
         cmd.run()
 
         # let's check the results
-        self.assertEqual(len(cmd.get_outputs()), 2)
+        self.assertEquals(len(cmd.get_outputs()), 2)
 
 def test_suite():
     return unittest.makeSuite(InstallHeadersTestCase)
 
 if __name__ == "__main__":
-    run_unittest(test_suite())
+    unittest.main(defaultTest="test_suite")

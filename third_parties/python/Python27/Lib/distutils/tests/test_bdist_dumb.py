@@ -1,10 +1,8 @@
 """Tests for distutils.command.bdist_dumb."""
 
-import os
-import sys
-import zipfile
 import unittest
-from test.test_support import run_unittest
+import sys
+import os
 
 # zlib is not used here, but if it's not available
 # test_simple_built will fail
@@ -12,6 +10,8 @@ try:
     import zlib
 except ImportError:
     zlib = None
+
+from test.test_support import run_unittest
 
 from distutils.core import Distribution
 from distutils.command.bdist_dumb import bdist_dumb
@@ -73,39 +73,30 @@ class BuildDumbTestCase(support.TempdirManager,
 
         # see what we have
         dist_created = os.listdir(os.path.join(pkg_dir, 'dist'))
-        base = "%s.%s.zip" % (dist.get_fullname(), cmd.plat_name)
+        base = "%s.%s" % (dist.get_fullname(), cmd.plat_name)
         if os.name == 'os2':
             base = base.replace(':', '-')
 
-        self.assertEqual(dist_created, [base])
+        wanted = ['%s.zip' % base]
+        self.assertEquals(dist_created, wanted)
 
         # now let's check what we have in the zip file
-        fp = zipfile.ZipFile(os.path.join('dist', base))
-        try:
-            contents = fp.namelist()
-        finally:
-            fp.close()
-
-        contents = sorted(filter(None, map(os.path.basename, contents)))
-        wanted = ['foo-0.1-py%s.%s.egg-info' % sys.version_info[:2], 'foo.py']
-        if not sys.dont_write_bytecode:
-            wanted.append('foo.pyc')
-        self.assertEqual(contents, sorted(wanted))
+        # XXX to be done
 
     def test_finalize_options(self):
         pkg_dir, dist = self.create_dist()
         os.chdir(pkg_dir)
         cmd = bdist_dumb(dist)
-        self.assertEqual(cmd.bdist_dir, None)
+        self.assertEquals(cmd.bdist_dir, None)
         cmd.finalize_options()
 
         # bdist_dir is initialized to bdist_base/dumb if not set
         base = cmd.get_finalized_command('bdist').bdist_base
-        self.assertEqual(cmd.bdist_dir, os.path.join(base, 'dumb'))
+        self.assertEquals(cmd.bdist_dir, os.path.join(base, 'dumb'))
 
         # the format is set to a default value depending on the os.name
         default = cmd.default_format[os.name]
-        self.assertEqual(cmd.format, default)
+        self.assertEquals(cmd.format, default)
 
 def test_suite():
     return unittest.makeSuite(BuildDumbTestCase)

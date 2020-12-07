@@ -7,7 +7,6 @@ from ..fixer_util import Name
 
 class FixRawInput(fixer_base.BaseFix):
 
-    BM_compatible = True
     PATTERN = """
               power< name='raw_input' trailer< '(' [any] ')' > any* >
               """

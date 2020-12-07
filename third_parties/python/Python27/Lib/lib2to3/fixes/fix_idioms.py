@@ -35,6 +35,7 @@ CMP = "(n='!=' | '==' | 'is' | n=comp_op< 'is' 'not' >)"
 TYPE = "power< 'type' trailer< '(' x=any ')' > >"
 
 class FixIdioms(fixer_base.BaseFix):
+
     explicit = True # The user must ask for this fixer
 
     PATTERN = r"""

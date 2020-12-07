@@ -4,7 +4,6 @@ raise         -> raise
 raise E       -> raise E
 raise E, V    -> raise E(V)
 raise E, V, T -> raise E(V).with_traceback(T)
-raise E, None, T -> raise E.with_traceback(T)
 
 raise (((E, E'), E''), E'''), V -> raise E(V)
 raise "foo", V, T               -> warns about string exceptions
@@ -30,7 +29,6 @@ from ..fixer_util import Name, Call, Attr, ArgList, is_tuple
 
 class FixRaise(fixer_base.BaseFix):
 
-    BM_compatible = True
     PATTERN = """
     raise_stmt< 'raise' exc=any [',' val=any [',' tb=any]] >
     """
@@ -39,9 +37,8 @@ class FixRaise(fixer_base.BaseFix):
         syms = self.syms
 
         exc = results["exc"].clone()
-        if exc.type == token.STRING:
-            msg = "Python 3 does not support string exceptions"
-            self.cannot_convert(node, msg)
+        if exc.type is token.STRING:
+            self.cannot_convert(node, "Python 3 does not support string exceptions")
             return
 
         # Python 2 supports
@@ -55,7 +52,7 @@ class FixRaise(fixer_base.BaseFix):
                 # exc.children[1:-1] is the unparenthesized tuple
                 # exc.children[1].children[0] is the first element of the tuple
                 exc = exc.children[1].children[0].clone()
-            exc.prefix = u" "
+            exc.prefix = " "
 
         if "val" not in results:
             # One-argument raise
@@ -74,12 +71,7 @@ class FixRaise(fixer_base.BaseFix):
             tb = results["tb"].clone()
             tb.prefix = u""
 
-            e = exc
-            # If there's a traceback and None is passed as the value, then don't
-            # add a call, since the user probably just wants to add a
-            # traceback. See issue #9661.
-            if val.type != token.NAME or val.value != u"None":
-                e = Call(exc, args)
+            e = Call(exc, args)
             with_tb = Attr(e, Name(u'with_traceback')) + [ArgList([tb])]
             new = pytree.Node(syms.simple_stmt, [Name(u"raise")] + with_tb)
             new.prefix = node.prefix

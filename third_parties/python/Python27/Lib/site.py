@@ -61,7 +61,6 @@ ImportError exception, it is silently ignored.
 import sys
 import os
 import __builtin__
-import traceback
 
 # Prefixes for site-packages; add additional prefixes like /usr/local here
 PREFIXES = [sys.prefix, sys.exec_prefix]
@@ -77,11 +76,7 @@ USER_BASE = None
 
 
 def makepath(*paths):
-    dir = os.path.join(*paths)
-    try:
-        dir = os.path.abspath(dir)
-    except OSError:
-        pass
+    dir = os.path.abspath(os.path.join(*paths))
     return dir, os.path.normcase(dir)
 
 
@@ -92,8 +87,8 @@ def abs__file__():
             continue   # don't mess with a PEP 302-supplied __file__
         try:
             m.__file__ = os.path.abspath(m.__file__)
-        except (AttributeError, OSError):
-            pass
+        except AttributeError:
+            continue
 
 
 def removeduppaths():
@@ -113,6 +108,18 @@ def removeduppaths():
             known_paths.add(dircase)
     sys.path[:] = L
     return known_paths
+
+# XXX This should not be part of site.py, since it is needed even when
+# using the -S option for Python.  See http://www.python.org/sf/586680
+def addbuilddir():
+    """Append ./build/lib.<platform> in case we're running in the build dir
+    (especially for Guido :-)"""
+    from sysconfig import get_platform
+    s = "build/lib.%s-%.3s" % (get_platform(), sys.version)
+    if hasattr(sys, 'gettotalrefcount'):
+        s += '-pydebug'
+    s = os.path.join(os.path.dirname(sys.path.pop()), s)
+    sys.path.append(s)
 
 
 def _init_pathinfo():
@@ -144,26 +151,17 @@ def addpackage(sitedir, name, known_paths):
     except IOError:
         return
     with f:
-        for n, line in enumerate(f):
+        for line in f:
             if line.startswith("#"):
                 continue
-            try:
-                if line.startswith(("import ", "import\t")):
-                    exec line
-                    continue
-                line = line.rstrip()
-                dir, dircase = makepath(sitedir, line)
-                if not dircase in known_paths and os.path.exists(dir):
-                    sys.path.append(dir)
-                    known_paths.add(dircase)
-            except Exception as err:
-                print >>sys.stderr, "Error processing line {:d} of {}:\n".format(
-                    n+1, fullname)
-                for record in traceback.format_exception(*sys.exc_info()):
-                    for line in record.splitlines():
-                        print >>sys.stderr, '  '+line
-                print >>sys.stderr, "\nRemainder of file ignored"
-                break
+            if line.startswith(("import ", "import\t")):
+                exec line
+                continue
+            line = line.rstrip()
+            dir, dircase = makepath(sitedir, line)
+            if not dircase in known_paths and os.path.exists(dir):
+                sys.path.append(dir)
+                known_paths.add(dircase)
     if reset:
         known_paths = None
     return known_paths
@@ -295,6 +293,15 @@ def getsitepackages():
         else:
             sitepackages.append(prefix)
             sitepackages.append(os.path.join(prefix, "lib", "site-packages"))
+        if sys.platform == "darwin":
+            # for framework builds *only* we add the standard Apple
+            # locations.
+            from sysconfig import get_config_var
+            framework = get_config_var("PYTHONFRAMEWORK")
+            if framework and "/%s.framework/"%(framework,) in prefix:
+                sitepackages.append(
+                        os.path.join("/Library", framework,
+                            sys.version[:3], "site-packages"))
     return sitepackages
 
 def addsitepackages(known_paths):
@@ -427,7 +434,7 @@ def setcopyright():
     for supporting Python development.  See www.python.org for more information.""")
     here = os.path.dirname(os.__file__)
     __builtin__.license = _Printer(
-        "license", "See https://www.python.org/psf/license/",
+        "license", "See http://www.python.org/%.3s/license.html" % sys.version,
         ["LICENSE.txt", "LICENSE"],
         [os.path.join(here, os.pardir), here, os.curdir])
 
@@ -516,6 +523,9 @@ def main():
 
     abs__file__()
     known_paths = removeduppaths()
+    if (os.name == "posix" and sys.path and
+        os.path.basename(sys.path[-1]) == "Modules"):
+        addbuilddir()
     if ENABLE_USER_SITE is None:
         ENABLE_USER_SITE = check_enableusersite()
     known_paths = addusersitepackages(known_paths)

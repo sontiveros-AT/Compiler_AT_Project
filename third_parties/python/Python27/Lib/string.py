@@ -145,11 +145,7 @@ class Template:
         raise ValueError('Invalid placeholder in string: line %d, col %d' %
                          (lineno, colno))
 
-    def substitute(*args, **kws):
-        if not args:
-            raise TypeError("descriptor 'substitute' of 'Template' object "
-                            "needs an argument")
-        self, args = args[0], args[1:]  # allow the "self" keyword be passed
+    def substitute(self, *args, **kws):
         if len(args) > 1:
             raise TypeError('Too many positional arguments')
         if not args:
@@ -175,11 +171,7 @@ class Template:
                              self.pattern)
         return self.pattern.sub(convert, self.template)
 
-    def safe_substitute(*args, **kws):
-        if not args:
-            raise TypeError("descriptor 'safe_substitute' of 'Template' object "
-                            "needs an argument")
-        self, args = args[0], args[1:]  # allow the "self" keyword be passed
+    def safe_substitute(self, *args, **kws):
         if len(args) > 1:
             raise TypeError('Too many positional arguments')
         if not args:
@@ -190,18 +182,24 @@ class Template:
             mapping = args[0]
         # Helper function for .sub()
         def convert(mo):
-            named = mo.group('named') or mo.group('braced')
+            named = mo.group('named')
             if named is not None:
                 try:
                     # We use this idiom instead of str() because the latter
                     # will fail if val is a Unicode containing non-ASCII
                     return '%s' % (mapping[named],)
                 except KeyError:
-                    return mo.group()
+                    return self.delimiter + named
+            braced = mo.group('braced')
+            if braced is not None:
+                try:
+                    return '%s' % (mapping[braced],)
+                except KeyError:
+                    return self.delimiter + '{' + braced + '}'
             if mo.group('escaped') is not None:
                 return self.delimiter
             if mo.group('invalid') is not None:
-                return mo.group()
+                return self.delimiter
             raise ValueError('Unrecognized named group in pattern',
                              self.pattern)
         return self.pattern.sub(convert, self.template)
@@ -510,15 +508,15 @@ def capitalize(s):
     return s.capitalize()
 
 # Substring replacement (global)
-def replace(s, old, new, maxreplace=-1):
-    """replace (str, old, new[, maxreplace]) -> string
+def replace(s, old, new, maxsplit=-1):
+    """replace (str, old, new[, maxsplit]) -> string
 
     Return a copy of string str with all occurrences of substring
-    old replaced by new. If the optional argument maxreplace is
-    given, only the first maxreplace occurrences are replaced.
+    old replaced by new. If the optional argument maxsplit is
+    given, only the first maxsplit occurrences are replaced.
 
     """
-    return s.replace(old, new, maxreplace)
+    return s.replace(old, new, maxsplit)
 
 
 # Try importing optional built-in module "strop" -- if it exists,
@@ -543,19 +541,7 @@ except ImportError:
 # The field name parser is implemented in str._formatter_field_name_split
 
 class Formatter(object):
-    def format(*args, **kwargs):
-        if not args:
-            raise TypeError("descriptor 'format' of 'Formatter' object "
-                            "needs an argument")
-        self, args = args[0], args[1:]  # allow the "self" keyword be passed
-        try:
-            format_string, args = args[0], args[1:] # allow the "format_string" keyword be passed
-        except IndexError:
-            if 'format_string' in kwargs:
-                format_string = kwargs.pop('format_string')
-            else:
-                raise TypeError("format() missing 1 required positional "
-                                "argument: 'format_string'")
+    def format(self, format_string, *args, **kwargs):
         return self.vformat(format_string, args, kwargs)
 
     def vformat(self, format_string, args, kwargs):
@@ -615,13 +601,13 @@ class Formatter(object):
 
     def convert_field(self, value, conversion):
         # do any conversion on the resulting object
-        if conversion is None:
-            return value
+        if conversion == 'r':
+            return repr(value)
         elif conversion == 's':
             return str(value)
-        elif conversion == 'r':
-            return repr(value)
-        raise ValueError("Unknown conversion specifier {0!s}".format(conversion))
+        elif conversion is None:
+            return value
+        raise ValueError("Unknown converion specifier {0!s}".format(conversion))
 
 
     # returns an iterable that contains tuples of the form:

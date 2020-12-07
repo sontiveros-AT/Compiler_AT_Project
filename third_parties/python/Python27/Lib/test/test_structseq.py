@@ -88,7 +88,7 @@ class StructSeqTest(unittest.TestCase):
         class Exc(Exception):
             pass
 
-        # Devious code could crash structseqs' constructors
+        # Devious code could crash structseqs' contructors
         class C:
             def __getitem__(self, i):
                 raise Exc

@@ -3,6 +3,8 @@
 # utility procs formerly in init.tcl which can be loaded on demand
 # for package management.
 #
+# RCS: @(#) $Id: package.tcl,v 1.35 2006/11/03 00:34:52 hobbs Exp $
+#
 # Copyright (c) 1991-1993 The Regents of the University of California.
 # Copyright (c) 1994-1998 Sun Microsystems, Inc.
 #
@@ -40,7 +42,7 @@ proc tcl::Pkg::CompareExtension { fileName {ext {}} } {
             set currExt [file extension $root]
             if {$currExt eq $ext} {
                 return 1
-            }
+            } 
 
 	    # The current extension does not match; if it is not a numeric
 	    # value, quit, as we are only looking to ignore version number
@@ -289,22 +291,22 @@ proc pkg_mkIndex {args} {
 		    set ::tcl::type source
 		}
 
-		# As a performance optimization, if we are creating
-		# direct load packages, don't bother figuring out the
-		# set of commands created by the new packages.  We
-		# only need that list for setting up the autoloading
+		# As a performance optimization, if we are creating 
+		# direct load packages, don't bother figuring out the 
+		# set of commands created by the new packages.  We 
+		# only need that list for setting up the autoloading 
 		# used in the non-direct case.
 		if { !$::tcl::direct } {
 		    # See what new namespaces appeared, and import commands
 		    # from them.  Only exported commands go into the index.
-
+		    
 		    foreach ::tcl::x [::tcl::GetAllNamespaces] {
 			if {! [info exists ::tcl::namespaces($::tcl::x)]} {
 			    namespace import -force ${::tcl::x}::*
 			}
 
 			# Figure out what commands appeared
-
+			
 			foreach ::tcl::x [info commands] {
 			    set ::tcl::newCmds($::tcl::x) 1
 			}
@@ -313,18 +315,18 @@ proc pkg_mkIndex {args} {
 			}
 			foreach ::tcl::x [array names ::tcl::newCmds] {
 			    # determine which namespace a command comes from
-
+			    
 			    set ::tcl::abs [namespace origin $::tcl::x]
-
+			    
 			    # special case so that global names have no leading
 			    # ::, this is required by the unknown command
-
+			    
 			    set ::tcl::abs \
 				    [lindex [auto_qualify $::tcl::abs ::] 0]
-
+			    
 			    if {$::tcl::x ne $::tcl::abs} {
 				# Name changed during qualification
-
+				
 				set ::tcl::newCmds($::tcl::abs) 1
 				unset ::tcl::newCmds($::tcl::x)
 			    }
@@ -389,9 +391,11 @@ proc pkg_mkIndex {args} {
 
     foreach pkg [lsort [array names files]] {
 	set cmd {}
-	lassign $pkg name version
+	foreach {name version} $pkg {
+	    break
+	}
 	lappend cmd ::tcl::Pkg::Create -name $name -version $version
-	foreach spec [lsort -index 0 $files($pkg)] {
+	foreach spec $files($pkg) {
 	    foreach {file type procs} $spec {
 		if { $direct } {
 		    set procs {}
@@ -437,7 +441,7 @@ proc tclPkgSetup {dir pkg version files} {
 		set auto_index($cmd) [list load [file join $dir $f] $pkg]
 	    } else {
 		set auto_index($cmd) [list source [file join $dir $f]]
-	    }
+	    } 
 	}
     }
 }
@@ -466,7 +470,7 @@ proc tclPkgUnknown {name args} {
     set old_path [set use_path $auto_path]
     while {[llength $use_path]} {
 	set dir [lindex $use_path end]
-
+	
 	# Make sure we only scan each directory one time.
 	if {[info exists tclSeenPath($dir)]} {
 	    set use_path [lrange $use_path 0 end-1]
@@ -481,15 +485,8 @@ proc tclPkgUnknown {name args} {
 	    foreach file [glob -directory $dir -join -nocomplain \
 		    * pkgIndex.tcl] {
 		set dir [file dirname $file]
-		if {![info exists procdDirs($dir)]} {
-		    set code [catch {source $file} msg opt]
-		    if {$code == 1 &&
-			    [lindex [dict get $opt -errorcode] 0] eq "POSIX" &&
-			    [lindex [dict get $opt -errorcode] 1] eq "EACCES"} {
-			# $file was not readable; silently ignore
-			continue
-		    }
-		    if {$code} {
+		if {![info exists procdDirs($dir)] && [file readable $file]} {
+		    if {[catch {source $file} msg]} {
 			tclLog "error reading package index file $file: $msg"
 		    } else {
 			set procdDirs($dir) 1
@@ -500,16 +497,10 @@ proc tclPkgUnknown {name args} {
 	set dir [lindex $use_path end]
 	if {![info exists procdDirs($dir)]} {
 	    set file [file join $dir pkgIndex.tcl]
-	    # safe interps usually don't have "file exists",
-	    if {([interp issafe] || [file exists $file])} {
-		set code [catch {source $file} msg opt]
-		if {$code == 1 &&
-			[lindex [dict get $opt -errorcode] 0] eq "POSIX" &&
-			[lindex [dict get $opt -errorcode] 1] eq "EACCES"} {
-		    # $file was not readable; silently ignore
-		    continue
-		}
-		if {$code}  {
+	    # safe interps usually don't have "file readable", 
+	    # nor stderr channel
+	    if {([interp issafe] || [file readable $file])} {
+		if {[catch {source $file} msg] && ![interp issafe]}  {
 		    tclLog "error reading package index file $file: $msg"
 		} else {
 		    set procdDirs($dir) 1
@@ -542,7 +533,8 @@ proc tclPkgUnknown {name args} {
 	# $use_path.  Don't add directories we've already seen, or ones
 	# already on the $use_path.
 	foreach dir [lrange $auto_path $index end] {
-	    if {![info exists tclSeenPath($dir)] && ($dir ni $use_path)} {
+	    if {![info exists tclSeenPath($dir)] 
+		    && ([lsearch -exact $use_path $dir] == -1) } {
 		lappend use_path $dir
 	    }
 	}
@@ -554,6 +546,8 @@ proc tclPkgUnknown {name args} {
 # This procedure extends the "package unknown" function for MacOSX.
 # It scans the Resources/Scripts directories of the immediate children
 # of the auto_path directories for pkgIndex files.
+# Only installed in interps that are not safe so we don't check
+# for [interp issafe] as in tclPkgUnknown.
 #
 # Arguments:
 # original -		original [package unknown] procedure
@@ -589,15 +583,8 @@ proc tcl::MacOSXPkgUnknown {original name args} {
 	foreach file [glob -directory $dir -join -nocomplain \
 		* Resources Scripts pkgIndex.tcl] {
 	    set dir [file dirname $file]
-	    if {![info exists procdDirs($dir)]} {
-		set code [catch {source $file} msg opt]
-		if {$code == 1 &&
-			[lindex [dict get $opt -errorcode] 0] eq "POSIX" &&
-			[lindex [dict get $opt -errorcode] 1] eq "EACCES"} {
-		    # $file was not readable; silently ignore
-		    continue
-		}
-		if {$code} {
+	    if {![info exists procdDirs($dir)] && [file readable $file]} {
+		if {[catch {source $file} msg]} {
 		    tclLog "error reading package index file $file: $msg"
 		} else {
 		    set procdDirs($dir) 1
@@ -629,7 +616,8 @@ proc tcl::MacOSXPkgUnknown {original name args} {
 	# $use_path.  Don't add directories we've already seen, or ones
 	# already on the $use_path.
 	foreach dir [lrange $auto_path $index end] {
-	    if {![info exists tclSeenPath($dir)] && ($dir ni $use_path)} {
+	    if {![info exists tclSeenPath($dir)] 
+		    && ([lsearch -exact $use_path $dir] == -1) } {
 		lappend use_path $dir
 	    }
 	}
@@ -653,11 +641,11 @@ proc tcl::MacOSXPkgUnknown {original name args} {
 #
 #			Any number of -load and -source parameters may be
 #			specified, so long as there is at least one -load or
-#			-source parameter.  If the procs component of a
+#			-source parameter.  If the procs component of a 
 #			module specifier is left off, that module will be
 #			set up for direct loading; otherwise, it will be
 #			set up for lazy loading.  If both -source and -load
-#			are specified, the -load'ed files will be loaded
+#			are specified, the -load'ed files will be loaded 
 #			first, followed by the -source'd files.
 #
 # Results:
@@ -679,9 +667,12 @@ proc ::tcl::Pkg::Create {args} {
     if { $len < 6 } {
 	error $err(wrongNumArgs)
     }
-
+    
     # Initialize parameters
-    array set opts {-name {} -version {} -source {} -load {}}
+    set opts(-name)		{}
+    set opts(-version)		{}
+    set opts(-source)		{}
+    set opts(-load)		{}
 
     # process parameters
     for {set i 0} {$i < $len} {incr i} {
@@ -715,22 +706,27 @@ proc ::tcl::Pkg::Create {args} {
     if { [llength $opts(-version)] == 0 } {
 	error [format $err(valueMissing) "-version"]
     }
-
+    
     if { [llength $opts(-source)] == 0 && [llength $opts(-load)] == 0 } {
 	error $err(noLoadOrSource)
     }
 
     # OK, now everything is good.  Generate the package ifneeded statment.
     set cmdline "package ifneeded $opts(-name) $opts(-version) "
-
+    
     set cmdList {}
     set lazyFileList {}
 
     # Handle -load and -source specs
     foreach key {load source} {
 	foreach filespec $opts(-$key) {
-	    lassign $filespec filename proclist
-
+	    foreach {filename proclist} {{} {}} {
+		break
+	    }
+	    foreach {filename proclist} $filespec {
+		break
+	    }
+	    
 	    if { [llength $proclist] == 0 } {
 		set cmd "\[list $key \[file join \$dir [list $filename]\]\]"
 		lappend cmdList $cmd
@@ -748,4 +744,4 @@ proc ::tcl::Pkg::Create {args} {
     return $cmdline
 }
 
-interp alias {} ::pkg::create {} ::tcl::Pkg::Create
+interp alias {} ::pkg::create {} ::tcl::Pkg::Create 

@@ -67,6 +67,7 @@ else:
     from _ssl import SSLError as sslerror
     from _ssl import \
          RAND_add, \
+         RAND_egd, \
          RAND_status, \
          SSL_ERROR_ZERO_RETURN, \
          SSL_ERROR_WANT_READ, \
@@ -77,11 +78,6 @@ else:
          SSL_ERROR_WANT_CONNECT, \
          SSL_ERROR_EOF, \
          SSL_ERROR_INVALID_ERROR_CODE
-    try:
-        from _ssl import RAND_egd
-    except ImportError:
-        # LibreSSL does not provide RAND_egd
-        pass
 
 import os, sys, warnings
 
@@ -193,9 +189,7 @@ class _socketobject(object):
         for method in _delegate_methods:
             setattr(self, method, getattr(_sock, method))
 
-    def close(self, _closedsocket=_closedsocket,
-              _delegate_methods=_delegate_methods, setattr=setattr):
-        # This function should not reference any globals. See issue #808164.
+    def close(self):
         self._sock = _closedsocket()
         dummy = self._sock._dummy
         for method in _delegate_methods:
@@ -323,8 +317,8 @@ class _fileobject(object):
         self._wbuf.append(data)
         self._wbuf_len += len(data)
         if (self._wbufsize == 0 or
-            (self._wbufsize == 1 and '\n' in data) or
-            (self._wbufsize > 1 and self._wbuf_len >= self._wbufsize)):
+            self._wbufsize == 1 and '\n' in data or
+            self._wbuf_len >= self._wbufsize):
             self.flush()
 
     def writelines(self, list):
@@ -549,11 +543,11 @@ def create_connection(address, timeout=_GLOBAL_DEFAULT_TIMEOUT,
     global default timeout setting returned by :func:`getdefaulttimeout`
     is used.  If *source_address* is set it must be a tuple of (host, port)
     for the socket to bind as a source address before making the connection.
-    A host of '' or port 0 tells the OS to use the default.
+    An host of '' or port 0 tells the OS to use the default.
     """
 
+    msg = "getaddrinfo returns an empty list"
     host, port = address
-    err = None
     for res in getaddrinfo(host, port, 0, SOCK_STREAM):
         af, socktype, proto, canonname, sa = res
         sock = None
@@ -566,12 +560,8 @@ def create_connection(address, timeout=_GLOBAL_DEFAULT_TIMEOUT,
             sock.connect(sa)
             return sock
 
-        except error as _:
-            err = _
+        except error, msg:
             if sock is not None:
                 sock.close()
 
-    if err is not None:
-        raise err
-    else:
-        raise error("getaddrinfo returns an empty list")
+    raise error, msg

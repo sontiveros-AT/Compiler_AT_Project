@@ -35,7 +35,7 @@ class ProjectParameters():
         else:
             file_name = 'main'
 
-        return Path(f'{file_name}{self.language.extension}')
+        return f'{file_name}{self.language.extension}'
 
     def get_template_code(self, file):
         template_code = ''

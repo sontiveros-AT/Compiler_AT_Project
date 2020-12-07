@@ -1,10 +1,9 @@
 import unittest
+from test import test_support
 import sys
 
 import random
 import math
-
-from test import test_int, test_support
 
 # Used for lazy formatting of failure messages
 class Frm(object):
@@ -79,15 +78,8 @@ if test_support.have_unicode:
         (unichr(0x200), ValueError),
 ]
 
-class LongSubclass(long):
-    pass
 
-class OtherLongSubclass(long):
-    pass
-
-class LongTest(test_int.IntLongCommonTests, unittest.TestCase):
-
-    ntype = long
+class LongTest(unittest.TestCase):
 
     # Get quasi-random long consisting of ndigits digits (in base BASE).
     # quasi == the most-significant digit will not be 0, and the number
@@ -96,7 +88,7 @@ class LongTest(test_int.IntLongCommonTests, unittest.TestCase):
     # The sign of the number is also random.
 
     def getran(self, ndigits):
-        self.assertGreater(ndigits, 0)
+        self.assertTrue(ndigits > 0)
         nbits_hi = ndigits * SHIFT
         nbits_lo = nbits_hi - SHIFT + 1
         answer = 0L
@@ -202,21 +194,6 @@ class LongTest(test_int.IntLongCommonTests, unittest.TestCase):
                 self.assertEqual(x, y,
                     Frm("bad result for a*b: a=%r, b=%r, x=%r, y=%r", a, b, x, y))
 
-    def test_lshift_of_zero(self):
-        self.assertEqual(0L << 0, 0)
-        self.assertEqual(0L << 10, 0)
-        with self.assertRaises(ValueError):
-            0L << -1
-
-    @test_support.cpython_only
-    def test_huge_lshift_of_zero(self):
-        # Shouldn't try to allocate memory for a huge shift. See issue #27870.
-        # Other implementations may have a different boundary for overflow,
-        # or not raise at all.
-        self.assertEqual(0L << sys.maxsize, 0)
-        with self.assertRaises(OverflowError):
-            0L << (sys.maxsize + 1)
-
     def check_bitop_identities_1(self, x):
         eq = self.assertEqual
         eq(x & 0, 0, Frm("x & 0 != 0 for x=%r", x))
@@ -237,43 +214,43 @@ class LongTest(test_int.IntLongCommonTests, unittest.TestCase):
         for n in xrange(2*SHIFT):
             p2 = 2L ** n
             eq(x << n >> n, x,
-                Frm("x << n >> n != x for x=%r, n=%r", x, n))
+                Frm("x << n >> n != x for x=%r, n=%r", (x, n)))
             eq(x // p2, x >> n,
-                Frm("x // p2 != x >> n for x=%r n=%r p2=%r", x, n, p2))
+                Frm("x // p2 != x >> n for x=%r n=%r p2=%r", (x, n, p2)))
             eq(x * p2, x << n,
-                Frm("x * p2 != x << n for x=%r n=%r p2=%r", x, n, p2))
+                Frm("x * p2 != x << n for x=%r n=%r p2=%r", (x, n, p2)))
             eq(x & -p2, x >> n << n,
-                Frm("not x & -p2 == x >> n << n for x=%r n=%r p2=%r", x, n, p2))
+                Frm("not x & -p2 == x >> n << n for x=%r n=%r p2=%r", (x, n, p2)))
             eq(x & -p2, x & ~(p2 - 1),
-                Frm("not x & -p2 == x & ~(p2 - 1) for x=%r n=%r p2=%r", x, n, p2))
+                Frm("not x & -p2 == x & ~(p2 - 1) for x=%r n=%r p2=%r", (x, n, p2)))
 
     def check_bitop_identities_2(self, x, y):
         eq = self.assertEqual
-        eq(x & y, y & x, Frm("x & y != y & x for x=%r, y=%r", x, y))
-        eq(x | y, y | x, Frm("x | y != y | x for x=%r, y=%r", x, y))
-        eq(x ^ y, y ^ x, Frm("x ^ y != y ^ x for x=%r, y=%r", x, y))
-        eq(x ^ y ^ x, y, Frm("x ^ y ^ x != y for x=%r, y=%r", x, y))
-        eq(x & y, ~(~x | ~y), Frm("x & y != ~(~x | ~y) for x=%r, y=%r", x, y))
-        eq(x | y, ~(~x & ~y), Frm("x | y != ~(~x & ~y) for x=%r, y=%r", x, y))
+        eq(x & y, y & x, Frm("x & y != y & x for x=%r, y=%r", (x, y)))
+        eq(x | y, y | x, Frm("x | y != y | x for x=%r, y=%r", (x, y)))
+        eq(x ^ y, y ^ x, Frm("x ^ y != y ^ x for x=%r, y=%r", (x, y)))
+        eq(x ^ y ^ x, y, Frm("x ^ y ^ x != y for x=%r, y=%r", (x, y)))
+        eq(x & y, ~(~x | ~y), Frm("x & y != ~(~x | ~y) for x=%r, y=%r", (x, y)))
+        eq(x | y, ~(~x & ~y), Frm("x | y != ~(~x & ~y) for x=%r, y=%r", (x, y)))
         eq(x ^ y, (x | y) & ~(x & y),
-             Frm("x ^ y != (x | y) & ~(x & y) for x=%r, y=%r", x, y))
+             Frm("x ^ y != (x | y) & ~(x & y) for x=%r, y=%r", (x, y)))
         eq(x ^ y, (x & ~y) | (~x & y),
-             Frm("x ^ y == (x & ~y) | (~x & y) for x=%r, y=%r", x, y))
+             Frm("x ^ y == (x & ~y) | (~x & y) for x=%r, y=%r", (x, y)))
         eq(x ^ y, (x | y) & (~x | ~y),
-             Frm("x ^ y == (x | y) & (~x | ~y) for x=%r, y=%r", x, y))
+             Frm("x ^ y == (x | y) & (~x | ~y) for x=%r, y=%r", (x, y)))
 
     def check_bitop_identities_3(self, x, y, z):
         eq = self.assertEqual
         eq((x & y) & z, x & (y & z),
-             Frm("(x & y) & z != x & (y & z) for x=%r, y=%r, z=%r", x, y, z))
+             Frm("(x & y) & z != x & (y & z) for x=%r, y=%r, z=%r", (x, y, z)))
         eq((x | y) | z, x | (y | z),
-             Frm("(x | y) | z != x | (y | z) for x=%r, y=%r, z=%r", x, y, z))
+             Frm("(x | y) | z != x | (y | z) for x=%r, y=%r, z=%r", (x, y, z)))
         eq((x ^ y) ^ z, x ^ (y ^ z),
-             Frm("(x ^ y) ^ z != x ^ (y ^ z) for x=%r, y=%r, z=%r", x, y, z))
+             Frm("(x ^ y) ^ z != x ^ (y ^ z) for x=%r, y=%r, z=%r", (x, y, z)))
         eq(x & (y | z), (x & y) | (x & z),
-             Frm("x & (y | z) != (x & y) | (x & z) for x=%r, y=%r, z=%r", x, y, z))
+             Frm("x & (y | z) != (x & y) | (x & z) for x=%r, y=%r, z=%r", (x, y, z)))
         eq(x | (y & z), (x | y) & (x | z),
-             Frm("x | (y & z) != (x | y) & (x | z) for x=%r, y=%r, z=%r", x, y, z))
+             Frm("x | (y & z) != (x | y) & (x | z) for x=%r, y=%r, z=%r", (x, y, z)))
 
     def test_bitop_identities(self):
         for x in special:
@@ -553,23 +530,12 @@ class LongTest(test_int.IntLongCommonTests, unittest.TestCase):
                 try:
                     long(TruncReturnsNonIntegral())
                 except TypeError as e:
-                    self.assertEqual(str(e),
-                                     "__trunc__ returned non-Integral"
-                                     " (type NonIntegral)")
+                    self.assertEquals(str(e),
+                                      "__trunc__ returned non-Integral"
+                                      " (type NonIntegral)")
                 else:
                     self.fail("Failed to raise TypeError with %s" %
                               ((base, trunc_result_base),))
-
-                class TruncReturnsLongSubclass(base):
-                    def __long__(self):
-                        return OtherLongSubclass(42L)
-                good_int = TruncReturnsLongSubclass()
-                n = long(good_int)
-                self.assertEqual(n, 42L)
-                self.assertIs(type(n), OtherLongSubclass)
-                n = LongSubclass(good_int)
-                self.assertEqual(n, 42L)
-                self.assertIs(type(n), LongSubclass)
 
     def test_misc(self):
 
@@ -620,7 +586,7 @@ class LongTest(test_int.IntLongCommonTests, unittest.TestCase):
             pass
         x = long2(1L<<100)
         y = int(x)
-        self.assertIs(type(y), long,
+        self.assertTrue(type(y) is long,
             "overflowing int conversion must return long not long subtype")
 
         # long -> Py_ssize_t conversion
@@ -634,22 +600,6 @@ class LongTest(test_int.IntLongCommonTests, unittest.TestCase):
             # that fit a Py_ssize_t
             slicemin, slicemax = X()[-2L**100:2L**100]
             self.assertEqual(X()[slicemin:slicemax], (slicemin, slicemax))
-
-    def test_issue9869(self):
-        # Issue 9869: Interpreter crash when initializing an instance
-        # of a long subclass from an object whose __long__ method returns
-        # a plain int.
-        class BadLong(object):
-            def __long__(self):
-                return 1000000
-
-        class MyLong(long):
-            pass
-
-        x = MyLong(BadLong())
-        self.assertIsInstance(x, long)
-        self.assertEqual(x, 1000000)
-
 
 # ----------------------------------- tests of auto int->long conversion
 
