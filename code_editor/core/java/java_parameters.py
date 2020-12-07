@@ -59,3 +59,11 @@ class JavaParameters(Parameters):
             raise EmptyParametersException(self.get_binary(), 'binary path')
         elif self.get_package() == '':
             raise EmptyParametersException(self.get_package(), 'package path')
+        elif not os.path.isfile(self.get_file_path()):
+            print('no file path')
+            raise NotFoundParametersException(self.get_file_path(), 'file path')
+        elif not os.path.isdir(self.get_language_path()):
+            print('no lang path')
+            raise NotFoundParametersException(self.get_language_path(), 'file language')
+        else:
+            return True

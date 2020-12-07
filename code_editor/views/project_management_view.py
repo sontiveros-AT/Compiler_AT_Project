@@ -16,7 +16,8 @@
 from django.http import JsonResponse
 from django.views.generic import TemplateView
 
-from code_editor.core.exceptions.exceptions import ParametersInvalidException, LanguageInvalidException
+from code_editor.core.exceptions.exceptions import ParametersInvalidException, LanguageInvalidException, \
+    CommandInvalidException, ExecuteInvalidException
 from code_editor.orm_queries.orm_project import OrmProject
 from code_editor.core.executor_facade import CompilerFactory
 
@@ -44,6 +45,10 @@ class ProjectManagementView(TemplateView):
             output = compiler.run()
             return JsonResponse({"output": output})
         except LanguageInvalidException as e:
-            return JsonResponse({"output": str(e)})
+            return JsonResponse({"error": str(e)})
         except ParametersInvalidException as e:
-            return JsonResponse({"output": str(e)})
+            return JsonResponse({"error": str(e)})
+        except CommandInvalidException as e:
+            return JsonResponse({"error": str(e)})
+        except ExecuteInvalidException as e:
+            return JsonResponse({"error": str(e)})

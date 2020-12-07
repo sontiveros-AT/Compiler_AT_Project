@@ -15,7 +15,6 @@
 #
 
 from configparser import ConfigParser
-
 from jala_compiler.settings import BASE_DIR
 
 
@@ -33,7 +32,6 @@ class ConfigManager:
         self.config_object.read(BASE_DIR / 'config/config.properties')
         self.config_path_compiler = self.config_object['path_compiler']
         self.config_file_template = self.config_object['file_templates']
-        self.config_data_base = self.config_object['data_base_config']
 
     def __init__(self):
         pass
@@ -43,6 +41,3 @@ class ConfigManager:
 
     def get_file_template(self, key):
         return self.config_file_template[key]
-
-    def get_data_base_config(self, key):
-        return self.config_data_base[key]
