@@ -28,7 +28,7 @@ option involved with the exception.
 # - RETURN_IN_ORDER option
 # - GNU extension with '-' as first character of option string
 # - optional arguments, specified by double colons
-# - an option string with a W followed by semicolon should
+# - a option string with a W followed by semicolon should
 #   treat "-W foo" as "--foo"
 
 __all__ = ["GetoptError","error","getopt","gnu_getopt"]
@@ -155,7 +155,7 @@ def do_longs(opts, opt, longopts, args):
             if not args:
                 raise GetoptError('option --%s requires argument' % opt, opt)
             optarg, args = args[0], args[1:]
-    elif optarg is not None:
+    elif optarg:
         raise GetoptError('option --%s must not have an argument' % opt, opt)
     opts.append(('--' + opt, optarg or ''))
     return opts, args

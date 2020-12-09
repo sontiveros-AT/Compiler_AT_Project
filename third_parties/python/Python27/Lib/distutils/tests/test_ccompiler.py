@@ -4,8 +4,7 @@ import unittest
 from test.test_support import captured_stdout
 
 from distutils.ccompiler import (gen_lib_options, CCompiler,
-                                 get_default_compiler)
-from distutils.sysconfig import customize_compiler
+                                 get_default_compiler, customize_compiler)
 from distutils import debug
 from distutils.tests import support
 
@@ -24,30 +23,6 @@ class FakeCompiler(object):
 
 class CCompilerTestCase(support.EnvironGuard, unittest.TestCase):
 
-    def test_set_executables(self):
-        class MyCCompiler(CCompiler):
-            executables = {'compiler': '', 'compiler_cxx': '', 'linker': ''}
-
-        compiler = MyCCompiler()
-
-        # set executable as list
-        compiler.set_executables(compiler=['env', 'OMPI_MPICC=clang', 'mpicc'])
-        self.assertEqual(compiler.compiler, ['env',
-                                             'OMPI_MPICC=clang',
-                                             'mpicc'])
-
-        # set executable as string
-        compiler.set_executables(compiler_cxx='env OMPI_MPICXX=clang++ mpicxx')
-        self.assertEqual(compiler.compiler_cxx, ['env',
-                                                 'OMPI_MPICXX=clang++',
-                                                 'mpicxx'])
-
-        # set executable as unicode string
-        compiler.set_executables(linker=u'env OMPI_MPICXX=clang++ mpiCC')
-        self.assertEqual(compiler.linker, [u'env',
-                                           u'OMPI_MPICXX=clang++',
-                                           u'mpiCC'])
-
     def test_gen_lib_options(self):
         compiler = FakeCompiler()
         libdirs = ['lib1', 'lib2']
@@ -57,7 +32,7 @@ class CCompilerTestCase(support.EnvironGuard, unittest.TestCase):
         opts = gen_lib_options(compiler, libdirs, runlibdirs, libs)
         wanted = ['-Llib1', '-Llib2', '-cool', '-Rrunlib1', 'found',
                   '-lname2']
-        self.assertEqual(opts, wanted)
+        self.assertEquals(opts, wanted)
 
     def test_debug_print(self):
 
@@ -68,20 +43,23 @@ class CCompilerTestCase(support.EnvironGuard, unittest.TestCase):
         with captured_stdout() as stdout:
             compiler.debug_print('xxx')
         stdout.seek(0)
-        self.assertEqual(stdout.read(), '')
+        self.assertEquals(stdout.read(), '')
 
         debug.DEBUG = True
         try:
             with captured_stdout() as stdout:
                 compiler.debug_print('xxx')
             stdout.seek(0)
-            self.assertEqual(stdout.read(), 'xxx\n')
+            self.assertEquals(stdout.read(), 'xxx\n')
         finally:
             debug.DEBUG = False
 
-    @unittest.skipUnless(get_default_compiler() == 'unix',
-                         'not testing if default compiler is not unix')
     def test_customize_compiler(self):
+
+        # not testing if default compiler is not unix
+        if get_default_compiler() != 'unix':
+            return
+
         os.environ['AR'] = 'my_ar'
         os.environ['ARFLAGS'] = '-arflags'
 
@@ -94,7 +72,7 @@ class CCompilerTestCase(support.EnvironGuard, unittest.TestCase):
 
         comp = compiler()
         customize_compiler(comp)
-        self.assertEqual(comp.exes['archiver'], 'my_ar -arflags')
+        self.assertEquals(comp.exes['archiver'], 'my_ar -arflags')
 
 def test_suite():
     return unittest.makeSuite(CCompilerTestCase)

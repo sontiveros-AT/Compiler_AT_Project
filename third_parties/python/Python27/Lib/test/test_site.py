@@ -6,13 +6,9 @@ executing have not been removed.
 """
 import unittest
 from test.test_support import run_unittest, TESTFN, EnvironmentVarGuard
-from test.test_support import captured_output
-from test import support
 import __builtin__
-import errno
 import os
 import sys
-import re
 import encodings
 import subprocess
 import sysconfig
@@ -26,31 +22,10 @@ if "site" in sys.modules:
 else:
     raise unittest.SkipTest("importation of site.py suppressed")
 
-
-OLD_SYS_PATH = None
-
-
-def setUpModule():
-    global OLD_SYS_PATH
-    OLD_SYS_PATH = sys.path[:]
-
-    if site.ENABLE_USER_SITE and not os.path.isdir(site.USER_SITE):
-        # need to add user site directory for tests
-        try:
-            os.makedirs(site.USER_SITE)
-            # modify sys.path: will be restored by tearDownModule()
-            site.addsitedir(site.USER_SITE)
-        except OSError as exc:
-            if exc.errno in (errno.EACCES, errno.EPERM):
-                raise unittest.SkipTest('unable to create user site directory (%r): %s'
-                                        % (site.USER_SITE, exc))
-            else:
-                raise
-
-
-def tearDownModule():
-    sys.path[:] = OLD_SYS_PATH
-
+if not os.path.isdir(site.USER_SITE):
+    # need to add user site directory for tests
+    os.makedirs(site.USER_SITE)
+    site.addsitedir(site.USER_SITE)
 
 class HelperFunctionsTests(unittest.TestCase):
     """Tests for helper functions.
@@ -119,58 +94,6 @@ class HelperFunctionsTests(unittest.TestCase):
         finally:
             pth_file.cleanup()
 
-    def make_pth(self, contents, pth_dir='.', pth_name=TESTFN):
-        # Create a .pth file and return its (abspath, basename).
-        pth_dir = os.path.abspath(pth_dir)
-        pth_basename = pth_name + '.pth'
-        pth_fn = os.path.join(pth_dir, pth_basename)
-        pth_file = open(pth_fn, 'w')
-        self.addCleanup(lambda: os.remove(pth_fn))
-        pth_file.write(contents)
-        pth_file.close()
-        return pth_dir, pth_basename
-
-    def test_addpackage_import_bad_syntax(self):
-        # Issue 10642
-        pth_dir, pth_fn = self.make_pth("import bad)syntax\n")
-        with captured_output("stderr") as err_out:
-            site.addpackage(pth_dir, pth_fn, set())
-        self.assertRegexpMatches(err_out.getvalue(), "line 1")
-        self.assertRegexpMatches(err_out.getvalue(),
-            re.escape(os.path.join(pth_dir, pth_fn)))
-        # XXX: the previous two should be independent checks so that the
-        # order doesn't matter.  The next three could be a single check
-        # but my regex foo isn't good enough to write it.
-        self.assertRegexpMatches(err_out.getvalue(), 'Traceback')
-        self.assertRegexpMatches(err_out.getvalue(), r'import bad\)syntax')
-        self.assertRegexpMatches(err_out.getvalue(), 'SyntaxError')
-
-    def test_addpackage_import_bad_exec(self):
-        # Issue 10642
-        pth_dir, pth_fn = self.make_pth("randompath\nimport nosuchmodule\n")
-        with captured_output("stderr") as err_out:
-            site.addpackage(pth_dir, pth_fn, set())
-        self.assertRegexpMatches(err_out.getvalue(), "line 2")
-        self.assertRegexpMatches(err_out.getvalue(),
-            re.escape(os.path.join(pth_dir, pth_fn)))
-        # XXX: ditto previous XXX comment.
-        self.assertRegexpMatches(err_out.getvalue(), 'Traceback')
-        self.assertRegexpMatches(err_out.getvalue(), 'ImportError')
-
-    @unittest.skipIf(sys.platform == "win32", "Windows does not raise an "
-                      "error for file paths containing null characters")
-    def test_addpackage_import_bad_pth_file(self):
-        # Issue 5258
-        pth_dir, pth_fn = self.make_pth("abc\x00def\n")
-        with captured_output("stderr") as err_out:
-            site.addpackage(pth_dir, pth_fn, set())
-        self.assertRegexpMatches(err_out.getvalue(), "line 1")
-        self.assertRegexpMatches(err_out.getvalue(),
-            re.escape(os.path.join(pth_dir, pth_fn)))
-        # XXX: ditto previous XXX comment.
-        self.assertRegexpMatches(err_out.getvalue(), 'Traceback')
-        self.assertRegexpMatches(err_out.getvalue(), 'TypeError')
-
     def test_addsitedir(self):
         # Same tests for test_addpackage since addsitedir() essentially just
         # calls addpackage() for every .pth file in the directory
@@ -184,23 +107,17 @@ class HelperFunctionsTests(unittest.TestCase):
         finally:
             pth_file.cleanup()
 
-    @unittest.skipUnless(site.ENABLE_USER_SITE, "requires access to PEP 370 "
-                          "user-site (site.ENABLE_USER_SITE)")
     def test_s_option(self):
         usersite = site.USER_SITE
         self.assertIn(usersite, sys.path)
 
-        env = os.environ.copy()
         rc = subprocess.call([sys.executable, '-c',
-            'import sys; sys.exit(%r in sys.path)' % usersite],
-            env=env)
+            'import sys; sys.exit(%r in sys.path)' % usersite])
         self.assertEqual(rc, 1, "%r is not in sys.path (sys.exit returned %r)"
                 % (usersite, rc))
 
-        env = os.environ.copy()
         rc = subprocess.call([sys.executable, '-s', '-c',
-            'import sys; sys.exit(%r in sys.path)' % usersite],
-            env=env)
+            'import sys; sys.exit(%r in sys.path)' % usersite])
         self.assertEqual(rc, 0)
 
         env = os.environ.copy()
@@ -222,7 +139,7 @@ class HelperFunctionsTests(unittest.TestCase):
         user_base = site.getuserbase()
 
         # the call sets site.USER_BASE
-        self.assertEqual(site.USER_BASE, user_base)
+        self.assertEquals(site.USER_BASE, user_base)
 
         # let's set PYTHONUSERBASE and see if it uses it
         site.USER_BASE = None
@@ -240,9 +157,8 @@ class HelperFunctionsTests(unittest.TestCase):
         user_site = site.getusersitepackages()
 
         # the call sets USER_BASE *and* USER_SITE
-        self.assertEqual(site.USER_SITE, user_site)
+        self.assertEquals(site.USER_SITE, user_site)
         self.assertTrue(user_site.startswith(site.USER_BASE), user_site)
-        self.assertEqual(site.USER_BASE, site.getuserbase())
 
     def test_getsitepackages(self):
         site.PREFIXES = ['xoxo']
@@ -251,63 +167,32 @@ class HelperFunctionsTests(unittest.TestCase):
         if sys.platform in ('os2emx', 'riscos'):
             self.assertEqual(len(dirs), 1)
             wanted = os.path.join('xoxo', 'Lib', 'site-packages')
-            self.assertEqual(dirs[0], wanted)
+            self.assertEquals(dirs[0], wanted)
         elif os.sep == '/':
-            # OS X, Linux, FreeBSD, etc
-            self.assertEqual(len(dirs), 2)
+            self.assertTrue(len(dirs), 2)
             wanted = os.path.join('xoxo', 'lib', 'python' + sys.version[:3],
                                   'site-packages')
-            self.assertEqual(dirs[0], wanted)
+            self.assertEquals(dirs[0], wanted)
             wanted = os.path.join('xoxo', 'lib', 'site-python')
-            self.assertEqual(dirs[1], wanted)
+            self.assertEquals(dirs[1], wanted)
         else:
-            # other platforms
-            self.assertEqual(len(dirs), 2)
-            self.assertEqual(dirs[0], 'xoxo')
+            self.assertTrue(len(dirs), 2)
+            self.assertEquals(dirs[0], 'xoxo')
             wanted = os.path.join('xoxo', 'lib', 'site-packages')
-            self.assertEqual(dirs[1], wanted)
+            self.assertEquals(dirs[1], wanted)
 
-    def test_no_home_directory(self):
-        # bpo-10496: getuserbase() and getusersitepackages() must not fail if
-        # the current user has no home directory (if expanduser() returns the
-        # path unchanged).
-        site.USER_SITE = None
-        site.USER_BASE = None
-        sysconfig._CONFIG_VARS = None
-
-        with EnvironmentVarGuard() as environ, \
-             support.swap_attr(os.path, 'expanduser', lambda path: path):
-
-            del environ['PYTHONUSERBASE']
-            del environ['APPDATA']
-
-            user_base = site.getuserbase()
-            self.assertTrue(user_base.startswith('~' + os.sep),
-                            user_base)
-
-            user_site = site.getusersitepackages()
-            self.assertTrue(user_site.startswith(user_base), user_site)
-
-        def fake_isdir(path):
-            fake_isdir.arg = path
-            return False
-        fake_isdir.arg = None
-
-        def must_not_be_called(*args):
-            raise AssertionError
-
-        with support.swap_attr(os.path, 'isdir', fake_isdir), \
-             support.swap_attr(site, 'addsitedir', must_not_be_called), \
-             support.swap_attr(site, 'ENABLE_USER_SITE', True):
-
-            # addusersitepackages() must not add user_site to sys.path
-            # if it is not an existing directory
-            known_paths = set()
-            site.addusersitepackages(known_paths)
-
-            self.assertEqual(fake_isdir.arg, user_site)
-            self.assertFalse(known_paths)
-
+        # let's try the specific Apple location
+        if (sys.platform == "darwin" and
+            sysconfig.get_config_var("PYTHONFRAMEWORK")):
+            site.PREFIXES = ['Python.framework']
+            dirs = site.getsitepackages()
+            self.assertEqual(len(dirs), 4)
+            wanted = os.path.join('~', 'Library', 'Python',
+                                  sys.version[:3], 'site-packages')
+            self.assertEquals(dirs[2], os.path.expanduser(wanted))
+            wanted = os.path.join('/Library', 'Python', sys.version[:3],
+                                  'site-packages')
+            self.assertEquals(dirs[3], wanted)
 
 class PthFile(object):
     """Helper class for handling testing of .pth files"""
@@ -398,7 +283,6 @@ class ImportSideEffectTests(unittest.TestCase):
             self.assertNotIn(path, seen_paths)
             seen_paths.add(path)
 
-    @unittest.skip('test not implemented')
     def test_add_build_dir(self):
         # Test that the build directory's Modules directory is used when it
         # should be.

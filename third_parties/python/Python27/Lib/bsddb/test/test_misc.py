@@ -9,6 +9,13 @@ from test_all import db, dbshelve, hashopen, test_support, get_new_environment_p
 #----------------------------------------------------------------------
 
 class MiscTestCase(unittest.TestCase):
+    if sys.version_info < (2, 4) :
+        def assertTrue(self, expr, msg=None):
+            self.failUnless(expr, msg=msg)
+
+        def assertFalse(self, expr, msg=None):
+            self.failIf(expr, msg=msg)
+
     def setUp(self):
         self.filename = get_new_database_path()
         self.homeDir = get_new_environment_path()
@@ -25,7 +32,7 @@ class MiscTestCase(unittest.TestCase):
     def test02_db_home(self):
         env = db.DBEnv()
         # check for crash fixed when db_home is used before open()
-        self.assertIsNone(env.db_home)
+        self.assert_(env.db_home is None)
         env.open(self.homeDir, db.DB_CREATE)
         if sys.version_info[0] < 3 :
             self.assertEqual(self.homeDir, env.db_home)
@@ -36,7 +43,7 @@ class MiscTestCase(unittest.TestCase):
         db = hashopen(self.filename)
         db.close()
         rp = repr(db)
-        self.assertEqual(rp, "{}")
+        self.assertEquals(rp, "{}")
 
     def test04_repr_db(self) :
         db = hashopen(self.filename)
@@ -47,7 +54,7 @@ class MiscTestCase(unittest.TestCase):
         db.close()
         db = hashopen(self.filename)
         rp = repr(db)
-        self.assertEqual(rp, repr(d))
+        self.assertEquals(rp, repr(d))
         db.close()
 
     # http://sourceforge.net/tracker/index.php?func=detail&aid=1708868&group_id=13900&atid=313900
@@ -90,6 +97,10 @@ class MiscTestCase(unittest.TestCase):
             test_support.unlink(self.filename)
 
     def test07_DB_set_flags_persists(self):
+        if db.version() < (4,2):
+            # The get_flags API required for this to work is only available
+            # in Berkeley DB >= 4.2
+            return
         try:
             db1 = db.DB()
             db1.set_flags(db.DB_DUPSORT)

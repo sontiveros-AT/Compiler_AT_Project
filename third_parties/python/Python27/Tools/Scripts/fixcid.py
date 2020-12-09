@@ -88,9 +88,9 @@ def main():
     sys.exit(bad)
 
 # Change this regular expression to select a different set of files
-Wanted = r'^[a-zA-Z0-9_]+\.[ch]$'
+Wanted = '^[a-zA-Z0-9_]+\.[ch]$'
 def wanted(name):
-    return re.match(Wanted, name)
+    return re.match(Wanted, name) >= 0
 
 def recursedown(dirname):
     dbg('recursedown(%r)\n' % (dirname,))
@@ -168,7 +168,6 @@ def fix(filename):
     if filename == '-': return 0 # Done in filter mode
     f.close()
     if not g: return 0 # No changes
-    g.close()
 
     # Finishing touch -- move files
 
@@ -189,26 +188,26 @@ def fix(filename):
     except os.error, msg:
         err(filename + ': rename failed (' + str(msg) + ')\n')
         return 1
-    # Return success
+    # Return succes
     return 0
 
 # Tokenizing ANSI C (partly)
 
-Identifier = '(struct )?[a-zA-Z_][a-zA-Z0-9_]+'
-String = r'"([^\n\\"]|\\.)*"'
-Char = r"'([^\n\\']|\\.)*'"
-CommentStart = r'/\*'
-CommentEnd = r'\*/'
+Identifier = '\(struct \)?[a-zA-Z_][a-zA-Z0-9_]+'
+String = '"\([^\n\\"]\|\\\\.\)*"'
+Char = '\'\([^\n\\\']\|\\\\.\)*\''
+CommentStart = '/\*'
+CommentEnd = '\*/'
 
 Hexnumber = '0[xX][0-9a-fA-F]*[uUlL]*'
 Octnumber = '0[0-7]*[uUlL]*'
 Decnumber = '[1-9][0-9]*[uUlL]*'
-Intnumber = Hexnumber + '|' + Octnumber + '|' + Decnumber
+Intnumber = Hexnumber + '\|' + Octnumber + '\|' + Decnumber
 Exponent = '[eE][-+]?[0-9]+'
-Pointfloat = r'([0-9]+\.[0-9]*|\.[0-9]+)(' + Exponent + r')?'
+Pointfloat = '\([0-9]+\.[0-9]*\|\.[0-9]+\)\(' + Exponent + '\)?'
 Expfloat = '[0-9]+' + Exponent
-Floatnumber = Pointfloat + '|' + Expfloat
-Number = Floatnumber + '|' + Intnumber
+Floatnumber = Pointfloat + '\|' + Expfloat
+Number = Floatnumber + '\|' + Intnumber
 
 # Anything else is an operator -- don't list this explicitly because of '/*'
 
@@ -229,10 +228,9 @@ def fixline(line):
 ##  print '-->', repr(line)
     i = 0
     while i < len(line):
-        match = Program.search(line, i)
-        if match is None: break
-        i = match.start()
-        found = match.group(0)
+        i = Program.search(line, i)
+        if i < 0: break
+        found = Program.group(0)
 ##      if Program is InsideCommentProgram: print '...',
 ##      else: print '   ',
 ##      print found
@@ -242,14 +240,14 @@ def fixline(line):
             elif found == '*/':
                 Program = OutsideCommentProgram
         n = len(found)
-        if found in Dict:
+        if Dict.has_key(found):
             subst = Dict[found]
             if Program is InsideCommentProgram:
                 if not Docomments:
                     print 'Found in comment:', found
                     i = i + n
                     continue
-                if found in NotInComment:
+                if NotInComment.has_key(found):
 ##                  print 'Ignored in comment:',
 ##                  print found, '-->', subst
 ##                  print 'Line:', line,
@@ -294,7 +292,7 @@ def addsubst(substfile):
         if not words: continue
         if len(words) == 3 and words[0] == 'struct':
             words[:2] = [words[0] + ' ' + words[1]]
-        elif len(words) != 2:
+        elif len(words) <> 2:
             err(substfile + '%s:%r: warning: bad line: %r' % (substfile, lineno, line))
             continue
         if Reverse:
@@ -306,7 +304,7 @@ def addsubst(substfile):
         if key[0] == '*':
             key = key[1:]
             NotInComment[key] = value
-        if key in Dict:
+        if Dict.has_key(key):
             err('%s:%r: warning: overriding: %r %r\n' % (substfile, lineno, key, value))
             err('%s:%r: warning: previous: %r\n' % (substfile, lineno, Dict[key]))
         Dict[key] = value

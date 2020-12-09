@@ -37,7 +37,6 @@ from ..fixer_util import Name, parenthesize
 
 
 class FixHasKey(fixer_base.BaseFix):
-    BM_compatible = True
 
     PATTERN = """
     anchor=power<

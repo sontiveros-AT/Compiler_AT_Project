@@ -16,7 +16,6 @@ from ..fixer_util import Comma, Name, Call
 
 
 class FixExec(fixer_base.BaseFix):
-    BM_compatible = True
 
     PATTERN = """
     exec_stmt< 'exec' a=any 'in' b=any [',' c=any] >

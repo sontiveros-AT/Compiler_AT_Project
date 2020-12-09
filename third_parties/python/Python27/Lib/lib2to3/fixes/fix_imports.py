@@ -84,8 +84,6 @@ def build_pattern(mapping=MAPPING):
 
 class FixImports(fixer_base.BaseFix):
 
-    BM_compatible = True
-    keep_line_order = True
     # This is overridden in fix_imports2.
     mapping = MAPPING
 

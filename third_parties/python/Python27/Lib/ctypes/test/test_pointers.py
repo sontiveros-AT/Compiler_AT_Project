@@ -53,12 +53,8 @@ class PointersTestCase(unittest.TestCase):
         # C code:
         #   int x = 12321;
         #   res = &x
-        x = c_int(12321)
-        res.contents = x
+        res.contents = c_int(12321)
         self.assertEqual(i.value, 54345)
-
-        x.value = -99
-        self.assertEqual(res.contents.value, -99)
 
     def test_callbacks_with_pointers(self):
         # a function type receiving a pointer
@@ -82,7 +78,7 @@ class PointersTestCase(unittest.TestCase):
 
 ##        i = c_int(42)
 ##        callback(byref(i))
-##        self.assertEqual(i.value, 84)
+##        self.assertTrue(i.value == 84)
 
         doit(callback)
 ##        print self.result
@@ -95,11 +91,11 @@ class PointersTestCase(unittest.TestCase):
             i = ct(42)
             p = pointer(i)
 ##            print type(p.contents), ct
-            self.assertIs(type(p.contents), ct)
+            self.assertTrue(type(p.contents) is ct)
             # p.contents is the same as p[0]
 ##            print p.contents
-##            self.assertEqual(p.contents, 42)
-##            self.assertEqual(p[0], 42)
+##            self.assertTrue(p.contents == 42)
+##            self.assertTrue(p[0] == 42)
 
             self.assertRaises(TypeError, delitem, p, 0)
 
@@ -132,10 +128,9 @@ class PointersTestCase(unittest.TestCase):
 
     def test_basic(self):
         p = pointer(c_int(42))
-        # Although a pointer can be indexed, it has no length
+        # Although a pointer can be indexed, it ha no length
         self.assertRaises(TypeError, len, p)
         self.assertEqual(p[0], 42)
-        self.assertEqual(p[0:1], [42])
         self.assertEqual(p.contents.value, 42)
 
     def test_charpp(self):
@@ -192,29 +187,6 @@ class PointersTestCase(unittest.TestCase):
         if sys.platform == "win32":
             mth = WINFUNCTYPE(None)(42, "name", (), None)
             self.assertEqual(bool(mth), True)
-
-    def test_pointer_type_name(self):
-        LargeNamedType = type('T' * 2 ** 25, (Structure,), {})
-        self.assertTrue(POINTER(LargeNamedType))
-
-        # to not leak references, we must clean _pointer_type_cache
-        from ctypes import _pointer_type_cache
-        del _pointer_type_cache[LargeNamedType]
-
-    def test_pointer_type_str_name(self):
-        large_string = 'T' * 2 ** 25
-        P = POINTER(large_string)
-        self.assertTrue(P)
-
-        # to not leak references, we must clean _pointer_type_cache
-        from ctypes import _pointer_type_cache
-        del _pointer_type_cache[id(P)]
-
-    def test_abstract(self):
-        from ctypes import _Pointer
-
-        self.assertRaises(TypeError, _Pointer.set_type, 42)
-
 
 if __name__ == '__main__':
     unittest.main()

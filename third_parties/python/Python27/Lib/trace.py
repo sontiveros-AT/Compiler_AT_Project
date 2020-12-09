@@ -52,33 +52,18 @@ import linecache
 import os
 import re
 import sys
+import threading
 import time
 import token
 import tokenize
-import inspect
+import types
 import gc
-import dis
+
 try:
     import cPickle
     pickle = cPickle
 except ImportError:
     import pickle
-
-try:
-    import threading
-except ImportError:
-    _settrace = sys.settrace
-
-    def _unsettrace():
-        sys.settrace(None)
-else:
-    def _settrace(func):
-        threading.settrace(func)
-        sys.settrace(func)
-
-    def _unsettrace():
-        sys.settrace(None)
-        threading.settrace(None)
 
 def usage(outfile):
     outfile.write("""Usage: %s [OPTIONS] <file> [ARGS]
@@ -210,13 +195,11 @@ def fullmodname(path):
         base = path[len(longest) + 1:]
     else:
         base = path
-    # the drive letter is never part of the module name
-    drive, base = os.path.splitdrive(base)
     base = base.replace(os.sep, ".")
     if os.altsep:
         base = base.replace(os.altsep, ".")
     filename, ext = os.path.splitext(base)
-    return filename.lstrip(".")
+    return filename
 
 class CoverageResults:
     def __init__(self, counts=None, calledfuncs=None, infile=None,
@@ -335,7 +318,7 @@ class CoverageResults:
                                                       lnotab, count)
 
             if summary and n_lines:
-                percent = 100 * n_hits // n_lines
+                percent = int(100 * n_hits / n_lines)
                 sums[modulename] = n_lines, percent, modulename, filename
 
         if summary and sums:
@@ -360,7 +343,7 @@ class CoverageResults:
         try:
             outfile = open(path, "w")
         except IOError, err:
-            print >> sys.stderr, ("trace: Could not open %r for writing: %s "
+            print >> sys.stderr, ("trace: Could not open %r for writing: %s"
                                   "- skipping" % (path, err))
             return 0, 0
 
@@ -394,7 +377,13 @@ def find_lines_from_code(code, strs):
     """Return dict where keys are lines in the line number table."""
     linenos = {}
 
-    for _, lineno in dis.findlinestarts(code):
+    line_increments = [ord(c) for c in code.co_lnotab[1::2]]
+    table_length = len(line_increments)
+    docstring = False
+
+    lineno = code.co_firstlineno
+    for li in line_increments:
+        lineno += li
         if lineno not in strs:
             linenos[lineno] = 1
 
@@ -407,7 +396,7 @@ def find_lines(code, strs):
 
     # and check the constants for references to other code objects
     for c in code.co_consts:
-        if inspect.iscode(c):
+        if isinstance(c, types.CodeType):
             # find another code object, so recurse into it
             linenos.update(find_lines(c, strs))
     return linenos
@@ -502,18 +491,28 @@ class Trace:
     def run(self, cmd):
         import __main__
         dict = __main__.__dict__
-        self.runctx(cmd, dict, dict)
+        if not self.donothing:
+            sys.settrace(self.globaltrace)
+            threading.settrace(self.globaltrace)
+        try:
+            exec cmd in dict, dict
+        finally:
+            if not self.donothing:
+                sys.settrace(None)
+                threading.settrace(None)
 
     def runctx(self, cmd, globals=None, locals=None):
         if globals is None: globals = {}
         if locals is None: locals = {}
         if not self.donothing:
-            _settrace(self.globaltrace)
+            sys.settrace(self.globaltrace)
+            threading.settrace(self.globaltrace)
         try:
             exec cmd in globals, locals
         finally:
             if not self.donothing:
-                _unsettrace()
+                sys.settrace(None)
+                threading.settrace(None)
 
     def runfunc(self, func, *args, **kw):
         result = None
@@ -544,7 +543,7 @@ class Trace:
             ## use of gc.get_referrers() was suggested by Michael Hudson
             # all functions which refer to this code object
             funcs = [f for f in gc.get_referrers(code)
-                         if inspect.isfunction(f)]
+                         if hasattr(f, "func_doc")]
             # require len(func) == 1 to avoid ambiguity caused by calls to
             # new.function(): "In the face of ambiguity, refuse the
             # temptation to guess."
@@ -556,13 +555,17 @@ class Trace:
                                    if hasattr(c, "__bases__")]
                     if len(classes) == 1:
                         # ditto for new.classobj()
-                        clsname = classes[0].__name__
+                        clsname = str(classes[0])
                         # cache the result - assumption is that new.* is
                         # not called later to disturb this relationship
                         # _caller_cache could be flushed if functions in
                         # the new module get called.
                         self._caller_cache[code] = clsname
         if clsname is not None:
+            # final hack - module name shows up in str(cls), but we've already
+            # computed module name, so remove it
+            clsname = clsname.split(".")[1:]
+            clsname = ".".join(clsname)
             funcname = "%s.%s" % (clsname, funcname)
 
         return filename, modulename, funcname
@@ -795,16 +798,7 @@ def main(argv=None):
                   ignoredirs=ignore_dirs, infile=counts_file,
                   outfile=counts_file, timing=timing)
         try:
-            with open(progname) as fp:
-                code = compile(fp.read(), progname, 'exec')
-            # try to emulate __main__ namespace as much as possible
-            globs = {
-                '__file__': progname,
-                '__name__': '__main__',
-                '__package__': None,
-                '__cached__': None,
-            }
-            t.runctx(code, globs, globs)
+            t.run('execfile(%r)' % (progname,))
         except IOError, err:
             _err_exit("Cannot run file %r because: %s" % (sys.argv[0], err))
         except SystemExit:

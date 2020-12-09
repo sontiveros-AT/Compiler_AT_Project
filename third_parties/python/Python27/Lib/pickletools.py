@@ -185,7 +185,7 @@ class ArgumentDescriptor(object):
         assert isinstance(name, str)
         self.name = name
 
-        assert isinstance(n, (int, long)) and (n >= 0 or
+        assert isinstance(n, int) and (n >= 0 or
                                        n in (UP_TO_NEWLINE,
                                              TAKEN_FROM_ARGUMENT1,
                                              TAKEN_FROM_ARGUMENT4))
@@ -804,7 +804,7 @@ stackslice = StackObject(
                  obtype=StackObject,
                  doc="""An object representing a contiguous slice of the stack.
 
-                 This is used in conjunction with markobject, to represent all
+                 This is used in conjuction with markobject, to represent all
                  of the stack following the topmost markobject.  For example,
                  the POP_MARK opcode changes the stack from
 
@@ -873,7 +873,7 @@ class OpcodeInfo(object):
             assert isinstance(x, StackObject)
         self.stack_after = stack_after
 
-        assert isinstance(proto, (int, long)) and 0 <= proto <= 2
+        assert isinstance(proto, int) and 0 <= proto <= 2
         self.proto = proto
 
         assert isinstance(doc, str)
@@ -1048,7 +1048,9 @@ opcodes = [
       stack_before=[],
       stack_after=[pybool],
       proto=2,
-      doc="Push True onto the stack."),
+      doc="""True.
+
+      Push True onto the stack."""),
 
     I(name='NEWFALSE',
       code='\x89',
@@ -1056,7 +1058,9 @@ opcodes = [
       stack_before=[],
       stack_after=[pybool],
       proto=2,
-      doc="Push False onto the stack."),
+      doc="""True.
+
+      Push False onto the stack."""),
 
     # Ways to spell Unicode strings.
 
@@ -1210,11 +1214,10 @@ opcodes = [
       stack_before=[anyobject],
       stack_after=[pytuple],
       proto=2,
-      doc="""Build a one-tuple out of the topmost item on the stack.
+      doc="""One-tuple.
 
       This code pops one value off the stack and pushes a tuple of
-      length 1 whose one item is that value back onto it.  In other
-      words:
+      length 1 whose one item is that value back onto it.  IOW:
 
           stack[-1] = tuple(stack[-1:])
       """),
@@ -1225,11 +1228,10 @@ opcodes = [
       stack_before=[anyobject, anyobject],
       stack_after=[pytuple],
       proto=2,
-      doc="""Build a two-tuple out of the top two items on the stack.
+      doc="""One-tuple.
 
-      This code pops two values off the stack and pushes a tuple of
-      length 2 whose items are those values back onto it.  In other
-      words:
+      This code pops two values off the stack and pushes a tuple
+      of length 2 whose items are those values back onto it.  IOW:
 
           stack[-2:] = [tuple(stack[-2:])]
       """),
@@ -1240,11 +1242,10 @@ opcodes = [
       stack_before=[anyobject, anyobject, anyobject],
       stack_after=[pytuple],
       proto=2,
-      doc="""Build a three-tuple out of the top three items on the stack.
+      doc="""One-tuple.
 
-      This code pops three values off the stack and pushes a tuple of
-      length 3 whose items are those values back onto it.  In other
-      words:
+      This code pops three values off the stack and pushes a tuple
+      of length 3 whose items are those values back onto it.  IOW:
 
           stack[-3:] = [tuple(stack[-3:])]
       """),
@@ -1366,7 +1367,7 @@ opcodes = [
       proto=0,
       doc="""Read an object from the memo and push it on the stack.
 
-      The index of the memo object to push is given by the newline-terminated
+      The index of the memo object to push is given by the newline-teriminated
       decimal string following.  BINGET and LONG_BINGET are space-optimized
       versions.
       """),
@@ -1925,7 +1926,7 @@ def dis(pickle, out=None, memo=None, indentlevel=4):
 
     stack = []          # crude emulation of unpickler stack
     if memo is None:
-        memo = {}       # crude emulation of unpickler memo
+        memo = {}       # crude emulation of unpicker memo
     maxproto = -1       # max protocol number seen
     markstack = []      # bytecode positions of MARK opcodes
     indentchunk = ' ' * indentlevel

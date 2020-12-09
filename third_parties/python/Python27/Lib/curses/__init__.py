@@ -5,12 +5,12 @@ the package, and perhaps a particular module inside it.
 
    import curses
    from curses import textpad
-   curses.initscr()
+   curses.initwin()
    ...
 
 """
 
-__revision__ = "$Id$"
+__revision__ = "$Id: __init__.py 61064 2008-02-25 16:29:58Z andrew.kuchling $"
 
 from _curses import *
 from curses.wrapper import wrapper

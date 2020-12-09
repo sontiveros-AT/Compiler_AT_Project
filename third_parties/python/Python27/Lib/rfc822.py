@@ -34,7 +34,7 @@ The optional `seekable' argument is provided as a workaround for certain stdio
 libraries in which tell() discards buffered data before discovering that the
 lseek() system call doesn't work.  For maximum portability, you should set the
 seekable argument to zero to prevent that initial \code{tell} when passing in
-an unseekable object such as a file object created from a socket object.  If
+an unseekable object such as a a file object created from a socket object.  If
 it is 1 on entry -- which it is by default -- the tell() method of the open
 file object is called once; if this raises an exception, seekable is reset to
 0.  For other nonzero values of seekable, this test is not made.
@@ -179,11 +179,6 @@ class Message:
                 lst.append(line)
                 self.dict[headerseen] = line[len(headerseen)+1:].strip()
                 continue
-            elif headerseen is not None:
-                # An empty header name. These aren't allowed in HTTP, but it's
-                # probably a benign mistake. Don't add the header, just keep
-                # going.
-                continue
             else:
                 # It's not a header line; throw it back and stop here.
                 if not self.dict:
@@ -207,7 +202,7 @@ class Message:
         data in RFC 2822-like formats with special header formats.
         """
         i = line.find(':')
-        if i > -1:
+        if i > 0:
             return line[:i].lower()
         return None
 
@@ -217,7 +212,7 @@ class Message:
         You may override this method if your application wants to bend the
         rules, e.g. to strip trailing whitespace, or to recognize MH template
         separators ('--------').  For convenience (e.g. for code reading from
-        sockets) a line consisting of \\r\\n also matches.
+        sockets) a line consisting of \r\n also matches.
         """
         return line in _blanklines
 
@@ -961,7 +956,7 @@ def formatdate(timeval=None):
 
     According to RFC 1123, day and month names must always be in
     English.  If not for that, this code could use strftime().  It
-    can't because strftime() honors the locale and could generate
+    can't because strftime() honors the locale and could generated
     non-English names.
     """
     if timeval is None:

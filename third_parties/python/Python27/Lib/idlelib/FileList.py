@@ -43,7 +43,7 @@ class FileList:
     def new(self, filename=None):
         return self.EditorWindow(self, filename)
 
-    def close_all_callback(self, *args, **kwds):
+    def close_all_callback(self, event):
         for edit in self.inversedict.keys():
             reply = edit.close()
             if reply == "cancel":
@@ -107,10 +107,8 @@ class FileList:
 
 def _test():
     from idlelib.EditorWindow import fixwordbreaks
-    from idlelib.run import fix_scaling
     import sys
     root = Tk()
-    fix_scaling(root)
     fixwordbreaks(root)
     root.withdraw()
     flist = FileList(root)

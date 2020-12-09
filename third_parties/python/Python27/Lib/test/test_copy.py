@@ -82,8 +82,7 @@ class TestCopy(unittest.TestCase):
             pass
         def f():
             pass
-        tests = [None, Ellipsis,
-                 42, 2L**100, 3.14, True, False, 1j,
+        tests = [None, 42, 2L**100, 3.14, True, False, 1j,
                  "hello", u"hello\u1234", f.func_code,
                  NewStyle, xrange(10), Classic, max]
         for x in tests:
@@ -91,57 +90,15 @@ class TestCopy(unittest.TestCase):
 
     def test_copy_list(self):
         x = [1, 2, 3]
-        y = copy.copy(x)
-        self.assertEqual(y, x)
-        self.assertIsNot(y, x)
-        x = []
-        y = copy.copy(x)
-        self.assertEqual(y, x)
-        self.assertIsNot(y, x)
+        self.assertEqual(copy.copy(x), x)
 
     def test_copy_tuple(self):
         x = (1, 2, 3)
-        self.assertIs(copy.copy(x), x)
-        x = ()
-        self.assertIs(copy.copy(x), x)
-        x = (1, 2, 3, [])
-        self.assertIs(copy.copy(x), x)
+        self.assertEqual(copy.copy(x), x)
 
     def test_copy_dict(self):
         x = {"foo": 1, "bar": 2}
-        y = copy.copy(x)
-        self.assertEqual(y, x)
-        self.assertIsNot(y, x)
-        x = {}
-        y = copy.copy(x)
-        self.assertEqual(y, x)
-        self.assertIsNot(y, x)
-
-    def test_copy_set(self):
-        x = {1, 2, 3}
-        y = copy.copy(x)
-        self.assertEqual(y, x)
-        self.assertIsNot(y, x)
-        x = set()
-        y = copy.copy(x)
-        self.assertEqual(y, x)
-        self.assertIsNot(y, x)
-
-    def test_copy_frozenset(self):
-        x = frozenset({1, 2, 3})
-        self.assertIs(copy.copy(x), x)
-        x = frozenset()
-        self.assertIs(copy.copy(x), x)
-
-    def test_copy_bytearray(self):
-        x = bytearray(b'abc')
-        y = copy.copy(x)
-        self.assertEqual(y, x)
-        self.assertIsNot(y, x)
-        x = bytearray()
-        y = copy.copy(x)
-        self.assertEqual(y, x)
-        self.assertIsNot(y, x)
+        self.assertEqual(copy.copy(x), x)
 
     def test_copy_inst_vanilla(self):
         class C:
@@ -207,9 +164,6 @@ class TestCopy(unittest.TestCase):
             def __cmp__(self, other):
                 return cmp(self.foo, other.foo)
         x = C(42)
-        self.assertEqual(copy.copy(x), x)
-        # State with boolean value is false (issue #25718)
-        x = C(0.0)
         self.assertEqual(copy.copy(x), x)
 
     # The deepcopy() method
@@ -441,12 +395,6 @@ class TestCopy(unittest.TestCase):
         x = C([42])
         y = copy.deepcopy(x)
         self.assertEqual(y, x)
-        self.assertIsNot(y, x)
-        self.assertIsNot(y.foo, x.foo)
-        # State with boolean value is false (issue #25718)
-        x = C([])
-        y = copy.deepcopy(x)
-        self.assertEqual(y, x)
         self.assertTrue(y is not x)
         self.assertTrue(y.foo is not x.foo)
 
@@ -577,26 +525,6 @@ class TestCopy(unittest.TestCase):
         y = copy.deepcopy(x)
         self.assertEqual(x.foo, y.foo)
         self.assertTrue(x.foo is not y.foo)
-
-    def test_deepcopy_dict_subclass(self):
-        class C(dict):
-            def __init__(self, d=None):
-                if not d:
-                    d = {}
-                self._keys = list(d.keys())
-                dict.__init__(self, d)
-            def __setitem__(self, key, item):
-                dict.__setitem__(self, key, item)
-                if key not in self._keys:
-                    self._keys.append(key)
-        x = C(d={'foo':0})
-        y = copy.deepcopy(x)
-        self.assertEqual(x, y)
-        self.assertEqual(x._keys, y._keys)
-        self.assertTrue(x is not y)
-        x['bar'] = 1
-        self.assertNotEqual(x, y)
-        self.assertNotEqual(x._keys, y._keys)
 
     def test_copy_list_subclass(self):
         class C(list):

@@ -148,7 +148,7 @@ class MhlibTests(unittest.TestCase):
         writeCurMessage('inbox', 2)
         mh = getMH()
 
-        eq = self.assertEqual
+        eq = self.assertEquals
         eq(mh.getprofile('Editor'), 'emacs')
         eq(mh.getprofile('not-set'), None)
         eq(mh.getpath(), os.path.abspath(_mhpath))
@@ -171,7 +171,7 @@ class MhlibTests(unittest.TestCase):
 
     def test_listfolders(self):
         mh = getMH()
-        eq = self.assertEqual
+        eq = self.assertEquals
 
         folders = mh.listfolders()
         folders.sort()
@@ -198,7 +198,7 @@ class MhlibTests(unittest.TestCase):
 
     def test_sequence(self):
         mh = getMH()
-        eq = self.assertEqual
+        eq = self.assertEquals
         writeCurMessage('wide', 55)
 
         f = mh.openfolder('wide')
@@ -253,7 +253,7 @@ class MhlibTests(unittest.TestCase):
 
     def test_modify(self):
         mh = getMH()
-        eq = self.assertEqual
+        eq = self.assertEquals
 
         mh.makefolder("dummy1")
         self.assertIn("dummy1", mh.listfolders())
@@ -315,7 +315,7 @@ class MhlibTests(unittest.TestCase):
 
     def test_read(self):
         mh = getMH()
-        eq = self.assertEqual
+        eq = self.assertEquals
 
         f = mh.openfolder('inbox')
         msg = f.openmessage(1)

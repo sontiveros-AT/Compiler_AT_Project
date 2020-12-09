@@ -8,7 +8,6 @@ from distutils.core import Distribution
 import sysconfig
 
 from distutils.tests import support
-from test.test_support import run_unittest
 
 
 class BuildScriptsTestCase(support.TempdirManager,
@@ -17,8 +16,8 @@ class BuildScriptsTestCase(support.TempdirManager,
 
     def test_default_settings(self):
         cmd = self.get_build_scripts_cmd("/foo/bar", [])
-        self.assertFalse(cmd.force)
-        self.assertIsNone(cmd.build_dir)
+        self.assertTrue(not cmd.force)
+        self.assertTrue(cmd.build_dir is None)
 
         cmd.finalize_options()
 
@@ -38,7 +37,7 @@ class BuildScriptsTestCase(support.TempdirManager,
 
         built = os.listdir(target)
         for name in expected:
-            self.assertIn(name, built)
+            self.assertTrue(name in built)
 
     def get_build_scripts_cmd(self, target, scripts):
         import sys
@@ -72,10 +71,8 @@ class BuildScriptsTestCase(support.TempdirManager,
 
     def write_script(self, dir, name, text):
         f = open(os.path.join(dir, name), "w")
-        try:
-            f.write(text)
-        finally:
-            f.close()
+        f.write(text)
+        f.close()
 
     def test_version_int(self):
         source = self.mkdtemp()
@@ -103,10 +100,10 @@ class BuildScriptsTestCase(support.TempdirManager,
 
         built = os.listdir(target)
         for name in expected:
-            self.assertIn(name, built)
+            self.assertTrue(name in built)
 
 def test_suite():
     return unittest.makeSuite(BuildScriptsTestCase)
 
 if __name__ == "__main__":
-    run_unittest(test_suite())
+    unittest.main(defaultTest="test_suite")

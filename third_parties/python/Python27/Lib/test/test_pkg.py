@@ -54,7 +54,7 @@ class Test(unittest.TestCase):
         if self.root: # Only clean if the test was actually run
             cleanout(self.root)
 
-        # delete all modules concerning the tested hierarchy
+        # delete all modules concerning the tested hiearchy
         if self.pkgname:
             modules = [name for name in sys.modules
                        if self.pkgname in name.split('.')]
@@ -134,7 +134,7 @@ class Test(unittest.TestCase):
 
         s = """
             from t2 import *
-            self.assertEqual(dir(), ['self', 'sub'])
+            self.assertTrue(dir(), ['self', 'sub'])
             """
         self.run_code(s)
 

@@ -34,7 +34,6 @@ def find_excepts(nodes):
                 yield (n, nodes[i+2])
 
 class FixExcept(fixer_base.BaseFix):
-    BM_compatible = True
 
     PATTERN = """
     try_stmt< 'try' ':' (simple_stmt | suite)

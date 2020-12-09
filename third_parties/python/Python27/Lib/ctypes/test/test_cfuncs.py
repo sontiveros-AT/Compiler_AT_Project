@@ -3,7 +3,6 @@
 
 import unittest
 from ctypes import *
-from ctypes.test import need_symbol
 
 import _ctypes_test
 
@@ -189,12 +188,12 @@ class CFunctions(unittest.TestCase):
         self.assertEqual(self._dll.tv_i(-42), None)
         self.assertEqual(self.S(), -42)
 
-# The following repeats the above tests with stdcall functions (where
+# The following repeates the above tests with stdcall functions (where
 # they are available)
 try:
     WinDLL
 except NameError:
-    def stdcall_dll(*_): pass
+    pass
 else:
     class stdcall_dll(WinDLL):
         def __getattr__(self, name):
@@ -204,9 +203,9 @@ else:
             setattr(self, name, func)
             return func
 
-@need_symbol('WinDLL')
-class stdcallCFunctions(CFunctions):
-    _dll = stdcall_dll(_ctypes_test.__file__)
+    class stdcallCFunctions(CFunctions):
+        _dll = stdcall_dll(_ctypes_test.__file__)
+        pass
 
 if __name__ == '__main__':
     unittest.main()

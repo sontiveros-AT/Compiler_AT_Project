@@ -31,10 +31,6 @@ def uu_encode(input,errors='strict',filename='<data>',mode=0666):
     read = infile.read
     write = outfile.write
 
-    # Remove newline chars from filename
-    filename = filename.replace('\n','\\n')
-    filename = filename.replace('\r','\\r')
-
     # Encode
     write('begin %o %s\n' % (mode & 0777, filename))
     chunk = read(45)
@@ -88,7 +84,7 @@ def uu_decode(input,errors='strict'):
             data = a2b_uu(s)
         except binascii.Error, v:
             # Workaround for broken uuencoders by /Fredrik Lundh
-            nbytes = (((ord(s[0])-32) & 63) * 4 + 5) // 3
+            nbytes = (((ord(s[0])-32) & 63) * 4 + 5) / 3
             data = a2b_uu(s[:nbytes])
             #sys.stderr.write("Warning: %s\n" % str(v))
         write(data)
@@ -130,5 +126,4 @@ def getregentry():
         incrementaldecoder=IncrementalDecoder,
         streamreader=StreamReader,
         streamwriter=StreamWriter,
-        _is_text_encoding=False,
     )

@@ -106,7 +106,6 @@ class TimeoutTestCase(unittest.TestCase):
     def tearDown(self):
         self.sock.close()
 
-    @unittest.skipIf(True, 'need to replace these hosts; see bpo-35518')
     def testConnectTimeout(self):
         # Choose a private address that is unlikely to exist to prevent
         # failures due to the connect succeeding before the timeout.
@@ -131,19 +130,17 @@ class TimeoutTestCase(unittest.TestCase):
     def testRecvTimeout(self):
         # Test recv() timeout
         _timeout = 0.02
+        self.sock.connect(self.addr_remote)
+        self.sock.settimeout(_timeout)
 
-        with test_support.transient_internet(self.addr_remote[0]):
-            self.sock.connect(self.addr_remote)
-            self.sock.settimeout(_timeout)
+        _t1 = time.time()
+        self.assertRaises(socket.error, self.sock.recv, 1024)
+        _t2 = time.time()
 
-            _t1 = time.time()
-            self.assertRaises(socket.timeout, self.sock.recv, 1024)
-            _t2 = time.time()
-
-            _delta = abs(_t1 - _t2)
-            self.assertTrue(_delta < _timeout + self.fuzz,
-                         "timeout (%g) is %g seconds more than expected (%g)"
-                         %(_delta, self.fuzz, _timeout))
+        _delta = abs(_t1 - _t2)
+        self.assertTrue(_delta < _timeout + self.fuzz,
+                     "timeout (%g) is %g seconds more than expected (%g)"
+                     %(_delta, self.fuzz, _timeout))
 
     def testAcceptTimeout(self):
         # Test accept() timeout
@@ -179,19 +176,16 @@ class TimeoutTestCase(unittest.TestCase):
                      "timeout (%g) is %g seconds more than expected (%g)"
                      %(_delta, self.fuzz, _timeout))
 
-    @unittest.skip('test not implemented')
     def testSend(self):
         # Test send() timeout
         # couldn't figure out how to test it
         pass
 
-    @unittest.skip('test not implemented')
     def testSendto(self):
         # Test sendto() timeout
         # couldn't figure out how to test it
         pass
 
-    @unittest.skip('test not implemented')
     def testSendall(self):
         # Test sendall() timeout
         # couldn't figure out how to test it

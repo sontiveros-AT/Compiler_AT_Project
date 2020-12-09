@@ -188,34 +188,8 @@ class UnicodeFunctionsTest(UnicodeDatabaseTest):
 
     def test_pr29(self):
         # http://www.unicode.org/review/pr-29.html
-        # See issues #1054943 and #10254.
-        composed = (u"\u0b47\u0300\u0b3e", u"\u1100\u0300\u1161",
-                    u'Li\u030dt-s\u1e73\u0301',
-                    u'\u092e\u093e\u0930\u094d\u0915 \u091c\u093c'
-                    + u'\u0941\u0915\u0947\u0930\u092c\u0930\u094d\u0917',
-                    u'\u0915\u093f\u0930\u094d\u0917\u093f\u091c\u093c'
-                    + 'u\u0938\u094d\u0924\u093e\u0928')
-        for text in composed:
+        for text in (u"\u0b47\u0300\u0b3e", u"\u1100\u0300\u1161"):
             self.assertEqual(self.db.normalize('NFC', text), text)
-
-    def test_issue10254(self):
-        # Crash reported in #10254
-        a = u'C\u0338' * 20  + u'C\u0327'
-        b = u'C\u0338' * 20  + u'\xC7'
-        self.assertEqual(self.db.normalize('NFC', a), b)
-
-    def test_issue29456(self):
-        # Fix #29456
-        u1176_str_a = u'\u1100\u1176\u11a8'
-        u1176_str_b = u'\u1100\u1176\u11a8'
-        u11a7_str_a = u'\u1100\u1175\u11a7'
-        u11a7_str_b = u'\uae30\u11a7'
-        u11c3_str_a = u'\u1100\u1175\u11c3'
-        u11c3_str_b = u'\uae30\u11c3'
-        self.assertEqual(self.db.normalize('NFC', u1176_str_a), u1176_str_b)
-        self.assertEqual(self.db.normalize('NFC', u11a7_str_a), u11a7_str_b)
-        self.assertEqual(self.db.normalize('NFC', u11c3_str_a), u11c3_str_b)
-
 
     def test_east_asian_width(self):
         eaw = self.db.east_asian_width
@@ -278,7 +252,7 @@ class UnicodeMiscTest(UnicodeDatabaseTest):
         self.assertTrue(count >= 10) # should have tested at least the ASCII digits
 
     def test_bug_1704793(self):
-        self.assertEqual(self.db.lookup("GOTHIC LETTER FAIHU"), u'\U00010346')
+        self.assertEquals(self.db.lookup("GOTHIC LETTER FAIHU"), u'\U00010346')
 
     def test_ucd_510(self):
         import unicodedata

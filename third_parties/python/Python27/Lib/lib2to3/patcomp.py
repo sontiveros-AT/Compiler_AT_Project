@@ -3,7 +3,7 @@
 
 """Pattern compiler.
 
-The grammar is taken from PatternGrammar.txt.
+The grammer is taken from PatternGrammar.txt.
 
 The compiler compiles a pattern to a pytree.*Pattern instance.
 """
@@ -11,7 +11,7 @@ The compiler compiles a pattern to a pytree.*Pattern instance.
 __author__ = "Guido van Rossum <guido@python.org>"
 
 # Python imports
-import StringIO
+import os
 
 # Fairly local imports
 from .pgen2 import driver, literals, token, tokenize, parse, grammar
@@ -19,6 +19,10 @@ from .pgen2 import driver, literals, token, tokenize, parse, grammar
 # Really local imports
 from . import pytree
 from . import pygram
+
+# The pattern grammar file
+_PATTERN_GRAMMAR_FILE = os.path.join(os.path.dirname(__file__),
+                                     "PatternGrammar.txt")
 
 
 class PatternSyntaxError(Exception):
@@ -28,7 +32,7 @@ class PatternSyntaxError(Exception):
 def tokenize_wrapper(input):
     """Tokenizes a string suppressing significant whitespace."""
     skip = set((token.NEWLINE, token.INDENT, token.DEDENT))
-    tokens = tokenize.generate_tokens(StringIO.StringIO(input).readline)
+    tokens = tokenize.generate_tokens(driver.generate_lines(input).next)
     for quintuple in tokens:
         type, value, start, end, line_text = quintuple
         if type not in skip:
@@ -37,32 +41,25 @@ def tokenize_wrapper(input):
 
 class PatternCompiler(object):
 
-    def __init__(self, grammar_file=None):
+    def __init__(self, grammar_file=_PATTERN_GRAMMAR_FILE):
         """Initializer.
 
         Takes an optional alternative filename for the pattern grammar.
         """
-        if grammar_file is None:
-            self.grammar = pygram.pattern_grammar
-            self.syms = pygram.pattern_symbols
-        else:
-            self.grammar = driver.load_grammar(grammar_file)
-            self.syms = pygram.Symbols(self.grammar)
+        self.grammar = driver.load_grammar(grammar_file)
+        self.syms = pygram.Symbols(self.grammar)
         self.pygrammar = pygram.python_grammar
         self.pysyms = pygram.python_symbols
         self.driver = driver.Driver(self.grammar, convert=pattern_convert)
 
-    def compile_pattern(self, input, debug=False, with_tree=False):
+    def compile_pattern(self, input, debug=False):
         """Compiles a pattern string to a nested pytree.*Pattern object."""
         tokens = tokenize_wrapper(input)
         try:
             root = self.driver.parse_tokens(tokens, debug=debug)
-        except parse.ParseError as e:
+        except parse.ParseError, e:
             raise PatternSyntaxError(str(e))
-        if with_tree:
-            return self.compile_node(root), root
-        else:
-            return self.compile_node(root)
+        return self.compile_node(root)
 
     def compile_node(self, node):
         """Compiles a node, recursively.
