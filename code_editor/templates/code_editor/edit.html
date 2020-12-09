@@ -1,0 +1,52 @@
+<!--
+@edit.html Copyright (c) 2020 Jalasoft.
+2643 Av Melchor Perez de Olguin, Colquiri Sud, Cochabamba, Bolivia.
+1376 subsuelo Edif. La Unión, Av. Gral. Inofuentes, Calacoto, La Paz, Bolivia
+All rights reserved.
+
+This software is the confidential and proprietary information of
+Jalasoft, ("Confidential Information"). You shall not
+disclose such Confidential Information and shall use it only in
+accordance with the termns of the license agreement you entered into
+with Jalasoft.
+
+-->
+
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Code!</title>
+{% endblock title %}
+
+{% block content %}
+<div class="container">
+    <div class="row row-height">
+        <div class="col-4">
+            <div class="zTreeDemoBackground left">
+                <ul id="treeDemo" class="ztree"></ul>
+            </div>
+        </div>
+        <div class="col-8">
+             <div id="editor"></div>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-4"></div>
+        <div class="col-8">
+            <button class="btn btn-success" onclick="RunCode()">
+                Run Main File
+            </button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <br>
+            <center>
+                <textarea id="output" style="font-family: 'Lucida Console'; background-color: black; color: white; width: 100%;height:240px; padding: 8px">
+                </textarea>
+            </center>
+        </div>
+    </div>
+</div>
+{% endblock content %}
