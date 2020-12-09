@@ -15,12 +15,14 @@
 #
 
 import unittest
-from code_editor.core.exceptions.command_exceptions import NoneCommandException, EmptyCommandException, \
-    TypeCommandException
+from code_editor.core.exceptions.command_exceptions import NoneCommandException
+from code_editor.core.exceptions.command_exceptions import EmptyCommandException
+from code_editor.core.exceptions.command_exceptions import TypeCommandException
 from code_editor.core.php.php_builder_command import PhpBuilderCommand
 from code_editor.core.php.php_parameters import PhpParameters
 
 
+# Create classes for test
 class TestPhpBuilderCommand(unittest.TestCase):
     def test_valid_command(self):
         params = PhpParameters()

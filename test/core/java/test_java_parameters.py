@@ -15,16 +15,15 @@
 #
 
 import unittest
-from code_editor.core.exceptions.parameters_exceptions import NoneParametersException, EmptyParametersException, \
-    NotFoundParametersException
+from code_editor.core.exceptions.parameters_exceptions import NoneParametersException
+from code_editor.core.exceptions.parameters_exceptions import EmptyParametersException
+from code_editor.core.exceptions.parameters_exceptions import NotFoundParametersException
 from code_editor.core.java.java_parameters import JavaParameters
 
 
 # Create classes for test
-
-
 class TestJavaParameters(unittest.TestCase):
-    def test_valid_both_parameters(self):
+    def test_valid_all_parameters(self):
         comp = JavaParameters()
         comp.set_language_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/third_parties/java/jdk-13.0.2/bin')
         comp.set_file_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/media/808eb9893815d1931afaea1dfe57dfb6/java/13.0.2/projectjava/src/com/Main.java')
@@ -32,8 +31,7 @@ class TestJavaParameters(unittest.TestCase):
         comp.set_package('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/media/808eb9893815d1931afaea1dfe57dfb6/java/13.0.2/projectjava/src')
         self.assertTrue(comp.validate())
 
-
-    def test_invalid_both_parameters_none(self):
+    def test_invalid_all_parameters_none(self):
         comp = JavaParameters()
         comp.set_language_path(None)
         comp.set_file_path(None)
@@ -46,6 +44,8 @@ class TestJavaParameters(unittest.TestCase):
         comp = JavaParameters()
         comp.set_language_path('java')
         comp.set_file_path(None)
+        comp.set_binary('/media/project/bin')
+        comp.set_package('/media/project/src/com')
         with self.assertRaises(NoneParametersException):
             comp.validate()
 
@@ -53,10 +53,30 @@ class TestJavaParameters(unittest.TestCase):
         comp = JavaParameters()
         comp.set_language_path(None)
         comp.set_file_path('/media/project')
+        comp.set_binary('/media/project/bin')
+        comp.set_package('/media/project/src/com')
         with self.assertRaises(NoneParametersException):
             comp.validate()
 
-    def test_invalid_both_parameters_empty(self):
+    def test_invalid_parameter_binary_none(self):
+        comp = JavaParameters()
+        comp.set_language_path('java')
+        comp.set_file_path('/media/project')
+        comp.set_binary(None)
+        comp.set_package('/media/project/src/com')
+        with self.assertRaises(NoneParametersException):
+            comp.validate()
+
+    def test_invalid_parameter_package_none(self):
+        comp = JavaParameters()
+        comp.set_language_path('java')
+        comp.set_file_path('/media/project')
+        comp.set_binary('/media/project/bin')
+        comp.set_package(None)
+        with self.assertRaises(NoneParametersException):
+            comp.validate()
+
+    def test_invalid_all_parameters_empty(self):
         comp = JavaParameters()
         comp.set_language_path('')
         comp.set_file_path('')
@@ -69,6 +89,8 @@ class TestJavaParameters(unittest.TestCase):
         comp = JavaParameters()
         comp.set_language_path('java')
         comp.set_file_path('')
+        comp.set_binary('/media/project/bin')
+        comp.set_package('/media/project/src/com')
         with self.assertRaises(EmptyParametersException):
             comp.validate()
 
@@ -76,12 +98,34 @@ class TestJavaParameters(unittest.TestCase):
         comp = JavaParameters()
         comp.set_language_path('')
         comp.set_file_path('/media/project')
+        comp.set_binary('/media/project/bin')
+        comp.set_package('/media/project/src/com')
         with self.assertRaises(EmptyParametersException):
             comp.validate()
 
-    def test_invalid_both_parameters_nofound(self):
+    def test_invalid_parameter_binary_empty(self):
+        comp = JavaParameters()
+        comp.set_language_path('java')
+        comp.set_file_path('/media/project')
+        comp.set_binary('')
+        comp.set_package('/media/project/src/com')
+        with self.assertRaises(EmptyParametersException):
+            comp.validate()
+
+    def test_invalid_parameter_package_empty(self):
+        comp = JavaParameters()
+        comp.set_language_path('java')
+        comp.set_file_path('/media/project')
+        comp.set_binary('/media/project/bin')
+        comp.set_package('')
+        with self.assertRaises(EmptyParametersException):
+            comp.validate()
+
+    def test_invalid_all_parameters_nofound(self):
         comp = JavaParameters()
         comp.set_language_path('/third_parties/c++')
         comp.set_file_path('/media/project/')
+        comp.set_binary('media/binary')
+        comp.set_package('media/package')
         with self.assertRaises(NotFoundParametersException):
             comp.validate()

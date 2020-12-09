@@ -15,14 +15,13 @@
 #
 
 import unittest
-from code_editor.core.exceptions.parameters_exceptions import NoneParametersException, EmptyParametersException, \
-    NotFoundParametersException
+from code_editor.core.exceptions.parameters_exceptions import NoneParametersException
+from code_editor.core.exceptions.parameters_exceptions import EmptyParametersException
+from code_editor.core.exceptions.parameters_exceptions import NotFoundParametersException
 from code_editor.core.python.python_parameters import PythonParameters
 
 
 # Create classes for test
-
-
 class TestPythonParameters(unittest.TestCase):
     def test_valid_both_parameters(self):
         comp = PythonParameters()

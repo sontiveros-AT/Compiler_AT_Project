@@ -15,12 +15,14 @@
 #
 
 import unittest
-from code_editor.core.exceptions.command_exceptions import NoneCommandException, EmptyCommandException, \
-    TypeCommandException
+from code_editor.core.exceptions.command_exceptions import NoneCommandException
+from code_editor.core.exceptions.command_exceptions import EmptyCommandException
+from code_editor.core.exceptions.command_exceptions import TypeCommandException
 from code_editor.core.python.python_builder_command import PythonBuilderCommand
 from code_editor.core.python.python_parameters import PythonParameters
 
 
+# Create classes for test
 class TestPythonBuilderCommand(unittest.TestCase):
     def test_valid_command(self):
         params = PythonParameters()

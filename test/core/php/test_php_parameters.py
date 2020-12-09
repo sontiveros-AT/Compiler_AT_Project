@@ -15,8 +15,9 @@
 #
 
 import unittest
-from code_editor.core.exceptions.parameters_exceptions import NoneParametersException, EmptyParametersException, \
-    NotFoundParametersException
+from code_editor.core.exceptions.parameters_exceptions import NoneParametersException
+from code_editor.core.exceptions.parameters_exceptions import EmptyParametersException
+from code_editor.core.exceptions.parameters_exceptions import NotFoundParametersException
 from code_editor.core.php.php_parameters import PhpParameters
 
 
@@ -72,7 +73,7 @@ class TestPhpParameters(unittest.TestCase):
 
     def test_invalid_both_parameters_nofound(self):
         comp = PhpParameters()
-        comp.set_language_path('/media/adsf')
-        comp.set_file_path('/media/skadfjasdf')
+        comp.set_language_path('/third_parties/c++')
+        comp.set_file_path('/media/project')
         with self.assertRaises(NotFoundParametersException):
             comp.validate()

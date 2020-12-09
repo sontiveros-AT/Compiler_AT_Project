@@ -15,8 +15,9 @@
 #
 
 import unittest
-from code_editor.core.exceptions.command_exceptions import NoneCommandException, EmptyCommandException, \
-    TypeCommandException
+from code_editor.core.exceptions.command_exceptions import NoneCommandException
+from code_editor.core.exceptions.command_exceptions import EmptyCommandException
+from code_editor.core.exceptions.command_exceptions import TypeCommandException
 from code_editor.core.java.java_builder_command import JavaBuilderCommand
 from code_editor.core.java.java_parameters import JavaParameters
 

@@ -15,14 +15,13 @@
 #
 
 import unittest
-from code_editor.core.exceptions.parameters_exceptions import NoneParametersException, EmptyParametersException, \
-    NotFoundParametersException
+from code_editor.core.exceptions.parameters_exceptions import NoneParametersException
+from code_editor.core.exceptions.parameters_exceptions import EmptyParametersException
+from code_editor.core.exceptions.parameters_exceptions import NotFoundParametersException
 from code_editor.core.javascript.javascript_parameters import JavascriptParameters
 
 
 # Create classes for test
-
-
 class TestJavascriptParameters(unittest.TestCase):
     def test_valid_both_parameters(self):
         comp = JavascriptParameters()

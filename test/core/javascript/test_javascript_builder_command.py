@@ -15,12 +15,14 @@
 #
 
 import unittest
-from code_editor.core.exceptions.command_exceptions import NoneCommandException, EmptyCommandException, \
-    TypeCommandException
+from code_editor.core.exceptions.command_exceptions import NoneCommandException
+from code_editor.core.exceptions.command_exceptions import EmptyCommandException
+from code_editor.core.exceptions.command_exceptions import TypeCommandException
 from code_editor.core.javascript.javascript_builder_command import JavascriptBuilderCommand
 from code_editor.core.javascript.javascript_parameters import JavascriptParameters
 
 
+# Create classes for test
 class TestJavascriptBuilderCommand(unittest.TestCase):
     def test_valid_command(self):
         params = JavascriptParameters()
