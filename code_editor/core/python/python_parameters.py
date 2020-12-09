@@ -34,3 +34,5 @@ class PythonParameters(Parameters):
             raise NotFoundParametersException(self.get_file_path(), 'file path')
         elif not os.path.isfile(self.get_language_path()):
             raise NotFoundParametersException(self.get_language_path(), 'file language')
+        else:
+            return True
