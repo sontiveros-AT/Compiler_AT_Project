@@ -41,12 +41,12 @@ def walk(file, root_path, tree):
         else:
             sub_tree = get_child(tree, dir_name)
 
-        root_path = root_path + '\\' + dir_name
+        root_path = root_path + '/' + dir_name
         walk(file, root_path, sub_tree['children'])
 
 
 def file_path_from_root(file_path, root):
-    return file_path.replace(root + '\\', '')
+    return file_path.replace(root + '/', '')
 
 
 def jsonify_project(project_id):
