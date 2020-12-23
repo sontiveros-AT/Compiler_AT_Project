@@ -47,10 +47,7 @@ class ProjectParameters():
                 template_code = ConfigTemplates.get_python39_template()
 
         if self.language_name == 'java':
-            if file.is_main:
-                template_code = ConfigTemplates.get_java_template()
-            else:
-                template_code = self.get_java_class_template(file)
+            template_code = self.get_java_class_template(file)
 
         if self.language_name == 'javascript':
             template_code = ConfigTemplates.get_javascript_template()
@@ -87,9 +84,18 @@ class ProjectParameters():
 
     def get_java_class_template(self, file):
         file_path = Path(file.path)
-        template = '''package {};
+        if file.is_main:
+            template = '''package com;
+
+public class Main {
+    public static void main(String[] args){
+        System.out.println("Hello world!");
+    }
+}'''
+        else:
+            template = '''package {};
 
 public class {} {{
     
-    }}'''.format(self.get_java_packages_route(file_path), file_path.stem)
+}}'''.format(self.get_java_packages_route(file_path), file_path.stem)
         return template

@@ -8,9 +8,9 @@ class Migration(migrations.Migration):
     def combine_names(apps, schema_editor):
         languages = [{'name': 'java', 'version': '13.0.2', 'extension': '.java'},
                      {'name': 'python', 'version': '3.9', 'extension': '.py'},
-                     {'name': 'javascript', 'version': '14.15.1', 'extension': '.js'},
+                     {'name': 'javascript', 'version': '14.15.3', 'extension': '.js'},
                      {'name': 'python', 'version': '2.7', 'extension': '.py'},
-                     {'name': 'php', 'version': '7.4.11', 'extension': '.php'}]
+                     {'name': 'php', 'version': '7.3.19', 'extension': '.php'}]
         Language = apps.get_model('code_editor', 'Language')
         for lang in languages:
             Language(name=lang['name'], version=lang['version'],

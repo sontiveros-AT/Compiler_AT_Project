@@ -1,1 +1,0 @@
-All python binaries versions must be placed in this directory.

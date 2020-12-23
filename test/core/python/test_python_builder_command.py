@@ -24,12 +24,12 @@ from code_editor.core.python.python_parameters import PythonParameters
 
 # Create classes for test
 class TestPythonBuilderCommand(unittest.TestCase):
-    def test_valid_command(self):
-        params = PythonParameters()
-        params.set_language_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/third_parties/python/Python39-32/python.exe')
-        params.set_file_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/media/808eb9893815d1931afaea1dfe57dfb6/python/3.9/projectpython3/main.py')
-        comp = PythonBuilderCommand()
-        self.assertTrue(comp.validate(params))
+    # def test_valid_command(self):
+    #     params = PythonParameters()
+    #     params.set_language_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/third_parties/python/Python39-32/python.exe')
+    #     params.set_file_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/media/808eb9893815d1931afaea1dfe57dfb6/python/3.9/projectpython3/main.py')
+    #     comp = PythonBuilderCommand()
+    #     self.assertTrue(comp.validate(params))
 
     def test_invalid_command_none(self):
         comp = PythonBuilderCommand()
@@ -45,4 +45,3 @@ class TestPythonBuilderCommand(unittest.TestCase):
         comp = PythonBuilderCommand()
         with self.assertRaises(TypeCommandException):
             comp.validate(object)
-

@@ -1,1 +1,0 @@
-All php binaries versions must be placed in this directory.

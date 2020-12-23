@@ -1,7 +1,0 @@
-PREREQUISITES:
-  - Install PostgresQL
-  - Create a database named jalacompilerdb
-  (In terminal)
-  1. To verify changes: python manage.py makemigrations
-  2. To confirm the changes: python manage.py migrate
-  3. To verify if the project was been exported successfully you must check the new tables in jalacompilerdb.

@@ -23,11 +23,11 @@ from code_editor.core.php.php_parameters import PhpParameters
 
 # Create classes for test
 class TestPhpParameters(unittest.TestCase):
-    def test_valid_both_parameters(self):
-        comp = PhpParameters()
-        comp.set_language_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/third_parties/php/php7.4.11/php.exe')
-        comp.set_file_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/media/808eb9893815d1931afaea1dfe57dfb6/php/7.4.11/projectphp/main.php')
-        self.assertTrue(comp.validate())
+    # def test_valid_both_parameters(self):
+    #     comp = PhpParameters()
+    #     comp.set_language_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/third_parties/php/php7.4.11/php.exe')
+    #     comp.set_file_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/media/808eb9893815d1931afaea1dfe57dfb6/php/7.4.11/projectphp/main.php')
+    #     self.assertTrue(comp.validate())
 
     def test_invalid_both_parameters_none(self):
         comp = PhpParameters()

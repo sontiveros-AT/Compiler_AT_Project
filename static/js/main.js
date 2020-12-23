@@ -13,7 +13,7 @@
 // Version: 1.0
 
 // Ip Dom Origin
-ip = "192.168.33.10";
+ip = "192.168.33.60";
 port = "8000";
 
 // get current project id

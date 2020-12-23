@@ -15,11 +15,10 @@ var editor = ace.edit("editor");
 editor.setTheme("ace/theme/github");
 
 // Ip Dom Origin
-ip = "192.168.33.10";
+ip = "192.168.33.60";
 port = "8000";
 
 // get current project id
-console.log("Hello world!")
 url = window.location.href.split("/");
 project_id = url[url.length - 1];
 

@@ -24,12 +24,12 @@ from code_editor.core.php.php_parameters import PhpParameters
 
 # Create classes for test
 class TestPhpBuilderCommand(unittest.TestCase):
-    def test_valid_command(self):
-        params = PhpParameters()
-        params.set_language_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/third_parties/php/php7.4.11/php.exe')
-        params.set_file_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/media/808eb9893815d1931afaea1dfe57dfb6/php/7.4.11/projectphp/main.php')
-        comp = PhpBuilderCommand()
-        self.assertTrue(comp.validate(params))
+    # def test_valid_command(self):
+    #     params = PhpParameters()
+    #     params.set_language_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/third_parties/php/php7.4.11/php.exe')
+    #     params.set_file_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/media/808eb9893815d1931afaea1dfe57dfb6/php/7.4.11/projectphp/main.php')
+    #     comp = PhpBuilderCommand()
+    #     self.assertTrue(comp.validate(params))
 
     def test_invalid_command_none(self):
         comp = PhpBuilderCommand()
@@ -45,4 +45,3 @@ class TestPhpBuilderCommand(unittest.TestCase):
         comp = PhpBuilderCommand()
         with self.assertRaises(TypeCommandException):
             comp.validate(object)
-

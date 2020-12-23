@@ -23,12 +23,11 @@ from code_editor.core.python.python_parameters import PythonParameters
 
 # Create classes for test
 class TestPythonParameters(unittest.TestCase):
-    def test_valid_both_parameters(self):
-        comp = PythonParameters()
-        comp.set_language_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/third_parties/python/Python39-32/python.exe')
-        comp.set_file_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/media/808eb9893815d1931afaea1dfe57dfb6/python/3.9/projectpython3/main.py')
-        self.assertTrue(comp.validate())
-
+    # def test_valid_both_parameters(self):
+    #     comp = PythonParameters()
+    #     comp.set_language_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/third_parties/python/Python39-32/python.exe')
+    #     comp.set_file_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/media/808eb9893815d1931afaea1dfe57dfb6/python/3.9/projectpython3/main.py')
+    #     self.assertTrue(comp.validate())
 
     def test_invalid_both_parameters_none(self):
         comp = PythonParameters()

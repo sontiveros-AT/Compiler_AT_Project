@@ -24,12 +24,12 @@ from code_editor.core.javascript.javascript_parameters import JavascriptParamete
 
 # Create classes for test
 class TestJavascriptBuilderCommand(unittest.TestCase):
-    def test_valid_command(self):
-        params = JavascriptParameters()
-        params.set_language_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/third_parties/javascript/nodejs14.15.1/node.exe')
-        params.set_file_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/media/808eb9893815d1931afaea1dfe57dfb6/javascript/14.15.1/projectjavascript/main.js')
-        comp = JavascriptBuilderCommand()
-        self.assertTrue(comp.validate(params))
+    # def test_valid_command(self):
+    #     params = JavascriptParameters()
+    #     params.set_language_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/third_parties/javascript/nodejs14.15.1/node.exe')
+    #     params.set_file_path('C:\Tests\CompilerProjectBugFix\Compiler_AT_Project/media/808eb9893815d1931afaea1dfe57dfb6/javascript/14.15.1/projectjavascript/main.js')
+    #     comp = JavascriptBuilderCommand()
+    #     self.assertTrue(comp.validate(params))
 
     def test_invalid_command_none(self):
         comp = JavascriptBuilderCommand()
@@ -45,4 +45,3 @@ class TestJavascriptBuilderCommand(unittest.TestCase):
         comp = JavascriptBuilderCommand()
         with self.assertRaises(TypeCommandException):
             comp.validate(object)
-
